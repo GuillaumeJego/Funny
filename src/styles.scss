@@ -1,1 +1,50 @@
-/* You can add global styles to this file, and also import other style files */
+// ==========================================
+// VARIABLES GLOBALES - Couleurs de l'app
+// ==========================================
+
+// --- Couleur principale (boutons, bordures actives, titres sections) ---
+$primary: #6366f1;
+$primary-hover: #4f46e5;        // Couleur au survol des boutons principaux
+$primary-light: #e0e7ff;        // Fond léger pour éléments primaires
+
+// --- Couleur secondaire (bouton Annuler, bordures sections) ---
+$secondary: #e5e7eb;
+$secondary-hover: #d1d5db;      // Couleur au survol des boutons secondaires
+
+// --- Couleurs de statut ---
+$success: #22c55e;              // Messages de succès (vert)
+$error: #ef4444;                // Messages d'erreur (rouge)
+$warning: #f59e0b;              // Messages d'avertissement (orange)
+
+// --- Couleurs de texte ---
+$text-dark: #333;               // Titres principaux (h1, h2...)
+$text-medium: #555;             // Labels, textes secondaires
+$text-light: #888;              // Textes grisés (placeholder, loading...)
+
+// --- Couleurs de fond ---
+$bg-light: #f5f5f5;             // Fond général de la page
+$bg-white: #ffffff;             // Fond des cards et formulaires
+
+// --- Bordures ---
+$border-color: #ddd;            // Bordure des inputs et selects
+$border-radius: 8px;            // Arrondi standard (inputs, boutons)
+$border-radius-lg: 12px;        // Arrondi large (cards)
+
+// --- Ombres ---
+$shadow: 0 4px 20px rgba(0, 0, 0, 0.1);  // Ombre des cards
+
+// ==========================================
+// STYLES GLOBAUX
+// ==========================================
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: $bg-light;
+  color: $text-dark;
+}
