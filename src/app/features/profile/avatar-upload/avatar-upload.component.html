@@ -1,0 +1,84 @@
+<div class="avatar-upload">
+
+  <!-- Affichage avatar actuel -->
+  <div class="current-avatar">
+    <img
+      *ngIf="currentAvatarUrl; else defaultAvatar"
+      [src]="currentAvatarUrl"
+      alt="Avatar"
+      class="avatar-img"
+    />
+    <ng-template #defaultAvatar>
+      <div class="avatar-placeholder">👤</div>
+    </ng-template>
+
+    <label class="btn-change" for="avatarInput">
+      📷 Changer la photo
+    </label>
+    <input
+      id="avatarInput"
+      type="file"
+      accept="image/*"
+      (change)="onFileSelected($event)"
+      hidden
+    />
+  </div>
+
+  <!-- Éditeur de recadrage -->
+  <div class="cropper-container" *ngIf="showCropper">
+
+    <h3>Recadrer votre photo</h3>
+
+    <image-cropper
+      [imageChangedEvent]="imageChangedEvent"
+      [maintainAspectRatio]="true"
+      [aspectRatio]="1"
+      [resizeToWidth]="400"
+      [resizeToHeight]="400"
+      format="jpeg"
+      (imageCropped)="imageCropped($event)"
+    />
+
+    <!-- Prévisualisation avec filtre -->
+    <div class="preview-section" *ngIf="croppedImageUrl">
+      <h4>Prévisualisation</h4>
+      <img
+        [src]="croppedImageUrl"
+        [style.filter]="selectedFilter"
+        class="preview-img"
+        alt="Prévisualisation"
+      />
+
+      <!-- Filtres -->
+      <h4>Filtres</h4>
+      <div class="filters">
+        <div
+          *ngFor="let filter of filters"
+          class="filter-option"
+          [class.active]="selectedFilter === filter.value"
+          (click)="selectFilter(filter.value)"
+        >
+          <img
+            [src]="croppedImageUrl"
+            [style.filter]="filter.value"
+            class="filter-thumb"
+            alt="{{ filter.name }}"
+          />
+          <span>{{ filter.name }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <!-- Boutons -->
+    <div class="actions">
+      <button class="btn-secondary" (click)="cancel()">Annuler</button>
+      <button class="btn-primary" (click)="onUpload()" [disabled]="uploading || !croppedImageUrl">
+        {{ uploading ? 'Upload...' : 'Valider la photo' }}
+      </button>
+    </div>
+
+  </div>
+</div>

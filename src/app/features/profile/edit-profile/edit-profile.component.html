@@ -2,6 +2,14 @@
   <div class="edit-profile-card">
     <h1>Mon profil</h1>
 
+    <!-- Avatar Upload -->
+    <app-avatar-upload
+      *ngIf="!loading && userId"
+      [userId]="userId"
+      [currentAvatarUrl]="profile.avatar_url"
+      (avatarUpdated)="onAvatarUpdated($event)"
+    />
+
     <div *ngIf="loading" class="loading">Chargement...</div>
 
     <div *ngIf="!loading">

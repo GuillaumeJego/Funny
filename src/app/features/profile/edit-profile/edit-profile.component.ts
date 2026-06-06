@@ -5,16 +5,18 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { Profile } from '../../../core/models/profile.model';
+import { AvatarUploadComponent } from '../avatar-upload/avatar-upload.component';
 
 @Component({
   selector: 'app-edit-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AvatarUploadComponent],
   templateUrl: './edit-profile.component.html',
   styleUrl: './edit-profile.component.scss'
 })
 export class EditProfileComponent implements OnInit {
   profile: Partial<Profile> = {};
+  userId = '';
   loading = false;
   saving = false;
   successMessage = '';
@@ -40,10 +42,15 @@ export class EditProfileComponent implements OnInit {
       return;
     }
 
+    this.userId = user.id;
     const { data, error } = await this.profileService.getMyProfile(user.id);
     if (data) this.profile = data;
 
     this.loading = false;
+  }
+
+  onAvatarUpdated(url: string) {
+    this.profile.avatar_url = url;
   }
 
   async onSave() {
@@ -51,10 +58,7 @@ export class EditProfileComponent implements OnInit {
     this.successMessage = '';
     this.errorMessage = '';
 
-    const { data: { user } } = await this.authService.getUser();
-    if (!user) return;
-
-    const { error } = await this.profileService.updateProfile(user.id, this.profile);
+    const { error } = await this.profileService.updateProfile(this.userId, this.profile);
 
     if (error) {
       this.errorMessage = 'Erreur lors de la sauvegarde.';
