@@ -1,1 +1,9 @@
-<p>dashboard works!</p>
+<div class="dashboard">
+  <!-- Navbar filtres (unique au dashboard) -->
+  <app-navbar-filters (filtersChanged)="onFiltersChanged($event)" />
+
+  <!-- Contenu du dashboard -->
+  <div class="dashboard-content">
+    <p class="coming-soon">Les sorties arrivent bientôt ! 🎉</p>
+  </div>
+</div>

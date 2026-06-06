@@ -87,5 +87,31 @@
         }
       }
     }
+
+    .metana-credit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid $border-color;
+
+      .metana-logo {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      span {
+        font-size: 0.75rem;
+        color: $text-light;
+
+        strong {
+          color: $text-medium;
+        }
+      }
+    }
   }
 }

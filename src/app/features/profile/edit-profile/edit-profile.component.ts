@@ -6,11 +6,12 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { Profile } from '../../../core/models/profile.model';
 import { AvatarUploadComponent } from '../avatar-upload/avatar-upload.component';
+import { MetanaCreditComponent } from '../../../core/components/metana-credit/metana-credit.component';
 
 @Component({
   selector: 'app-edit-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, AvatarUploadComponent],
+  imports: [CommonModule, FormsModule, AvatarUploadComponent, MetanaCreditComponent],
   templateUrl: './edit-profile.component.html',
   styleUrl: './edit-profile.component.scss'
 })

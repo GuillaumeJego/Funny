@@ -32,13 +32,8 @@
       />
     </div>
 
-    <div class="error" *ngIf="errorMessage">
-      {{ errorMessage }}
-    </div>
-
-    <div class="success" *ngIf="successMessage">
-      {{ successMessage }}
-    </div>
+    <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
 
     <button (click)="onRegister()" [disabled]="loading">
       {{ loading ? 'Inscription...' : "S'inscrire" }}
@@ -48,5 +43,8 @@
       Déjà un compte ?
       <a routerLink="/login">Se connecter</a>
     </p>
+
+    <app-metana-credit />
+
   </div>
 </div>

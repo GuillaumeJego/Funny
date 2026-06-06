@@ -1,0 +1,15 @@
+@use 'styles' as *;
+
+.dashboard {
+  .dashboard-content {
+    padding: 1rem;
+    margin-top: 48px; // Espace pour la navbar filtres
+
+    .coming-soon {
+      text-align: center;
+      color: $text-light;
+      padding: 3rem 1rem;
+      font-size: 1.1rem;
+    }
+  }
+}
