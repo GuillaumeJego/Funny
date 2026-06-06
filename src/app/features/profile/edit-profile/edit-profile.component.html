@@ -1,0 +1,114 @@
+<div class="edit-profile-container">
+  <div class="edit-profile-card">
+    <h1>Mon profil</h1>
+
+    <div *ngIf="loading" class="loading">Chargement...</div>
+
+    <div *ngIf="!loading">
+
+      <!-- Informations de base -->
+      <section>
+        <h2>Informations générales</h2>
+
+        <div class="form-group">
+          <label>Nom d'utilisateur</label>
+          <input type="text" [(ngModel)]="profile.username" placeholder="Votre pseudo" />
+        </div>
+
+        <div class="form-group">
+          <label>Bio</label>
+          <textarea [(ngModel)]="profile.bio" placeholder="Parlez de vous..." rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Ville</label>
+          <input type="text" [(ngModel)]="profile.city" placeholder="Votre ville" />
+        </div>
+
+        <div class="form-group">
+          <label>Date de naissance</label>
+          <input type="date" [(ngModel)]="profile.birthdate" />
+        </div>
+      </section>
+
+      <!-- Informations personnelles -->
+      <section>
+        <h2>Informations personnelles</h2>
+
+        <div class="form-group">
+          <label>Genre</label>
+          <select [(ngModel)]="profile.gender">
+            <option *ngFor="let opt of genderOptions" [value]="opt">
+              {{ opt === 'secret' ? "C'est secret" : opt }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Statut conjugal</label>
+          <select [(ngModel)]="profile.relationship">
+            <option *ngFor="let opt of relationshipOptions" [value]="opt">
+              {{ opt === 'secret' ? "C'est secret" : opt }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Enfants</label>
+          <select [(ngModel)]="profile.children">
+            <option *ngFor="let opt of childrenOptions" [value]="opt">
+              {{ opt === 'secret' ? "C'est secret" : opt }}
+            </option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Habitudes de vie -->
+      <section>
+        <h2>Habitudes de vie</h2>
+
+        <div class="form-group">
+          <label>Tabac</label>
+          <select [(ngModel)]="profile.smoking">
+            <option *ngFor="let opt of habitOptions" [value]="opt">
+              {{ opt === 'secret' ? "C'est secret" : opt }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Vapotage</label>
+          <select [(ngModel)]="profile.vaping">
+            <option *ngFor="let opt of habitOptions" [value]="opt">
+              {{ opt === 'secret' ? "C'est secret" : opt }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Alcool</label>
+          <select [(ngModel)]="profile.alcohol">
+            <option *ngFor="let opt of habitOptions" [value]="opt">
+              {{ opt === 'secret' ? "C'est secret" : opt }}
+            </option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Messages -->
+      <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
+      <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+      <!-- Boutons -->
+      <div class="actions">
+        <button class="btn-secondary" (click)="goToDashboard()">
+          Annuler
+        </button>
+        <button class="btn-primary" (click)="onSave()" [disabled]="saving">
+          {{ saving ? 'Sauvegarde...' : 'Sauvegarder' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

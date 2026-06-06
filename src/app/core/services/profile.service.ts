@@ -1,0 +1,35 @@
+import { Injectable } from '@angular/core';
+import { SupabaseService } from './supabase.service';
+import { Profile } from '../models/profile.model';
+
+@Injectable({ providedIn: 'root' })
+export class ProfileService {
+
+  constructor(private supabase: SupabaseService) {}
+
+  // Récupérer son propre profil
+  async getMyProfile(userId: string) {
+    return await this.supabase.client
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+  }
+
+  // Récupérer le profil public d'un utilisateur
+  async getProfileById(userId: string) {
+    return await this.supabase.client
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+  }
+
+  // Mettre à jour son profil
+  async updateProfile(userId: string, updates: Partial<Profile>) {
+    return await this.supabase.client
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId);
+  }
+}

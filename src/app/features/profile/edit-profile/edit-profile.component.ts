@@ -1,0 +1,71 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+import { ProfileService } from '../../../core/services/profile.service';
+import { Profile } from '../../../core/models/profile.model';
+
+@Component({
+  selector: 'app-edit-profile',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './edit-profile.component.html',
+  styleUrl: './edit-profile.component.scss'
+})
+export class EditProfileComponent implements OnInit {
+  profile: Partial<Profile> = {};
+  loading = false;
+  saving = false;
+  successMessage = '';
+  errorMessage = '';
+
+  genderOptions = ['Homme', 'Femme', 'secret'];
+  habitOptions = ['Pas du tout', 'Un peu', 'Beaucoup', 'secret'];
+  childrenOptions = ["J'en veux", "J'en ai", "Je n'en ai pas", 'secret'];
+  relationshipOptions = ['En couple', 'Célibataire', 'secret'];
+
+  constructor(
+    private authService: AuthService,
+    private profileService: ProfileService,
+    private router: Router
+  ) {}
+
+  async ngOnInit() {
+    this.loading = true;
+    const { data: { user } } = await this.authService.getUser();
+
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const { data, error } = await this.profileService.getMyProfile(user.id);
+    if (data) this.profile = data;
+
+    this.loading = false;
+  }
+
+  async onSave() {
+    this.saving = true;
+    this.successMessage = '';
+    this.errorMessage = '';
+
+    const { data: { user } } = await this.authService.getUser();
+    if (!user) return;
+
+    const { error } = await this.profileService.updateProfile(user.id, this.profile);
+
+    if (error) {
+      this.errorMessage = 'Erreur lors de la sauvegarde.';
+    } else {
+      this.successMessage = 'Profil mis à jour avec succès !';
+    }
+
+    this.saving = false;
+  }
+
+  goToDashboard() {
+    this.router.navigate(['/dashboard']);
+  }
+}
