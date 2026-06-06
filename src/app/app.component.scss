@@ -1,0 +1,16 @@
+@use 'styles' as *;
+
+main {
+  &.with-navbar {
+    // Mobile : espace pour navbar top (56px) + padding bottom pour navbar bottom (64px)
+    padding-top: 56px;
+    padding-bottom: 64px;
+
+    // Desktop : espace pour navbar top (56px) + sidebar gauche (240px)
+    @media (min-width: 769px) {
+      padding-top: 56px;
+      padding-bottom: 0;
+      padding-left: 240px;
+    }
+  }
+}

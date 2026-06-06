@@ -1,1 +1,10 @@
-<router-outlet />
+<!-- Navbars (cachées sur login/register) -->
+<ng-container *ngIf="showNavbar">
+  <app-navbar-top />
+  <app-navbar-main />
+</ng-container>
+
+<!-- Contenu de la page -->
+<main [class.with-navbar]="showNavbar">
+  <router-outlet />
+</main>

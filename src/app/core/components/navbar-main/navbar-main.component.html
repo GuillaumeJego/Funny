@@ -1,0 +1,11 @@
+<nav class="navbar-main">
+  <div
+    *ngFor="let item of navItems"
+    class="nav-item"
+    [class.active]="isActive(item.route)"
+    (click)="navigate(item.route)"
+  >
+    <span class="nav-icon">{{ item.icon }}</span>
+    <span class="nav-label">{{ item.label }}</span>
+  </div>
+</nav>

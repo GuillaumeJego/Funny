@@ -1,0 +1,40 @@
+<nav class="navbar-filters">
+
+  <div class="filter-item" (click)="toggleAllFilters()">
+    <span class="filter-icon">🍽️</span>
+    <span class="filter-label">Quoi ?</span>
+  </div>
+
+  <div class="filter-item" (click)="toggleAllFilters()">
+    <span class="filter-icon">📍</span>
+    <span class="filter-label">Où ?</span>
+  </div>
+
+  <div class="filter-item" (click)="toggleAllFilters()">
+    <span class="filter-icon">📅</span>
+    <span class="filter-label">Quand ?</span>
+  </div>
+
+  <div class="filter-item" (click)="toggleAllFilters()">
+    <span class="filter-icon">💰</span>
+    <span class="filter-label">Prix</span>
+  </div>
+
+  <div class="filter-item" (click)="toggleAllFilters()">
+    <span class="filter-icon">🔽</span>
+    <span class="filter-label">Filtres</span>
+  </div>
+
+  <!-- Panel tous les filtres -->
+  <div class="filters-panel" *ngIf="showAllFilters">
+    <div class="filters-panel-header">
+      <h3>Filtres</h3>
+      <button class="btn-reset" (click)="resetFilters()">Réinitialiser</button>
+      <button class="btn-close" (click)="toggleAllFilters()">✕</button>
+    </div>
+    <div class="filters-panel-content">
+      <p class="coming-soon">Les filtres avancés seront disponibles prochainement !</p>
+    </div>
+  </div>
+
+</nav>

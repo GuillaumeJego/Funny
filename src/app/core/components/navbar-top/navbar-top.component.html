@@ -1,0 +1,33 @@
+<nav class="navbar-top">
+
+  <!-- Menu burger -->
+  <div class="menu-btn" (click)="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- Logo / Nom de l'app -->
+  <div class="app-name">Funny</div>
+
+  <!-- Avatar + Profil -->
+  <div class="profile-btn" (click)="goToProfile()">
+    <img
+      *ngIf="avatarUrl; else defaultAvatar"
+      [src]="avatarUrl"
+      alt="Avatar"
+      class="avatar"
+    />
+    <ng-template #defaultAvatar>
+      <div class="avatar-placeholder">👤</div>
+    </ng-template>
+  </div>
+
+  <!-- Menu déroulant -->
+  <div class="dropdown-menu" *ngIf="menuOpen">
+    <div class="menu-item" (click)="logout()">
+      🚪 Déconnexion
+    </div>
+  </div>
+
+</nav>
