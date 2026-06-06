@@ -1,0 +1,52 @@
+<div class="sortie-image-upload">
+
+  <!-- Bouton sélection -->
+  <div class="upload-btn-container">
+    <label class="btn-upload" for="sortieImage">
+      📷 Choisir une image personnalisée
+    </label>
+    <input
+      id="sortieImage"
+      type="file"
+      accept="image/*"
+      (change)="onFileSelected($event)"
+      hidden
+    />
+  </div>
+
+  <!-- Éditeur de recadrage -->
+  <div class="cropper-container" *ngIf="showCropper">
+    <h4>Recadrer votre image</h4>
+
+    <image-cropper
+      [imageChangedEvent]="imageChangedEvent"
+      [maintainAspectRatio]="true"
+      [aspectRatio]="1"
+      [resizeToWidth]="600"
+      [resizeToHeight]="600"
+      format="jpeg"
+      (imageCropped)="imageCropped($event)"
+    />
+
+    <!-- Prévisualisation -->
+    <div class="preview" *ngIf="croppedImageUrl">
+      <h4>Prévisualisation</h4>
+      <img [src]="croppedImageUrl" alt="Prévisualisation" class="preview-img" />
+    </div>
+
+    <!-- Boutons -->
+    <div class="actions">
+      <button class="btn-secondary" (click)="cancel()">Annuler</button>
+      <button class="btn-primary" (click)="validate()" [disabled]="!croppedImageUrl">
+        ✅ Valider
+      </button>
+    </div>
+  </div>
+
+  <!-- Aperçu final -->
+  <div class="final-preview" *ngIf="!showCropper && croppedImageUrl">
+    <img [src]="croppedImageUrl" alt="Image sélectionnée" class="final-img" />
+    <button class="btn-change" (click)="showCropper = true">Modifier</button>
+  </div>
+
+</div>
