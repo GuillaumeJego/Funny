@@ -13,10 +13,10 @@ import { DrawerService } from '../../services/drawer.service';
 export class NavbarMainComponent {
 
   navItems = [
-    { icon: '🏠', label: 'Dashboard', route: '/dashboard' },
-    { icon: '👥', label: 'Membres', route: '/membres' },
-    { icon: '➕', label: 'Créer', route: '/sorties/creer' },
+    { icon: '🏠', label: 'Sorties', route: '/dashboard' },
     { icon: '⭐', label: 'Mes sorties', route: '/mes-sorties' },
+    { icon: '➕', label: 'Créer', route: '/sorties/creer' },
+    { icon: '👥', label: 'Membres', route: '/membres' },
     { icon: '🔔', label: 'Notifications', route: '/notifications' },
   ];
 
