@@ -37,9 +37,12 @@
 
     &:hover {
       background-color: $bg-light;
-      .filter-label {
-        color: $primary;
-      }
+      .filter-label { color: $primary; }
+    }
+
+    &.active {
+      background-color: $primary-light;
+      .filter-label { color: $primary; font-weight: 600; }
     }
   }
 

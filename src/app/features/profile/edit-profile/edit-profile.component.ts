@@ -63,11 +63,10 @@ export class EditProfileComponent implements OnInit {
 
     if (error) {
       this.errorMessage = 'Erreur lors de la sauvegarde.';
+      this.saving = false;
     } else {
-      this.successMessage = 'Profil mis à jour avec succès !';
+      this.router.navigate(['/dashboard']);
     }
-
-    this.saving = false;
   }
 
   goToDashboard() {

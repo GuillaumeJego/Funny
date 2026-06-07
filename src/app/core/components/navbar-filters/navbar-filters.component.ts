@@ -6,6 +6,7 @@ export interface Filters {
   ou?: string;
   quand?: string;
   prix?: string;
+  premium?: boolean;
 }
 
 @Component({
@@ -23,6 +24,11 @@ export class NavbarFiltersComponent {
 
   applyFilter(type: string, value: string) {
     this.filters = { ...this.filters, [type]: value };
+    this.filtersChanged.emit(this.filters);
+  }
+
+  togglePremium() {
+    this.filters = { ...this.filters, premium: !this.filters.premium };
     this.filtersChanged.emit(this.filters);
   }
 

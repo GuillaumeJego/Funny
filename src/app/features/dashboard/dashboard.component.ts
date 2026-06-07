@@ -140,6 +140,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (filters.prix === 'gratuit' && s.price > 0) return false;
         if (filters.prix === 'payant' && s.price === 0) return false;
       }
+      if (filters.premium && !s.is_premium) return false;
       return true;
     });
     this.groupes = this.grouperParDate(this.sortiesFiltrees);
