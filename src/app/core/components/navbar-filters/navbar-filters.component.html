@@ -20,6 +20,11 @@
     <span class="filter-label">Prix</span>
   </div>
 
+  <div class="filter-item" [class.active]="filters.premium" (click)="togglePremium()">
+    <span class="filter-icon">⭐</span>
+    <span class="filter-label">Premium</span>
+  </div>
+
   <div class="filter-item" (click)="toggleAllFilters()">
     <span class="filter-icon">🔽</span>
     <span class="filter-label">Filtres</span>
