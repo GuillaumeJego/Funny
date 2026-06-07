@@ -194,6 +194,20 @@
     display: flex; align-items: center; justify-content: center;
   }
 
+  .footer-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-heart {
+    background: none; border: none; cursor: pointer;
+    padding: 0.3rem; color: $text-light;
+    display: flex; align-items: center;
+    transition: color 0.2s, transform 0.15s;
+    &:hover, &.active { color: #ef4444; transform: scale(1.15); }
+  }
+
   .btn-join {
     flex-shrink: 0;
     padding: 0.4rem 0.9rem;

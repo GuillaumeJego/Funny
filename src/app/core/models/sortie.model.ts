@@ -22,6 +22,13 @@ export interface SortieWithRelations extends Sortie {
   inscriptionsCount?: number;
 }
 
+export interface Favori {
+  id: string;
+  user_id: string;
+  sortie_id: string;
+  created_at?: string;
+}
+
 export interface Inscription {
   id: string;
   sortie_id: string;

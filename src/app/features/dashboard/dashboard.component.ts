@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NavbarFiltersComponent, Filters } from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieService } from '../../core/services/sortie.service';
+import { FavoriService } from '../../core/services/favori.service';
+import { AuthService } from '../../core/services/auth.service';
+import { ProfileService } from '../../core/services/profile.service';
 import { SortieWithRelations } from '../../core/models/sortie.model';
 
 export interface SortieGroup {
@@ -24,10 +27,30 @@ export class DashboardComponent implements OnInit {
   loading = true;
   error = '';
   viewMode: 'grid' | 'list' = 'grid';
+  favorisIds: Set<string> = new Set();
+  userId = '';
 
-  constructor(private sortieService: SortieService) {}
+  constructor(
+    private sortieService: SortieService,
+    private favoriService: FavoriService,
+    private authService: AuthService,
+    private profileService: ProfileService
+  ) {}
 
   async ngOnInit() {
+    const { data: { user } } = await this.authService.getUser();
+    if (user) {
+      this.userId = user.id;
+      const [favoris, profile] = await Promise.all([
+        this.favoriService.getFavoris(user.id),
+        this.profileService.getMyProfile(user.id)
+      ]);
+      this.favorisIds = new Set(favoris);
+      if (profile.data?.view_mode) {
+        this.viewMode = profile.data.view_mode;
+      }
+    }
+
     const { data, error } = await this.sortieService.getAllSorties();
     this.loading = false;
     if (error) {
@@ -38,7 +61,6 @@ export class DashboardComponent implements OnInit {
     const sorties = (data as SortieWithRelations[]) ?? [];
 
     await Promise.all(sorties.map(async s => {
-      // Résoudre l'image (fallback vers theme_images)
       if (s.image_url) {
         s.resolvedImageUrl = s.image_url;
       } else if (s.theme_id) {
@@ -50,6 +72,25 @@ export class DashboardComponent implements OnInit {
     this.sorties = sorties;
     this.sortiesFiltrees = sorties;
     this.groupes = this.grouperParDate(sorties);
+  }
+
+  async toggleFavori(event: Event, sortieId: string) {
+    event.stopPropagation();
+    if (!this.userId) return;
+
+    if (this.favorisIds.has(sortieId)) {
+      this.favorisIds.delete(sortieId);
+      await this.favoriService.removeFavori(this.userId, sortieId);
+    } else {
+      this.favorisIds.add(sortieId);
+      await this.favoriService.addFavori(this.userId, sortieId);
+    }
+    // Forcer la détection de changement
+    this.favorisIds = new Set(this.favorisIds);
+  }
+
+  isFavori(sortieId: string): boolean {
+    return this.favorisIds.has(sortieId);
   }
 
   onFiltersChanged(filters: Filters) {
@@ -80,6 +121,13 @@ export class DashboardComponent implements OnInit {
       map.get(label)!.push(s);
     }
     return Array.from(map.entries()).map(([dateLabel, sorties]) => ({ dateLabel, sorties }));
+  }
+
+  async setViewMode(mode: 'grid' | 'list') {
+    this.viewMode = mode;
+    if (this.userId) {
+      await this.profileService.updateProfile(this.userId, { view_mode: mode });
+    }
   }
 
   formatHeure(dateStr: string): string {

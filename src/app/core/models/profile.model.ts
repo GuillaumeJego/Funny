@@ -17,4 +17,5 @@ export interface Profile {
   ban_reason?: string;
   ban_count?: number;
   total_ban_days?: number;
+  view_mode?: 'grid' | 'list';
 }
