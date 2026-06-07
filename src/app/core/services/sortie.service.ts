@@ -20,6 +20,16 @@ export class SortieService {
       .order('date');
   }
 
+  // Récupérer le nombre d'inscrits pour une sortie
+  async getInscriptionsCount(sortieId: string): Promise<number> {
+    const { count } = await this.supabase.client
+      .from('inscriptions')
+      .select('*', { count: 'exact', head: true })
+      .eq('sortie_id', sortieId)
+      .eq('status', 'pending');
+    return count ?? 0;
+  }
+
   // Récupérer la première image d'un thème (fallback image)
   async getFirstThemeImage(themeId: string): Promise<string | null> {
     const { data } = await this.supabase.client

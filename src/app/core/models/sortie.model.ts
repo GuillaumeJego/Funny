@@ -18,7 +18,8 @@ export interface Sortie {
 export interface SortieWithRelations extends Sortie {
   themes: { name: string; icon: string } | null;
   profiles: { username: string; avatar_url?: string } | null;
-  resolvedImageUrl?: string; // image résolue après fallback thème
+  resolvedImageUrl?: string;
+  inscriptionsCount?: number;
 }
 
 export interface Inscription {
