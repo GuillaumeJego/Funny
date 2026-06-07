@@ -1,0 +1,114 @@
+<div class="drawer-backdrop" *ngIf="isOpen" (click)="onBackdropClick($event)">
+  <div class="drawer" [class.open]="isOpen">
+
+    <!-- Poignée mobile -->
+    <div class="drawer-handle">
+      <div class="handle-bar"></div>
+    </div>
+
+    <!-- Bouton fermer (toujours visible) -->
+    <button class="btn-close" (click)="close()" title="Fermer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    <ng-container *ngIf="sortie">
+
+      <!-- ══ CAS PREMIUM VERROUILLÉ ══ -->
+      <div *ngIf="isPremiumLocked" class="locked">
+        <div class="locked-image">
+          <img *ngIf="sortie.resolvedImageUrl" [src]="sortie.resolvedImageUrl" alt="" class="blurred" />
+          <div class="lock-overlay">
+            <div class="lock-icon">🔒</div>
+            <h3>Sortie Premium</h3>
+            <p>Abonnez-vous pour accéder aux détails de cette sortie et rejoindre la communauté premium.</p>
+            <button class="btn-subscribe">⭐ Passer Premium</button>
+          </div>
+        </div>
+        <div class="locked-info">
+          <h2 class="sortie-title">{{ sortie.title }}</h2>
+          <span class="badge-premium">⭐ Réservé aux abonnés</span>
+        </div>
+      </div>
+
+      <!-- ══ CAS NORMAL ══ -->
+      <div *ngIf="!isPremiumLocked" class="drawer-content">
+
+        <!-- Image -->
+        <div class="drawer-image">
+          <img *ngIf="sortie.resolvedImageUrl" [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
+          <div *ngIf="!sortie.resolvedImageUrl" class="image-placeholder">{{ sortie.themes?.icon || '🎯' }}</div>
+          <span *ngIf="sortie.is_premium" class="badge-premium-img">⭐ Premium</span>
+          <span class="badge-theme-img">{{ sortie.themes?.icon }} {{ sortie.themes?.name }}</span>
+        </div>
+
+        <!-- Corps -->
+        <div class="drawer-body">
+
+          <!-- Titre + actions -->
+          <div class="title-row">
+            <h2 class="sortie-title">{{ sortie.title }}</h2>
+            <button
+              class="btn-heart"
+              [class.active]="isFavori"
+              (click)="favoriToggled.emit(sortie.id)"
+              title="Favoris"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24"
+                [attr.fill]="isFavori ? '#ef4444' : 'none'"
+                stroke="currentColor"
+                [attr.stroke]="isFavori ? '#ef4444' : 'currentColor'"
+                stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Description -->
+          <p *ngIf="sortie.description" class="sortie-desc">{{ sortie.description }}</p>
+
+          <!-- Infos -->
+          <div class="info-list">
+            <div class="info-item">
+              <span class="info-icon">📅</span>
+              <span>{{ formatDate(sortie.date) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-icon">📍</span>
+              <span>{{ sortie.location }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-icon">💶</span>
+              <span>{{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}</span>
+            </div>
+            <div class="info-item" *ngIf="sortie.max_participants">
+              <span class="info-icon">👥</span>
+              <span>{{ sortie.inscriptionsCount }} / {{ sortie.max_participants }} participants</span>
+            </div>
+          </div>
+
+          <!-- Organisateur -->
+          <div class="organizer" *ngIf="sortie.profiles">
+            <img *ngIf="sortie.profiles.avatar_url" [src]="sortie.profiles.avatar_url" class="avatar" alt="" />
+            <div *ngIf="!sortie.profiles.avatar_url" class="avatar-placeholder">
+              {{ sortie.profiles.username.charAt(0).toUpperCase() }}
+            </div>
+            <div>
+              <div class="organizer-label">Organisé par</div>
+              <div class="organizer-name">{{ sortie.profiles.username }}</div>
+            </div>
+          </div>
+
+          <!-- Bouton rejoindre -->
+          <button class="btn-rejoindre" (click)="rejoindreClicked.emit(sortie.id)">
+            Rejoindre cette sortie
+          </button>
+
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>
