@@ -1,12 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule, NavigationStart } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { NavbarFiltersComponent, Filters } from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieService } from '../../core/services/sortie.service';
 import { FavoriService } from '../../core/services/favori.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
+import { DrawerService } from '../../core/services/drawer.service';
 import { SortieWithRelations } from '../../core/models/sortie.model';
+import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
 
 export interface SortieGroup {
   dateLabel: string;
@@ -16,11 +19,13 @@ export interface SortieGroup {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarFiltersComponent],
+  imports: [CommonModule, RouterModule, NavbarFiltersComponent, SortieDrawerComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
+  private routerSub!: Subscription;
+  private drawerSub!: Subscription;
   sorties: SortieWithRelations[] = [];
   sortiesFiltrees: SortieWithRelations[] = [];
   groupes: SortieGroup[] = [];
@@ -29,15 +34,31 @@ export class DashboardComponent implements OnInit {
   viewMode: 'grid' | 'list' = 'grid';
   favorisIds: Set<string> = new Set();
   userId = '';
+  userRole = 'user';
+  selectedSortie: SortieWithRelations | null = null;
+  drawerOpen = false;
 
   constructor(
     private sortieService: SortieService,
     private favoriService: FavoriService,
     private authService: AuthService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private drawerService: DrawerService,
+    private router: Router
   ) {}
 
+  ngOnDestroy() {
+    this.routerSub?.unsubscribe();
+    this.drawerSub?.unsubscribe();
+  }
+
   async ngOnInit() {
+    this.routerSub = this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        this.closeDrawer();
+      }
+    });
+    this.drawerSub = this.drawerService.closeAll$.subscribe(() => this.closeDrawer());
     const { data: { user } } = await this.authService.getUser();
     if (user) {
       this.userId = user.id;
@@ -46,9 +67,8 @@ export class DashboardComponent implements OnInit {
         this.profileService.getMyProfile(user.id)
       ]);
       this.favorisIds = new Set(favoris);
-      if (profile.data?.view_mode) {
-        this.viewMode = profile.data.view_mode;
-      }
+      if (profile.data?.view_mode) this.viewMode = profile.data.view_mode;
+      if (profile.data?.role) this.userRole = profile.data.role;
     }
 
     const { data, error } = await this.sortieService.getAllSorties();
@@ -72,6 +92,20 @@ export class DashboardComponent implements OnInit {
     this.sorties = sorties;
     this.sortiesFiltrees = sorties;
     this.groupes = this.grouperParDate(sorties);
+  }
+
+  openDrawer(sortie: SortieWithRelations) {
+    this.selectedSortie = sortie;
+    this.drawerOpen = true;
+  }
+
+  closeDrawer() {
+    this.drawerOpen = false;
+    this.selectedSortie = null;
+  }
+
+  async onFavoriFromDrawer(sortieId: string) {
+    await this.toggleFavori(new Event('click'), sortieId);
   }
 
   async toggleFavori(event: Event, sortieId: string) {

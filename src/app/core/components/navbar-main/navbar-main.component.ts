@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { DrawerService } from '../../services/drawer.service';
 
 @Component({
   selector: 'app-navbar-main',
@@ -19,9 +20,10 @@ export class NavbarMainComponent {
     { icon: '🔔', label: 'Notifications', route: '/notifications' },
   ];
 
-  constructor(public router: Router) {}
+  constructor(public router: Router, private drawerService: DrawerService) {}
 
   navigate(route: string) {
+    this.drawerService.closeAll();
     this.router.navigate([route]);
   }
 
