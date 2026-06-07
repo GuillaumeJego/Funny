@@ -22,9 +22,14 @@ export class SortieImageUploadComponent {
     this.showCropper = true;
   }
 
-  imageCropped(event: ImageCroppedEvent) {
-    this.croppedImageBlob = event.blob || null;
+  async imageCropped(event: ImageCroppedEvent) {
     this.croppedImageUrl = event.objectUrl || '';
+    if (event.blob) {
+      this.croppedImageBlob = event.blob;
+    } else if (event.objectUrl) {
+      const res = await fetch(event.objectUrl);
+      this.croppedImageBlob = await res.blob();
+    }
   }
 
   validate() {

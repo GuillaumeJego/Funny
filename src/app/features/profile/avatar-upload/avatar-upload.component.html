@@ -16,6 +16,7 @@
       📷 Changer la photo
     </label>
     <input
+      #fileInput
       id="avatarInput"
       type="file"
       accept="image/*"
@@ -36,7 +37,7 @@
       [resizeToWidth]="400"
       [resizeToHeight]="400"
       format="jpeg"
-      output="blob"
+      output="base64"
       (imageCropped)="imageCropped($event)"
     />
 

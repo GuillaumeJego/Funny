@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 import { SupabaseService } from '../../../core/services/supabase.service';
@@ -14,15 +14,15 @@ export class AvatarUploadComponent {
   @Input() userId!: string;
   @Input() currentAvatarUrl?: string;
   @Output() avatarUpdated = new EventEmitter<string>();
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   imageChangedEvent: Event | null = null;
-  croppedImageBlob: Blob | null = null;
+  croppedBase64: string = '';
   croppedImageUrl: string = '';
   showCropper = false;
   uploading = false;
   errorMessage = '';
 
-  // Filtres disponibles
   filters = [
     { name: 'Normal', value: 'none' },
     { name: 'Noir & Blanc', value: 'grayscale(100%)' },
@@ -38,11 +38,13 @@ export class AvatarUploadComponent {
     this.imageChangedEvent = event;
     this.showCropper = true;
     this.errorMessage = '';
+    this.croppedBase64 = '';
+    this.croppedImageUrl = '';
   }
 
   imageCropped(event: ImageCroppedEvent) {
-    this.croppedImageBlob = event.blob || null;
-    this.croppedImageUrl = event.objectUrl || '';
+    this.croppedBase64 = event.base64 || '';
+    this.croppedImageUrl = event.base64 || '';
   }
 
   selectFilter(filter: string) {
@@ -50,74 +52,71 @@ export class AvatarUploadComponent {
   }
 
   async onUpload() {
-    if (!this.croppedImageBlob || !this.userId) return;
+    if (!this.croppedBase64 || !this.userId) {
+      this.errorMessage = 'Aucune image sélectionnée.';
+      return;
+    }
 
     this.uploading = true;
     this.errorMessage = '';
 
     try {
-      // Applique le filtre sur le canvas avant upload
-      const filteredBlob = await this.applyFilter(this.croppedImageBlob);
-
+      const blob = await this.applyFilterAndGetBlob(this.croppedBase64);
       const filePath = `${this.userId}/avatar.jpg`;
 
-      // Supprime l'ancien avatar s'il existe
-      await this.supabase.client.storage
-        .from('avatars')
-        .remove([filePath]);
+      await this.supabase.client.storage.from('avatars').remove([filePath]);
 
-      // Upload le nouveau
       const { error: uploadError } = await this.supabase.client.storage
         .from('avatars')
-        .upload(filePath, filteredBlob, { contentType: 'image/jpeg', upsert: true });
+        .upload(filePath, blob, { contentType: 'image/jpeg', upsert: true });
 
       if (uploadError) throw uploadError;
 
-      // Récupère l'URL publique
-      const { data } = this.supabase.client.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
+      const { data } = this.supabase.client.storage.from('avatars').getPublicUrl(filePath);
+      const urlWithCache = `${data.publicUrl}?t=${Date.now()}`;
 
-      // Met à jour le profil
       await this.supabase.client
         .from('profiles')
-        .update({ avatar_url: data.publicUrl })
+        .update({ avatar_url: urlWithCache })
         .eq('id', this.userId);
 
-      this.avatarUpdated.emit(data.publicUrl);
+      this.avatarUpdated.emit(urlWithCache);
       this.showCropper = false;
+      this.croppedBase64 = '';
+      this.croppedImageUrl = '';
+      // Reset le file input pour permettre de re-sélectionner une photo
+      if (this.fileInput) this.fileInput.nativeElement.value = '';
 
-    } catch (error) {
+    } catch (err) {
+      console.error('Upload error:', err);
       this.errorMessage = "Erreur lors de l'upload.";
     }
 
     this.uploading = false;
   }
 
-  private async applyFilter(blob: Blob): Promise<Blob> {
-    if (this.selectedFilter === 'none') return blob;
-
+  private async applyFilterAndGetBlob(base64: string): Promise<Blob> {
     return new Promise((resolve) => {
       const img = new Image();
-      const url = URL.createObjectURL(blob);
       img.onload = () => {
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
         canvas.height = img.height;
         const ctx = canvas.getContext('2d')!;
-        ctx.filter = this.selectedFilter;
+        if (this.selectedFilter !== 'none') ctx.filter = this.selectedFilter;
         ctx.drawImage(img, 0, 0);
-        URL.revokeObjectURL(url);
         canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.85);
       };
-      img.src = url;
+      img.src = base64;
     });
   }
 
   cancel() {
     this.showCropper = false;
     this.imageChangedEvent = null;
+    this.croppedBase64 = '';
     this.croppedImageUrl = '';
     this.selectedFilter = 'none';
+    if (this.fileInput) this.fileInput.nativeElement.value = '';
   }
 }

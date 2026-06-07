@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -31,7 +31,8 @@ export class EditProfileComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private profileService: ProfileService,
-    private router: Router
+    private router: Router,
+    private location: Location
   ) {}
 
   async ngOnInit() {
@@ -69,7 +70,7 @@ export class EditProfileComponent implements OnInit {
     }
   }
 
-  goToDashboard() {
-    this.router.navigate(['/dashboard']);
+  cancel() {
+    this.location.back();
   }
 }
