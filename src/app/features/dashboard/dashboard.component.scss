@@ -1,15 +1,251 @@
 @use 'styles' as *;
 
 .dashboard {
+  position: relative;
+  min-height: 100vh;
+
   .dashboard-content {
     padding: 1rem;
     margin-top: 48px; // Espace pour la navbar filtres
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
 
-    .coming-soon {
-      text-align: center;
-      color: $text-light;
-      padding: 3rem 1rem;
-      font-size: 1.1rem;
-    }
+// États vides / chargement
+.state-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 1rem;
+  color: $text-light;
+  text-align: center;
+
+  &.error { color: $error; }
+
+  .empty-icon { font-size: 3rem; }
+
+  p { font-size: 1rem; line-height: 1.6; }
+
+  .btn-create {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.6rem 1.4rem;
+    background: $primary;
+    color: #fff;
+    border-radius: $border-radius;
+    text-decoration: none;
+    font-weight: 600;
+    &:hover { background: $primary-hover; }
+  }
+}
+
+// Spinner
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid $border-color;
+  border-top-color: $primary;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// Grille des sorties
+.sorties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+  padding-bottom: 5rem; // espace pour le FAB
+}
+
+// Card
+.sortie-card {
+  background: $bg-white;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.13);
+  }
+}
+
+// Image
+.card-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: $primary-light;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .card-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+  }
+
+  .badge-premium {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    background: #f59e0b;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-theme {
+    position: absolute;
+    bottom: 0.6rem;
+    left: 0.6rem;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+  }
+}
+
+// Corps
+.card-body {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-dark;
+  line-height: 1.3;
+}
+
+.card-desc {
+  font-size: 0.85rem;
+  color: $text-medium;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    color: $text-medium;
+
+    .meta-icon { font-size: 0.9rem; flex-shrink: 0; }
+  }
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid $border-color;
+
+  .organizer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: $text-medium;
+  }
+
+  .avatar, .avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .avatar-placeholder {
+    background: $primary-light;
+    color: $primary;
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-join {
+    padding: 0.4rem 0.9rem;
+    background: $primary;
+    color: #fff;
+    border: none;
+    border-radius: $border-radius;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    &:hover { background: $primary-hover; }
+  }
+}
+
+// FAB
+.fab {
+  position: fixed;
+  bottom: 5rem; // au-dessus de la navbar bottom mobile
+  right: 1.25rem;
+  width: 52px;
+  height: 52px;
+  background: $primary;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 300;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.45);
+  transition: background 0.2s, transform 0.2s;
+  z-index: 100;
+
+  &:hover {
+    background: $primary-hover;
+    transform: scale(1.07);
+  }
+}
+
+// Desktop : FAB en bas à droite sans tenir compte de la navbar bottom
+@media (min-width: 768px) {
+  .fab {
+    bottom: 1.5rem;
   }
 }

@@ -1,9 +1,81 @@
 <div class="dashboard">
-  <!-- Navbar filtres (unique au dashboard) -->
   <app-navbar-filters (filtersChanged)="onFiltersChanged($event)" />
 
-  <!-- Contenu du dashboard -->
   <div class="dashboard-content">
-    <p class="coming-soon">Les sorties arrivent bientôt ! 🎉</p>
+
+    <!-- Chargement -->
+    <div *ngIf="loading" class="state-message">
+      <div class="spinner"></div>
+      <p>Chargement des sorties…</p>
+    </div>
+
+    <!-- Erreur -->
+    <div *ngIf="!loading && error" class="state-message error">
+      <p>{{ error }}</p>
+    </div>
+
+    <!-- Aucune sortie -->
+    <div *ngIf="!loading && !error && sortiesFiltrees.length === 0" class="state-message empty">
+      <span class="empty-icon">🎉</span>
+      <p>Aucune sortie pour le moment.<br>Sois le premier à en créer une !</p>
+      <a routerLink="/sorties/creer" class="btn-create">Créer une sortie</a>
+    </div>
+
+    <!-- Liste des sorties -->
+    <div *ngIf="!loading && !error && sortiesFiltrees.length > 0" class="sorties-grid">
+      <div *ngFor="let sortie of sortiesFiltrees" class="sortie-card">
+
+        <!-- Image -->
+        <div class="card-image">
+          <img *ngIf="sortie.resolvedImageUrl" [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
+          <div *ngIf="!sortie.resolvedImageUrl" class="card-image-placeholder">
+            <span>{{ sortie.themes?.icon || '🎯' }}</span>
+          </div>
+          <span *ngIf="sortie.is_premium" class="badge-premium">Premium</span>
+          <span class="badge-theme">{{ sortie.themes?.icon }} {{ sortie.themes?.name }}</span>
+        </div>
+
+        <!-- Contenu -->
+        <div class="card-body">
+          <h3 class="card-title">{{ sortie.title }}</h3>
+          <p *ngIf="sortie.description" class="card-desc">{{ sortie.description }}</p>
+
+          <div class="card-meta">
+            <div class="meta-item">
+              <span class="meta-icon">📅</span>
+              <span>{{ formatDate(sortie.date) }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">📍</span>
+              <span>{{ sortie.location }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">💶</span>
+              <span>{{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}</span>
+            </div>
+            <div *ngIf="sortie.max_participants" class="meta-item">
+              <span class="meta-icon">👥</span>
+              <span>{{ sortie.max_participants }} places max</span>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="organizer" *ngIf="sortie.profiles">
+              <img *ngIf="sortie.profiles.avatar_url" [src]="sortie.profiles.avatar_url" class="avatar" alt="" />
+              <div *ngIf="!sortie.profiles.avatar_url" class="avatar-placeholder">
+                {{ sortie.profiles.username.charAt(0).toUpperCase() }}
+              </div>
+              <span>{{ sortie.profiles.username }}</span>
+            </div>
+            <button class="btn-join">Rejoindre</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
+
+  <!-- FAB créer une sortie -->
+  <a routerLink="/sorties/creer" class="fab" title="Créer une sortie">+</a>
 </div>

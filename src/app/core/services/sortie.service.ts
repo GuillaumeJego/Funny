@@ -20,6 +20,18 @@ export class SortieService {
       .order('date');
   }
 
+  // Récupérer la première image d'un thème (fallback image)
+  async getFirstThemeImage(themeId: string): Promise<string | null> {
+    const { data } = await this.supabase.client
+      .from('theme_images')
+      .select('image_url')
+      .eq('theme_id', themeId)
+      .order('position')
+      .limit(1)
+      .single();
+    return data?.image_url ?? null;
+  }
+
   // Récupérer une sortie par ID
   async getSortieById(id: string) {
     return await this.supabase.client

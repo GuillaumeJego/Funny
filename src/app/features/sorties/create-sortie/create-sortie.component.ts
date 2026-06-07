@@ -93,17 +93,20 @@ export class CreateSortieComponent implements OnInit {
     try {
       // Upload image personnalisée si besoin
       if (this.customImageFile && this.sortie.image_source === 'custom') {
-        const filePath = `sorties/${this.userId}/${Date.now()}.jpg`;
+        const filePath = `${this.userId}/${Date.now()}.jpg`;
         const { error: uploadError } = await this.supabase.client.storage
           .from('sorties-images')
           .upload(filePath, this.customImageFile, { upsert: true });
 
-        if (!uploadError) {
-          const { data: urlData } = this.supabase.client.storage
-            .from('sorties-images')
-            .getPublicUrl(filePath);
-          this.sortie.image_url = urlData.publicUrl;
+        if (uploadError) {
+          this.errorMessage = `Erreur upload image : ${uploadError.message}`;
+          this.saving = false;
+          return;
         }
+        const { data: urlData } = this.supabase.client.storage
+          .from('sorties-images')
+          .getPublicUrl(filePath);
+        this.sortie.image_url = urlData.publicUrl;
       }
 
       this.sortie.created_by = this.userId;
@@ -125,6 +128,8 @@ export class CreateSortieComponent implements OnInit {
   onImageReady(blob: Blob) {
     this.customImageFile = new File([blob], 'sortie.jpg', { type: 'image/jpeg' });
     this.sortie.image_source = 'custom';
+    this.sortie.image_url = '';   // efface l'éventuelle image par défaut sélectionnée
+    this.selectedImageUrl = '';
     const reader = new FileReader();
     reader.onload = (e) => this.customImagePreview = e.target?.result as string;
     reader.readAsDataURL(blob);
