@@ -194,6 +194,17 @@
   &:hover { background: $primary-hover; }
 }
 
+.btn-quitter {
+  width: 100%;
+  padding: 0.9rem;
+  background: none; color: $error;
+  border: 2px solid $error; border-radius: $border-radius;
+  font-size: 1rem; font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  &:hover { background: $error; color: #fff; }
+}
+
 // ─── Premium verrouillé ───────────────────────────────────
 .locked {
   .locked-image {

@@ -101,9 +101,20 @@
             </div>
           </div>
 
-          <!-- Bouton rejoindre -->
-          <button class="btn-rejoindre" (click)="rejoindreClicked.emit(sortie.id)">
-            Rejoindre cette sortie
+          <!-- Bouton rejoindre / quitter -->
+          <button
+            *ngIf="!isInscrit"
+            class="btn-rejoindre"
+            (click)="rejoindreClicked.emit(sortie.id)"
+          >
+            ✅ Rejoindre cette sortie
+          </button>
+          <button
+            *ngIf="isInscrit"
+            class="btn-quitter"
+            (click)="quitterClicked.emit(sortie.id)"
+          >
+            ❌ Quitter cette sortie
           </button>
 
         </div>

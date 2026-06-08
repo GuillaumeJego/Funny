@@ -8,6 +8,7 @@ import { FavoriService } from '../../core/services/favori.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { DrawerService } from '../../core/services/drawer.service';
+import { InscriptionService } from '../../core/services/inscription.service';
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
 
@@ -37,6 +38,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   userRole = 'user';
   selectedSortie: SortieWithRelations | null = null;
   drawerOpen = false;
+  isInscrit = false;
 
   constructor(
     private sortieService: SortieService,
@@ -44,6 +46,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private profileService: ProfileService,
     private drawerService: DrawerService,
+    private inscriptionService: InscriptionService,
     private router: Router
   ) {}
 
@@ -94,9 +97,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.groupes = this.grouperParDate(sorties);
   }
 
-  openDrawer(sortie: SortieWithRelations) {
+  async openDrawer(sortie: SortieWithRelations) {
     this.selectedSortie = sortie;
     this.drawerOpen = true;
+    if (this.userId) {
+      this.isInscrit = await this.inscriptionService.isInscrit(this.userId, sortie.id);
+    }
   }
 
   closeDrawer() {
@@ -106,6 +112,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   async onFavoriFromDrawer(sortieId: string) {
     await this.toggleFavori(new Event('click'), sortieId);
+  }
+
+  async onRejoindre(sortieId: string) {
+    if (!this.userId) return;
+    const { error } = await this.inscriptionService.rejoindre(this.userId, sortieId);
+    if (!error) {
+      this.isInscrit = true;
+      const s = this.sorties.find(s => s.id === sortieId);
+      if (s && s.inscriptionsCount !== undefined) s.inscriptionsCount++;
+    }
+  }
+
+  async onQuitter(sortieId: string) {
+    if (!this.userId) return;
+    const { error } = await this.inscriptionService.quitter(this.userId, sortieId);
+    if (!error) {
+      this.isInscrit = false;
+      const s = this.sorties.find(s => s.id === sortieId);
+      if (s && s.inscriptionsCount !== undefined) s.inscriptionsCount--;
+    }
   }
 
   async toggleFavori(event: Event, sortieId: string) {

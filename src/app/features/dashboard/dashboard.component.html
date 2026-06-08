@@ -53,6 +53,9 @@
           </div>
           <span *ngIf="sortie.is_premium" class="badge-premium">Premium</span>
           <span class="badge-theme">{{ sortie.themes?.icon }} {{ sortie.themes?.name }}</span>
+          <span class="badge-prix-grid" [class.gratuit]="sortie.price === 0">
+            {{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}
+          </span>
         </div>
         <div class="card-body">
           <div class="card-header-row">
@@ -100,7 +103,7 @@
             <img *ngIf="sortie.resolvedImageUrl" [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
             <div *ngIf="!sortie.resolvedImageUrl" class="list-image-placeholder">{{ sortie.themes?.icon || '🎯' }}</div>
             <span class="badge-prix" [class.gratuit]="sortie.price === 0">
-              {{ sortie.price === 0 ? '€/' : '€' }}
+              {{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}
             </span>
           </div>
 
@@ -150,8 +153,10 @@
   [isOpen]="drawerOpen"
   [userRole]="userRole"
   [isFavori]="selectedSortie ? isFavori(selectedSortie.id) : false"
+  [isInscrit]="isInscrit"
   (closed)="closeDrawer()"
   (favoriToggled)="onFavoriFromDrawer($event)"
-  (rejoindreClicked)="closeDrawer()"
+  (rejoindreClicked)="onRejoindre($event)"
+  (quitterClicked)="onQuitter($event)"
 />
 

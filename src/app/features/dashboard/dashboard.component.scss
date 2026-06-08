@@ -139,6 +139,14 @@
     font-size: 0.72rem; padding: 0.2rem 0.5rem;
     border-radius: 20px; backdrop-filter: blur(4px);
   }
+
+  .badge-prix-grid {
+    position: absolute; bottom: 0.5rem; right: 0.5rem;
+    background: $primary; color: #fff;
+    font-size: 0.72rem; font-weight: 700;
+    padding: 0.2rem 0.55rem; border-radius: 20px;
+    &.gratuit { background: $success; }
+  }
 }
 
 .card-body {
@@ -274,15 +282,14 @@
   .badge-prix {
     position: absolute;
     top: 0.3rem; left: 0.3rem;
-    width: 24px; height: 24px;
-    border-radius: 50%;
+    border-radius: 20px;
+    padding: 0.15rem 0.45rem;
     display: flex; align-items: center; justify-content: center;
     font-size: 0.65rem; font-weight: 700;
     background: $primary; color: #fff;
 
     &.gratuit {
-      background: rgba(0,0,0,0.45);
-      text-decoration: line-through;
+      background: $success;
     }
   }
 }

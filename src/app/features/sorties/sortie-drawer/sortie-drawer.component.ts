@@ -15,9 +15,11 @@ export class SortieDrawerComponent implements OnChanges {
   @Input() isOpen = false;
   @Input() userRole = 'user';
   @Input() isFavori = false;
+  @Input() isInscrit = false;
   @Output() closed = new EventEmitter<void>();
   @Output() favoriToggled = new EventEmitter<string>();
   @Output() rejoindreClicked = new EventEmitter<string>();
+  @Output() quitterClicked = new EventEmitter<string>();
 
   constructor(private router: Router) {}
 
