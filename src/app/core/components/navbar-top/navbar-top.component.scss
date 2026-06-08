@@ -43,6 +43,41 @@
     letter-spacing: 0.05em;
   }
 
+  .right-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .subscription-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    border-radius: 20px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+
+    &:hover { opacity: 0.8; }
+
+    .badge-icon { font-size: 0.85rem; }
+
+    &.premium {
+      background: rgba($warning, 0.15);
+      color: $warning;
+      border: 1px solid rgba($warning, 0.4);
+    }
+
+    &.not-premium {
+      background: $bg-light;
+      color: $text-light;
+      border: 1px solid $border-color;
+    }
+  }
+
   .profile-btn {
     cursor: pointer;
 

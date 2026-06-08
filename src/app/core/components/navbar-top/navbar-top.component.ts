@@ -14,6 +14,8 @@ import { ProfileService } from '../../services/profile.service';
 export class NavbarTopComponent implements OnInit {
   avatarUrl?: string;
   menuOpen = false;
+  isPremium = false;
+  subscriptionEndDate?: Date;
 
   constructor(
     private authService: AuthService,
@@ -25,8 +27,26 @@ export class NavbarTopComponent implements OnInit {
     const { data: { user } } = await this.authService.getUser();
     if (user) {
       const { data } = await this.profileService.getMyProfile(user.id);
-      if (data) this.avatarUrl = data.avatar_url;
+      if (data) {
+        this.avatarUrl = data.avatar_url;
+        this.isPremium = ['user_premium', 'admin', 'developer'].includes(data.role || '');
+        if (data.subscription_end_date) {
+          this.subscriptionEndDate = new Date(data.subscription_end_date);
+        }
+      }
     }
+  }
+
+  get subscriptionLabel(): string {
+    if (!this.isPremium || !this.subscriptionEndDate) return '';
+    const now = new Date();
+    const diffMs = this.subscriptionEndDate.getTime() - now.getTime();
+    if (diffMs <= 0) return 'Expiré';
+    const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    if (days === 1) return '1 jour';
+    if (days < 30) return `${days} jours`;
+    const months = Math.ceil(days / 30);
+    return `${months} mois`;
   }
 
   toggleMenu() {
@@ -35,6 +55,10 @@ export class NavbarTopComponent implements OnInit {
 
   goToProfile() {
     this.router.navigate(['/profile/edit']);
+  }
+
+  goToPremium() {
+    this.router.navigate(['/premium']);
   }
 
   async logout() {

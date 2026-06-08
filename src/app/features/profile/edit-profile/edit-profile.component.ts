@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule, Location, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -11,7 +11,7 @@ import { MetanaCreditComponent } from '../../../core/components/metana-credit/me
 @Component({
   selector: 'app-edit-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, AvatarUploadComponent, MetanaCreditComponent],
+  imports: [CommonModule, FormsModule, DatePipe, AvatarUploadComponent, MetanaCreditComponent],
   templateUrl: './edit-profile.component.html',
   styleUrl: './edit-profile.component.scss'
 })
@@ -22,6 +22,8 @@ export class EditProfileComponent implements OnInit {
   saving = false;
   successMessage = '';
   errorMessage = '';
+  isPremium = false;
+  subscriptionEndDate?: Date;
 
   genderOptions = ['Homme', 'Femme', 'secret'];
   habitOptions = ['Pas du tout', 'Un peu', 'Beaucoup', 'secret'];
@@ -46,7 +48,13 @@ export class EditProfileComponent implements OnInit {
 
     this.userId = user.id;
     const { data, error } = await this.profileService.getMyProfile(user.id);
-    if (data) this.profile = data;
+    if (data) {
+      this.profile = data;
+      this.isPremium = ['user_premium', 'admin', 'developer'].includes(data.role || '');
+      if (data.subscription_end_date) {
+        this.subscriptionEndDate = new Date(data.subscription_end_date);
+      }
+    }
 
     this.loading = false;
   }
@@ -68,6 +76,10 @@ export class EditProfileComponent implements OnInit {
     } else {
       this.router.navigate(['/dashboard']);
     }
+  }
+
+  goToPremium() {
+    this.router.navigate(['/premium']);
   }
 
   cancel() {

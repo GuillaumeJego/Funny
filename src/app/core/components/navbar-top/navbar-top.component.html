@@ -10,17 +10,33 @@
   <!-- Logo / Nom de l'app -->
   <div class="app-name">Funny</div>
 
-  <!-- Avatar + Profil -->
-  <div class="profile-btn" (click)="goToProfile()">
-    <img
-      *ngIf="avatarUrl; else defaultAvatar"
-      [src]="avatarUrl"
-      alt="Avatar"
-      class="avatar"
-    />
-    <ng-template #defaultAvatar>
-      <div class="avatar-placeholder">👤</div>
-    </ng-template>
+  <!-- Badge abonnement + Avatar -->
+  <div class="right-section">
+    <!-- Badge premium -->
+    <div
+      class="subscription-badge"
+      [class.premium]="isPremium"
+      [class.not-premium]="!isPremium"
+      (click)="goToPremium()"
+      [title]="isPremium ? 'Abonné Premium' : 'Passer Premium'"
+    >
+      <span class="badge-icon">{{ isPremium ? '⭐' : '🔓' }}</span>
+      <span class="badge-label" *ngIf="isPremium && subscriptionLabel">{{ subscriptionLabel }}</span>
+      <span class="badge-label" *ngIf="!isPremium">Non abonné</span>
+    </div>
+
+    <!-- Avatar -->
+    <div class="profile-btn" (click)="goToProfile()">
+      <img
+        *ngIf="avatarUrl; else defaultAvatar"
+        [src]="avatarUrl"
+        alt="Avatar"
+        class="avatar"
+      />
+      <ng-template #defaultAvatar>
+        <div class="avatar-placeholder">👤</div>
+      </ng-template>
+    </div>
   </div>
 
   <!-- Menu déroulant -->

@@ -18,4 +18,5 @@ export interface Profile {
   ban_count?: number;
   total_ban_days?: number;
   view_mode?: 'grid' | 'list';
+  subscription_end_date?: string;
 }

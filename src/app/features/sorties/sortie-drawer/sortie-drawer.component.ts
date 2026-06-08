@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { SortieWithRelations } from '../../../core/models/sortie.model';
 
 @Component({
@@ -18,9 +19,15 @@ export class SortieDrawerComponent implements OnChanges {
   @Output() favoriToggled = new EventEmitter<string>();
   @Output() rejoindreClicked = new EventEmitter<string>();
 
+  constructor(private router: Router) {}
+
   get isPremiumLocked(): boolean {
     if (!this.sortie?.is_premium) return false;
     return !['admin', 'developer', 'user_premium'].includes(this.userRole);
+  }
+
+  goToPremium() {
+    this.router.navigate(['/premium']);
   }
 
   close() {
