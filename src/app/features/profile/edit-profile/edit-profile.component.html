@@ -103,6 +103,28 @@
         </div>
       </section>
 
+      <!-- Abonnement -->
+      <section class="subscription-section">
+        <h2>Mon abonnement</h2>
+        <div class="subscription-card" [class.is-premium]="isPremium">
+          <div class="subscription-status">
+            <span class="sub-icon">{{ isPremium ? '⭐' : '🔓' }}</span>
+            <div>
+              <div class="sub-label">{{ isPremium ? 'Abonné Premium' : 'Non abonné' }}</div>
+              <div class="sub-detail" *ngIf="isPremium && subscriptionEndDate">
+                Expire le {{ subscriptionEndDate | date:'dd/MM/yyyy' }}
+              </div>
+              <div class="sub-detail" *ngIf="!isPremium">
+                Accédez aux sorties exclusives et plus encore
+              </div>
+            </div>
+          </div>
+          <button *ngIf="!isPremium" class="btn-premium" (click)="goToPremium()">
+            ⭐ Passer Premium
+          </button>
+        </div>
+      </section>
+
       <!-- Messages -->
       <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
       <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>

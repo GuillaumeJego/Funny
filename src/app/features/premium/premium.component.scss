@@ -1,0 +1,223 @@
+@use 'styles' as *;
+
+.premium-page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 6rem;
+}
+
+// ─── Hero ─────────────────────────────────────────────────
+.hero {
+  position: relative;
+  text-align: center;
+  padding: 2.5rem 1rem 2rem;
+  background: linear-gradient(135deg, $primary 0%, #7c3aed 100%);
+  border-radius: $border-radius-lg;
+  color: #fff;
+  margin-bottom: 2rem;
+
+  .btn-back {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    &:hover { background: rgba(255,255,255,0.3); }
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 20px;
+    padding: 0.25rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+  }
+
+  p {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    line-height: 1.5;
+  }
+}
+
+// ─── Sections ─────────────────────────────────────────────
+.section {
+  margin-bottom: 2rem;
+
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin-bottom: 1rem;
+  }
+}
+
+// ─── Avantages ────────────────────────────────────────────
+.avantages {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.avantage-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: $text-dark;
+
+  .avantage-icon { font-size: 1.2rem; flex-shrink: 0; }
+}
+
+// ─── Plans ────────────────────────────────────────────────
+.plans {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.plan-card {
+  position: relative;
+  background: $bg-white;
+  border: 2px solid $border-color;
+  border-radius: $border-radius-lg;
+  padding: 1.25rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  text-align: center;
+
+  &.selected {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.15);
+  }
+
+  &.highlight .plan-label::after {
+    content: '⭐';
+    margin-left: 0.3rem;
+  }
+}
+
+.plan-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.plan-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.plan-note {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $primary;
+  background: $primary-light;
+  border-radius: 20px;
+  padding: 0.1rem 0.5rem;
+}
+
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.2rem;
+
+  .price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: $text-dark;
+  }
+
+  .period {
+    font-size: 0.8rem;
+    color: $text-light;
+  }
+}
+
+.plan-check {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 20px;
+  height: 20px;
+  background: $primary;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+// ─── Boutons ──────────────────────────────────────────────
+.btn-subscribe {
+  width: 100%;
+  padding: 1rem;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $border-radius-lg;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover { background: $primary-hover; }
+}
+
+.section-contact {
+  text-align: center;
+
+  p {
+    font-size: 0.9rem;
+    color: $text-light;
+    margin-bottom: 0.85rem;
+  }
+}
+
+.btn-contact {
+  background: none;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  padding: 0.7rem 1.25rem;
+  font-size: 0.9rem;
+  color: $text-dark;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+
+  &:hover {
+    background: $bg-light;
+    border-color: $primary;
+  }
+}

@@ -1,0 +1,62 @@
+<div class="premium-page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <button class="btn-back" (click)="goBack()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <div class="hero-badge">⭐ Premium</div>
+    <h1>Passez à l'expérience complète</h1>
+    <p>Débloquez toutes les fonctionnalités et accédez aux sorties exclusives.</p>
+  </div>
+
+  <!-- Avantages -->
+  <section class="section">
+    <h2>Ce qui vous attend</h2>
+    <ul class="avantages">
+      <li *ngFor="let a of avantages" class="avantage-item">
+        <span class="avantage-icon">{{ a.icon }}</span>
+        <span>{{ a.label }}</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- Plans -->
+  <section class="section">
+    <h2>Choisissez votre plan</h2>
+    <div class="plans">
+      <div
+        *ngFor="let plan of plans; let i = index"
+        class="plan-card"
+        [class.selected]="selectedPlan === i"
+        [class.highlight]="plan.highlight"
+        (click)="selectPlan(i)"
+      >
+        <div class="plan-top">
+          <span class="plan-label">{{ plan.label }}</span>
+          <span *ngIf="plan.note" class="plan-note">{{ plan.note }}</span>
+        </div>
+        <div class="plan-price">
+          <span class="price">{{ plan.price }} €</span>
+          <span class="period">/ {{ plan.period }}</span>
+        </div>
+        <div class="plan-check" *ngIf="selectedPlan === i">✓</div>
+      </div>
+    </div>
+
+    <button class="btn-subscribe" (click)="onSubscribe()">
+      ⭐ S'abonner maintenant
+    </button>
+  </section>
+
+  <!-- Contact admin -->
+  <section class="section section-contact">
+    <p>Une question avant de vous abonner ?</p>
+    <button class="btn-contact" (click)="contactAdmin()">
+      ✉️ Envoyer un message aux administrateurs
+    </button>
+  </section>
+
+</div>
