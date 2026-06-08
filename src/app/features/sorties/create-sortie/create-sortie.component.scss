@@ -200,6 +200,93 @@
       margin-bottom: 1rem;
     }
 
+    // ── Autocomplete lieu ───────────────────────────────────
+    .location-autocomplete {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .location-search-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .location-field {
+      flex: 1;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid $border-color;
+      border-radius: $border-radius;
+      font-size: 0.95rem;
+      color: $text-dark;
+      &:focus { outline: none; border-color: $primary; }
+    }
+
+    .btn-clear-loc {
+      background: none;
+      border: 1px solid $border-color;
+      border-radius: $border-radius;
+      padding: 0.45rem 0.65rem;
+      cursor: pointer;
+      color: $text-light;
+      font-size: 0.9rem;
+      &:hover { color: $error; border-color: $error; }
+    }
+
+    .location-selected {
+      font-size: 0.85rem;
+      color: $primary;
+      font-weight: 600;
+      padding: 0.3rem 0.5rem;
+      background: $primary-light;
+      border-radius: $border-radius;
+    }
+
+    .location-suggestions {
+      border: 1px solid $border-color;
+      border-radius: $border-radius;
+      overflow: hidden;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .suggestion-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 0.75rem;
+      cursor: pointer;
+      border-bottom: 1px solid $border-color;
+      transition: background 0.15s;
+
+      &:last-child { border-bottom: none; }
+      &:hover { background: $primary-light; }
+
+      .sug-details {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+      }
+      .sug-name { font-size: 0.9rem; font-weight: 600; color: $text-dark; }
+      .sug-address {
+        font-size: 0.75rem;
+        color: $text-light;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .sug-city { font-size: 0.9rem; font-weight: 500; color: $text-dark; }
+      .sug-country { font-size: 0.72rem; color: $text-light; white-space: nowrap; flex-shrink: 0; }
+    }
+
+    .location-searching {
+      font-size: 0.8rem;
+      color: $text-light;
+    }
+
     .warning {
       color: $warning;
       font-size: 0.9rem;

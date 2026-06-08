@@ -60,7 +60,37 @@
 
       <div class="form-group">
         <label>Lieu *</label>
-        <input type="text" [(ngModel)]="sortie.location" placeholder="Ex: Paris, Restaurant Le Marais" />
+        <div class="location-autocomplete">
+          <div class="location-search-row">
+            <input
+              type="text"
+              [(ngModel)]="locationQuery"
+              (input)="onLocationInput()"
+              placeholder="Rechercher une ville…"
+              autocomplete="off"
+              class="location-field"
+            />
+            <button *ngIf="sortie.location" class="btn-clear-loc" type="button" (click)="clearLocation()">✕</button>
+          </div>
+          <div class="location-selected" *ngIf="sortie.location">
+            📍 {{ sortie.location }}
+          </div>
+          <div class="location-suggestions" *ngIf="locationSuggestions.length">
+            <div
+              *ngFor="let place of locationSuggestions"
+              class="suggestion-item"
+              (click)="selectLocation(place)"
+            >
+              <span>📍</span>
+              <div class="sug-details">
+                <span class="sug-name">{{ place.shortName }}</span>
+                <span class="sug-address" *ngIf="place.address">{{ place.address }}</span>
+              </div>
+              <span class="sug-country">{{ place.country }}</span>
+            </div>
+          </div>
+          <div class="location-searching" *ngIf="locationSearching">⏳ Recherche…</div>
+        </div>
       </div>
 
       <div class="form-group">

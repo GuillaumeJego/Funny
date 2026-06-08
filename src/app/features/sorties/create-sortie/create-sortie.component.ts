@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { GeoService, GeoFullPlace } from '../../../core/services/geo.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SortieService } from '../../../core/services/sortie.service';
 import { ThemeService } from '../../../core/services/theme.service';
@@ -17,7 +20,7 @@ import { SortieImageUploadComponent } from '../sortie-image-upload/sortie-image-
   templateUrl: './create-sortie.component.html',
   styleUrl: './create-sortie.component.scss'
 })
-export class CreateSortieComponent implements OnInit {
+export class CreateSortieComponent implements OnInit, OnDestroy {
   themes: Theme[] = [];
   themeImages: ThemeImage[] = [];
   userId = '';
@@ -47,12 +50,20 @@ export class CreateSortieComponent implements OnInit {
   customImageFile: File | null = null;
   customImagePreview = '';
 
+  // Autocomplete lieu
+  locationQuery = '';
+  locationSuggestions: GeoFullPlace[] = [];
+  locationSearching = false;
+  private locationSearch$ = new Subject<string>();
+  private locationSub!: Subscription;
+
   constructor(
     private authService: AuthService,
     private sortieService: SortieService,
     private themeService: ThemeService,
     private supabase: SupabaseService,
-    private router: Router
+    private router: Router,
+    private geo: GeoService
   ) {}
 
   async ngOnInit() {
@@ -62,6 +73,36 @@ export class CreateSortieComponent implements OnInit {
 
     const { data: themes } = await this.themeService.getAllThemes();
     if (themes) this.themes = themes;
+
+    this.locationSub = this.locationSearch$.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(q => {
+        this.locationSearching = true;
+        return this.geo.searchPlaces(q);
+      })
+    ).subscribe(places => {
+      this.locationSuggestions = places;
+      this.locationSearching = false;
+    });
+  }
+
+  ngOnDestroy() { this.locationSub?.unsubscribe(); }
+
+  onLocationInput() { this.locationSearch$.next(this.locationQuery); }
+
+  selectLocation(place: GeoFullPlace) {
+    // On stocke le nom court (ex: "Le Marais", "Paris") + adresse si disponible
+    const label = place.address ? `${place.shortName}, ${place.address}` : place.shortName;
+    this.sortie.location = label;
+    this.locationQuery = place.shortName;
+    this.locationSuggestions = [];
+  }
+
+  clearLocation() {
+    this.sortie.location = '';
+    this.locationQuery = '';
+    this.locationSuggestions = [];
   }
 
   async onThemeSelected() {

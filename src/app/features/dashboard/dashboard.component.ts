@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { NavbarFiltersComponent, Filters } from '../../core/components/navbar-filters/navbar-filters.component';
+import { NavbarFiltersComponent, Filters, ThemeOption } from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieService } from '../../core/services/sortie.service';
 import { FavoriService } from '../../core/services/favori.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -39,6 +39,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   selectedSortie: SortieWithRelations | null = null;
   drawerOpen = false;
   isInscrit = false;
+  availableThemes: ThemeOption[] = [];
+  availableLocations: string[] = [];
 
   constructor(
     private sortieService: SortieService,
@@ -95,6 +97,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.sorties = sorties;
     this.sortiesFiltrees = sorties;
     this.groupes = this.grouperParDate(sorties);
+
+    // Extraire thèmes et villes uniques pour les filtres
+    const themesMap = new Map<string, ThemeOption>();
+    const locationsSet = new Set<string>();
+    for (const s of sorties) {
+      if (s.theme_id && s.themes) themesMap.set(s.theme_id, { id: s.theme_id, name: s.themes.name, icon: s.themes.icon });
+      if (s.location) locationsSet.add(s.location);
+    }
+    this.availableThemes = [...themesMap.values()];
+    this.availableLocations = [...locationsSet].sort();
   }
 
   async openDrawer(sortie: SortieWithRelations) {
@@ -154,18 +166,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   onFiltersChanged(filters: Filters) {
+    const now = new Date();
     this.sortiesFiltrees = this.sorties.filter(s => {
-      if (filters.quoi && !s.title.toLowerCase().includes(filters.quoi.toLowerCase()) &&
-          !s.themes?.name.toLowerCase().includes(filters.quoi.toLowerCase())) {
-        return false;
+      if (filters.themeIds?.length && !filters.themeIds.includes(s.theme_id ?? '')) return false;
+      if (filters.ou && s.location !== filters.ou) return false;
+      if (filters.quickPeriod === 'past' && new Date(s.date) >= now) return false;
+      if (filters.quickPeriod === 'upcoming' && new Date(s.date) < now) return false;
+      if (!filters.quickPeriod && (filters.dateDebut || filters.dateFin)) {
+        const d = new Date(s.date);
+        if (filters.dateDebut && d < new Date(filters.dateDebut)) return false;
+        if (filters.dateFin) {
+          const fin = new Date(filters.dateFin); fin.setHours(23, 59, 59);
+          if (d > fin) return false;
+        }
       }
-      if (filters.ou && !s.location.toLowerCase().includes(filters.ou.toLowerCase())) {
-        return false;
-      }
-      if (filters.prix) {
-        if (filters.prix === 'gratuit' && s.price > 0) return false;
-        if (filters.prix === 'payant' && s.price === 0) return false;
-      }
+      if (filters.prix === 'gratuit' && s.price > 0) return false;
+      if (filters.prix === 'payant' && s.price === 0) return false;
       if (filters.premium && !s.is_premium) return false;
       return true;
     });

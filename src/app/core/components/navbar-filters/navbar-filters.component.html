@@ -1,44 +1,179 @@
 <nav class="navbar-filters">
 
-  <div class="filter-item" (click)="toggleAllFilters()">
+  <!-- Quoi ? -->
+  <div class="filter-item" [class.active]="filters.themeIds?.length" (click)="togglePanel('quoi')">
     <span class="filter-icon">🍽️</span>
-    <span class="filter-label">Quoi ?</span>
+    <span class="filter-label">{{ quoiLabel }}</span>
   </div>
 
-  <div class="filter-item" (click)="toggleAllFilters()">
+  <!-- Où ? -->
+  <div class="filter-item" [class.active]="filters.ou" (click)="togglePanel('ou')">
     <span class="filter-icon">📍</span>
-    <span class="filter-label">Où ?</span>
+    <span class="filter-label">{{ filters.ou || 'Où ?' }}</span>
   </div>
 
-  <div class="filter-item" (click)="toggleAllFilters()">
+  <!-- Quand ? -->
+  <div class="filter-item" [class.active]="filters.dateDebut || filters.dateFin || filters.quickPeriod" (click)="togglePanel('quand')">
     <span class="filter-icon">📅</span>
-    <span class="filter-label">Quand ?</span>
+    <span class="filter-label">{{ quandLabel }}</span>
   </div>
 
-  <div class="filter-item" (click)="toggleAllFilters()">
+  <!-- Prix -->
+  <div class="filter-item" [class.active]="filters.prix" (click)="togglePanel('prix')">
     <span class="filter-icon">💰</span>
-    <span class="filter-label">Prix</span>
+    <span class="filter-label">{{ filters.prix === 'gratuit' ? 'Gratuit' : filters.prix === 'payant' ? 'Payant' : 'Prix' }}</span>
   </div>
 
-  <div class="filter-item" [class.active]="filters.premium" (click)="togglePremium()">
+  <!-- Premium -->
+  <div class="filter-item" [class.active]="filters.premium" (click)="togglePanel('premium')">
     <span class="filter-icon">⭐</span>
     <span class="filter-label">Premium</span>
   </div>
 
-  <div class="filter-item" (click)="toggleAllFilters()">
-    <span class="filter-icon">🔽</span>
-    <span class="filter-label">Filtres</span>
+  <!-- Reset -->
+  <div class="filter-item filter-reset" [class.has-active]="activeCount > 0" (click)="resetFilters()">
+    <span class="filter-icon">{{ activeCount > 0 ? '✕' : '⚙️' }}</span>
+    <span class="filter-label">{{ activeCount > 0 ? activeCount + ' filtre' + (activeCount > 1 ? 's' : '') : 'Filtres' }}</span>
   </div>
 
-  <!-- Panel tous les filtres -->
-  <div class="filters-panel" *ngIf="showAllFilters">
-    <div class="filters-panel-header">
-      <h3>Filtres</h3>
-      <button class="btn-reset" (click)="resetFilters()">Réinitialiser</button>
-      <button class="btn-close" (click)="toggleAllFilters()">✕</button>
+  <!-- ── Panel Quoi : thèmes ── -->
+  <div class="filter-panel" *ngIf="openPanel === 'quoi'" (click)="$event.stopPropagation()">
+    <div class="panel-inner">
+      <label>Sélectionner un ou plusieurs thèmes</label>
+      <div class="theme-list">
+        <div
+          *ngFor="let theme of availableThemes"
+          class="theme-option"
+          [class.selected]="selectedThemeIds.has(theme.id)"
+          (click)="toggleTheme(theme.id)"
+        >
+          <span class="theme-icon">{{ theme.icon }}</span>
+          <span class="theme-name">{{ theme.name }}</span>
+          <span class="check" *ngIf="selectedThemeIds.has(theme.id)">✓</span>
+        </div>
+      </div>
+      <div class="panel-actions">
+        <button class="btn-clear" *ngIf="filters.themeIds?.length" (click)="clearThemes()">✕ Effacer</button>
+        <button class="btn-apply" (click)="applyThemes()">Appliquer</button>
+      </div>
     </div>
-    <div class="filters-panel-content">
-      <p class="coming-soon">Les filtres avancés seront disponibles prochainement !</p>
+  </div>
+
+  <!-- ── Panel Où : lieux existants + recherche Nominatim ── -->
+  <div class="filter-panel" *ngIf="openPanel === 'ou'" (click)="$event.stopPropagation()">
+    <div class="panel-inner">
+
+      <!-- Lieux déjà en base -->
+      <div *ngIf="availableLocations.length">
+        <label>Lieux existants</label>
+        <div class="location-chips">
+          <button
+            *ngFor="let loc of availableLocations"
+            class="chip"
+            [class.active]="filters.ou === loc"
+            (click)="setOuDirect(loc)"
+          >
+            📍 {{ loc }}
+          </button>
+        </div>
+        <div class="ou-separator">ou rechercher</div>
+      </div>
+
+      <!-- Recherche Nominatim -->
+      <label *ngIf="!availableLocations.length">Rechercher une ville</label>
+      <div class="location-search">
+        <input
+          type="text"
+          class="location-input"
+          [(ngModel)]="locationQuery"
+          (input)="onLocationInput()"
+          placeholder="Ex: Paris, Lyon, Rennes…"
+          autocomplete="off"
+        />
+        <span class="location-spinner" *ngIf="locationSearching">⏳</span>
+      </div>
+
+      <!-- Ville active (depuis recherche) -->
+      <div class="location-active" *ngIf="filters.ou && !locationSuggestions.length">
+        <span>📍 {{ filters.ou }}</span>
+        <button class="btn-clear-inline" (click)="clearOu()">✕</button>
+      </div>
+
+      <!-- Suggestions Nominatim -->
+      <div class="location-suggestions" *ngIf="locationSuggestions.length">
+        <div *ngFor="let place of locationSuggestions" class="suggestion-item" (click)="setOu(place)">
+          <span class="sug-icon">📍</span>
+          <span class="sug-city">{{ place.city }}</span>
+          <span class="sug-country">{{ place.country }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="locationQuery.length > 1 && !locationSearching && !locationSuggestions.length && !filters.ou" class="empty-hint">
+        Aucun résultat
+      </div>
+
+      <div class="panel-actions" *ngIf="filters.ou">
+        <button class="btn-clear" (click)="clearOu()">✕ Effacer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Panel Quand : plage de dates ── -->
+  <div class="filter-panel" *ngIf="openPanel === 'quand'" (click)="$event.stopPropagation()">
+    <div class="panel-inner">
+      <label>Raccourcis</label>
+      <div class="chip-list" style="margin-bottom: 0.75rem">
+        <button class="chip" [class.active]="quickPeriod === 'past'" (click)="setQuickPeriod('past')">📅 Passées</button>
+        <button class="chip" [class.active]="quickPeriod === 'upcoming'" (click)="setQuickPeriod('upcoming')">🔜 À venir</button>
+        <button class="chip" [class.active]="quickPeriod === 'today'" (click)="setQuickPeriod('today')">Ce jour</button>
+        <button class="chip" [class.active]="quickPeriod === 'week'" (click)="setQuickPeriod('week')">Cette semaine</button>
+        <button class="chip" [class.active]="quickPeriod === 'month'" (click)="setQuickPeriod('month')">Ce mois</button>
+      </div>
+      <label>Ou choisir une plage</label>
+      <div class="date-range">
+        <div class="date-field">
+          <span class="date-label">Du</span>
+          <input type="date" [(ngModel)]="dateDebut" [max]="dateFin || ''" (change)="quickPeriod = ''" />
+        </div>
+        <span class="date-sep">→</span>
+        <div class="date-field">
+          <span class="date-label">Au</span>
+          <input type="date" [(ngModel)]="dateFin" [min]="dateDebut || ''" (change)="quickPeriod = ''" />
+        </div>
+      </div>
+      <div class="panel-actions">
+        <button class="btn-clear" *ngIf="filters.dateDebut || filters.dateFin" (click)="clearDates()">Effacer</button>
+        <button class="btn-apply" (click)="applyDates()">Appliquer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Panel Prix ── -->
+  <div class="filter-panel" *ngIf="openPanel === 'prix'" (click)="$event.stopPropagation()">
+    <div class="panel-inner">
+      <label>Tarif</label>
+      <div class="chip-list">
+        <button class="chip" [class.active]="filters.prix === 'gratuit'" (click)="setPrix('gratuit')">🟢 Gratuit</button>
+        <button class="chip" [class.active]="filters.prix === 'payant'" (click)="setPrix('payant')">💶 Payant</button>
+      </div>
+      <div class="panel-actions" *ngIf="filters.prix">
+        <button class="btn-clear" (click)="clearPrix()">✕ Effacer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Panel Premium ── -->
+  <div class="filter-panel" *ngIf="openPanel === 'premium'" (click)="$event.stopPropagation()">
+    <div class="panel-inner">
+      <label>Sorties réservées aux abonnés</label>
+      <div class="chip-list">
+        <button class="chip" [class.active]="filters.premium" (click)="togglePremium()">
+          ⭐ Afficher uniquement les sorties Premium
+        </button>
+      </div>
+      <div class="panel-actions" *ngIf="filters.premium">
+        <button class="btn-clear" (click)="togglePremium(); openPanel = null">✕ Effacer</button>
+      </div>
     </div>
   </div>
 

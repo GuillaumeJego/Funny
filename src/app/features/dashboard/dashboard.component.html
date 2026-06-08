@@ -1,5 +1,9 @@
 <div class="dashboard">
-  <app-navbar-filters (filtersChanged)="onFiltersChanged($event)" />
+  <app-navbar-filters
+    [availableThemes]="availableThemes"
+    [availableLocations]="availableLocations"
+    (filtersChanged)="onFiltersChanged($event)"
+  />
 
   <div class="dashboard-content">
 
@@ -45,13 +49,13 @@
 
     <!-- ══ VUE GRILLE ══ -->
     <div *ngIf="!loading && !error && sortiesFiltrees.length > 0 && viewMode === 'grid'" class="sorties-grid">
-      <div *ngFor="let sortie of sortiesFiltrees" class="sortie-card" (click)="openDrawer(sortie)">
+      <div *ngFor="let sortie of sortiesFiltrees" class="sortie-card" [class.premium]="sortie.is_premium" (click)="openDrawer(sortie)">
         <div class="card-image">
           <img *ngIf="sortie.resolvedImageUrl" [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
           <div *ngIf="!sortie.resolvedImageUrl" class="card-image-placeholder">
             <span>{{ sortie.themes?.icon || '🎯' }}</span>
           </div>
-          <span *ngIf="sortie.is_premium" class="badge-premium">Premium</span>
+          <span *ngIf="sortie.is_premium" class="badge-premium">⭐ Premium</span>
           <span class="badge-theme">{{ sortie.themes?.icon }} {{ sortie.themes?.name }}</span>
           <span class="badge-prix-grid" [class.gratuit]="sortie.price === 0">
             {{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}
@@ -96,7 +100,7 @@
         <h2 class="date-header">{{ groupe.dateLabel }}</h2>
 
         <!-- Cards liste -->
-        <div *ngFor="let sortie of groupe.sorties" class="list-card" (click)="openDrawer(sortie)">
+        <div *ngFor="let sortie of groupe.sorties" class="list-card" [class.premium]="sortie.is_premium" (click)="openDrawer(sortie)">
 
           <!-- Image + badge prix -->
           <div class="list-image">
@@ -105,6 +109,7 @@
             <span class="badge-prix" [class.gratuit]="sortie.price === 0">
               {{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}
             </span>
+            <span *ngIf="sortie.is_premium" class="badge-premium-list">⭐</span>
           </div>
 
           <!-- Infos centrales -->
@@ -144,7 +149,6 @@
 
   </div>
 
-  <a routerLink="/sorties/creer" class="fab" title="Créer une sortie">+</a>
 </div>
 
 <!-- Drawer détail sortie -->

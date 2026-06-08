@@ -2,9 +2,7 @@
 
 .navbar-filters {
   position: fixed;
-  top: 56px;
-  left: 0;
-  right: 0;
+  top: 56px; left: 0; right: 0;
   height: 48px;
   background-color: $bg-white;
   border-bottom: 1px solid $border-color;
@@ -12,7 +10,7 @@
   align-items: center;
   justify-content: space-around;
   z-index: 999;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 
   .filter-item {
     display: flex;
@@ -20,110 +18,247 @@
     align-items: center;
     gap: 2px;
     cursor: pointer;
-    padding: 0.4rem 0.75rem;
+    padding: 0.4rem 0.4rem;
     border-radius: $border-radius;
     transition: all 0.2s;
     flex: 1;
+    min-width: 0;
 
-    .filter-icon {
-      font-size: 1rem;
-    }
+    .filter-icon { font-size: 1rem; }
 
     .filter-label {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       color: $text-medium;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
 
-    &:hover {
-      background-color: $bg-light;
-      .filter-label { color: $primary; }
-    }
+    &:hover { background-color: $bg-light; .filter-label { color: $primary; } }
+    &.active { background-color: $primary-light; .filter-label { color: $primary; font-weight: 600; } }
+    &.filter-reset.has-active { .filter-label { color: $error; font-weight: 600; } }
+  }
 
-    &.active {
-      background-color: $primary-light;
-      .filter-label { color: $primary; font-weight: 600; }
+  // ── Panel ──────────────────────────────────────────────
+  .filter-panel {
+    position: fixed;
+    top: 104px; left: 0; right: 0;
+    background: $bg-white;
+    border-bottom: 2px solid $primary;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    z-index: 998;
+    animation: slideDown 0.15s ease;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel-inner {
+    padding: 0.85rem 1rem;
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: $text-medium;
+      margin-bottom: 0.65rem;
     }
   }
 
-  .filters-panel {
-    position: fixed;
-    top: 104px;
-    left: 0;
-    right: 0;
-    background-color: $bg-white;
+  .panel-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  // ── Thèmes ──────────────────────────────────────────────
+  .theme-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .theme-option {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
+    border: 1px solid $border-color;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: $text-dark;
+    transition: all 0.15s;
+    user-select: none;
+
+    .check { color: $primary; font-weight: 700; margin-left: 0.2rem; }
+
+    &:hover { border-color: $primary; background: $primary-light; }
+    &.selected { background: $primary; color: #fff; border-color: $primary; .check { color: #fff; } }
+  }
+
+  // ── Lieu : chips existants ───────────────────────────────
+  .location-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .ou-separator {
+    font-size: 0.75rem;
+    color: $text-light;
+    text-align: center;
+    margin: 0.6rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    &::before, &::after { content: ''; flex: 1; height: 1px; background: $border-color; }
+  }
+
+  // ── Lieu autocomplete ────────────────────────────────────
+  .location-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .location-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    font-size: 0.9rem;
+    color: $text-dark;
+    &:focus { outline: none; border-color: $primary; }
+  }
+
+  .location-spinner { font-size: 0.85rem; }
+
+  .location-active {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.75rem;
+    background: $primary-light;
+    border: 1px solid $primary;
+    border-radius: $border-radius;
+    font-size: 0.85rem;
+    color: $primary;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .btn-clear-inline {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $primary;
+    font-size: 0.9rem;
+    padding: 0;
+    line-height: 1;
+  }
+
+  .location-suggestions {
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    overflow: hidden;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+
+  .suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s;
     border-bottom: 1px solid $border-color;
-    box-shadow: $shadow;
-    z-index: 998;
-    padding: 1rem;
 
-    .filters-panel-header {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
+    &:last-child { border-bottom: none; }
+    &:hover { background: $primary-light; }
 
-      h3 {
-        flex: 1;
-        color: $text-dark;
-        font-size: 1rem;
-      }
+    .sug-icon { font-size: 0.85rem; }
+    .sug-city { font-size: 0.9rem; color: $text-dark; font-weight: 500; }
+    .sug-country { font-size: 0.75rem; color: $text-light; margin-left: auto; }
+  }
 
-      .btn-reset {
-        background: none;
-        border: 1px solid $border-color;
-        border-radius: $border-radius;
-        padding: 0.25rem 0.75rem;
-        cursor: pointer;
-        color: $text-medium;
-        font-size: 0.85rem;
+  .empty-hint { font-size: 0.85rem; color: $text-light; }
 
-        &:hover {
-          color: $primary;
-          border-color: $primary;
-        }
-      }
+  // ── Dates ───────────────────────────────────────────────
+  .date-range {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
 
-      .btn-close {
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 1rem;
-        color: $text-medium;
+  .date-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 
-        &:hover {
-          color: $error;
-        }
-      }
+    .date-label { font-size: 0.8rem; color: $text-medium; font-weight: 600; white-space: nowrap; }
+
+    input[type="date"] {
+      padding: 0.45rem 0.6rem;
+      border: 1px solid $border-color;
+      border-radius: $border-radius;
+      font-size: 0.85rem;
+      color: $text-dark;
+      &:focus { outline: none; border-color: $primary; }
     }
+  }
 
-    .coming-soon {
-      color: $text-light;
-      text-align: center;
-      font-size: 0.9rem;
-      padding: 1rem;
-    }
+  .date-sep { color: $text-light; font-size: 1.1rem; }
+
+  // ── Chips prix ──────────────────────────────────────────
+  .chip-list { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  .chip {
+    padding: 0.35rem 0.85rem;
+    border: 1px solid $border-color;
+    border-radius: 20px;
+    background: $bg-white;
+    color: $text-dark;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    &:hover { border-color: $primary; color: $primary; }
+    &.active { background: $primary; color: #fff; border-color: $primary; }
+  }
+
+  // ── Boutons ─────────────────────────────────────────────
+  .btn-apply {
+    padding: 0.45rem 1rem;
+    background: $primary; color: #fff;
+    border: none; border-radius: $border-radius;
+    font-size: 0.85rem; font-weight: 700; cursor: pointer;
+    &:hover { background: $primary-hover; }
+  }
+
+  .btn-clear {
+    padding: 0.45rem 0.75rem;
+    background: none; color: $text-light;
+    border: 1px solid $border-color; border-radius: $border-radius;
+    font-size: 0.85rem; cursor: pointer;
+    &:hover { color: $error; border-color: $error; }
   }
 
   // 🖥️ Desktop
   @media (min-width: 769px) {
     left: 240px;
-
     .filter-item {
-      flex-direction: row;
-      gap: 0.5rem;
-
-      .filter-icon {
-        font-size: 1rem;
-      }
-
-      .filter-label {
-        font-size: 0.85rem;
-      }
+      flex-direction: row; gap: 0.5rem;
+      .filter-label { font-size: 0.85rem; max-width: 120px; }
     }
-
-    .filters-panel {
-      left: 240px;
-    }
+    .filter-panel { left: 240px; }
   }
 }
