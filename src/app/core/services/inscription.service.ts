@@ -6,20 +6,24 @@ export class InscriptionService {
   constructor(private supabase: SupabaseService) {}
 
   async isInscrit(userId: string, sortieId: string): Promise<boolean> {
-    const { data } = await this.supabase.client
+    const { count } = await this.supabase.client
       .from('inscriptions')
-      .select('id')
+      .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('sortie_id', sortieId)
       .neq('status', 'cancelled')
-      .maybeSingle();
-    return !!data;
+      .neq('status', 'confirmed');
+    return (count ?? 0) > 0;
   }
 
   async rejoindre(userId: string, sortieId: string): Promise<{ error: any }> {
+    // Upsert : remet à 'pending' si une inscription annulée existe déjà
     const { error } = await this.supabase.client
       .from('inscriptions')
-      .insert({ user_id: userId, sortie_id: sortieId, status: 'pending' });
+      .upsert(
+        { user_id: userId, sortie_id: sortieId, status: 'pending' },
+        { onConflict: 'user_id,sortie_id' }
+      );
     return { error };
   }
 
