@@ -6,9 +6,7 @@
 /out-tsc
 /bazel-out
 
-# Environment files (Supabase keys)
-src/environments/environment.ts
-src/environments/environment.development.ts
+# Environment files
 
 # IDEs and editors
 .idea/
