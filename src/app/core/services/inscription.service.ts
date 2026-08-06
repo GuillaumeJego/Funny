@@ -11,6 +11,7 @@ export class InscriptionService {
       .select('id')
       .eq('user_id', userId)
       .eq('sortie_id', sortieId)
+      .neq('status', 'cancelled')
       .maybeSingle();
     return !!data;
   }

@@ -131,13 +131,14 @@ export class SortieService {
       .order('date');
   }
 
-  // Sorties auxquelles un utilisateur est inscrit
+  // Sorties auxquelles un utilisateur est inscrit (exclut cancelled et confirmed=organisateur)
   async getSortiesRejointes(userId: string) {
     return await this.supabase.client
       .from('inscriptions')
       .select(`sortie_id, sorties (*, themes (name, icon), profiles (username, avatar_url))`)
       .eq('user_id', userId)
-      .eq('status', 'pending');
+      .neq('status', 'cancelled')
+      .neq('status', 'confirmed');
   }
 
   // Membres inscrits à une sortie (pending = membres, confirmed = organisateur)
