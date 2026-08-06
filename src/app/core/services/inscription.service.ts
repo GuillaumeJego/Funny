@@ -19,7 +19,7 @@ export class InscriptionService {
   async rejoindre(userId: string, sortieId: string): Promise<{ error: any }> {
     const { error } = await this.supabase.client
       .from('inscriptions')
-      .insert({ user_id: userId, sortie_id: sortieId });
+      .insert({ user_id: userId, sortie_id: sortieId, status: 'pending' });
     return { error };
   }
 
