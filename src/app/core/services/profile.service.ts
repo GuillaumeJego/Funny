@@ -25,6 +25,14 @@ export class ProfileService {
       .single();
   }
 
+  // Récupérer tous les profils (page Membres)
+  async getAllProfiles() {
+    return await this.supabase.client
+      .from('profiles')
+      .select('id, username, avatar_url, bio, role')
+      .order('username');
+  }
+
   // Mettre à jour son profil
   async updateProfile(userId: string, updates: Partial<Profile>) {
     return await this.supabase.client

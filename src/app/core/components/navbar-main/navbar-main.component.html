@@ -5,7 +5,13 @@
     [class.active]="isActive(item.route)"
     (click)="navigate(item.route)"
   >
-    <span class="nav-icon">{{ item.icon }}</span>
+    <div class="nav-icon-wrap">
+      <span class="nav-icon">{{ item.icon }}</span>
+      <span
+        *ngIf="item.route === '/notifications' && unreadCount > 0"
+        class="notif-badge"
+      >{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+    </div>
     <span class="nav-label">{{ item.label }}</span>
   </div>
 </nav>

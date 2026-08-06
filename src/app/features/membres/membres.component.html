@@ -1,0 +1,22 @@
+<div class="membres-page">
+  <div class="page-header">
+    <h1>Membres <span *ngIf="!loading" class="total">({{ membres.length }})</span></h1>
+  </div>
+
+  <div *ngIf="loading" class="loading">Chargement…</div>
+
+  <div *ngIf="!loading" class="membres-grid">
+    <div *ngFor="let m of membres" class="membre-card">
+      <div class="avatar-wrap">
+        <img *ngIf="m.avatar_url" [src]="m.avatar_url" [alt]="m.username" class="avatar" />
+        <div *ngIf="!m.avatar_url" class="avatar-placeholder">{{ getInitial(m.username) }}</div>
+        <span *ngIf="m.role === 'user_premium'" class="badge-premium" title="Membre Premium">⭐</span>
+        <span *ngIf="m.role === 'admin'" class="badge-admin" title="Admin">🛡️</span>
+      </div>
+      <div class="membre-info">
+        <div class="membre-name">{{ m.username }}</div>
+        <div *ngIf="m.bio" class="membre-bio">{{ m.bio }}</div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+<div class="notifications-page">
+  <div class="page-header">
+    <h1>Notifications</h1>
+  </div>
+
+  <div *ngIf="loading" class="loading">Chargement…</div>
+
+  <div *ngIf="!loading && notifications.length === 0" class="empty">
+    <div class="empty-icon">🔔</div>
+    <p>Pas de notifications pour le moment.</p>
+    <p class="sub">Vous serez alerté quand quelqu'un rejoint votre sortie ou qu'une sortie est annulée.</p>
+  </div>
+
+  <div *ngIf="!loading && notifications.length > 0" class="notif-list">
+    <div
+      *ngFor="let n of notifications"
+      class="notif-item"
+      [class.unread]="!n.read"
+    >
+      <div class="notif-dot" *ngIf="!n.read"></div>
+      <div class="notif-body">
+        <div class="notif-title">{{ n.title }}</div>
+        <div class="notif-message">{{ n.message }}</div>
+        <div class="notif-date">{{ formatDate(n.created_at) }}</div>
+      </div>
+    </div>
+  </div>
+</div>

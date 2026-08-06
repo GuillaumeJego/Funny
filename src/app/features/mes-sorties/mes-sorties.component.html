@@ -1,0 +1,55 @@
+<div class="mes-sorties-page">
+  <div class="page-header">
+    <h1>Mes sorties</h1>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'creees'" (click)="activeTab = 'creees'">
+      Créées <span class="count">{{ sortiesCreees.length }}</span>
+    </button>
+    <button class="tab" [class.active]="activeTab === 'rejointes'" (click)="activeTab = 'rejointes'">
+      Rejointes <span class="count">{{ sortiesRejointes.length }}</span>
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Chargement…</div>
+
+  <div *ngIf="!loading">
+    <div *ngIf="currentList.length === 0" class="empty">
+      <div class="empty-icon">{{ activeTab === 'creees' ? '📋' : '🎯' }}</div>
+      <p *ngIf="activeTab === 'creees'">Vous n'avez pas encore créé de sortie.</p>
+      <p *ngIf="activeTab === 'rejointes'">Vous n'avez pas encore rejoint de sortie.</p>
+    </div>
+
+    <div class="sortie-list">
+      <div
+        *ngFor="let sortie of currentList"
+        class="sortie-card"
+        [class.premium]="sortie.is_premium"
+        (click)="openDrawer(sortie)"
+      >
+        <div class="card-image">
+          <img *ngIf="sortie.resolvedImageUrl" [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
+          <div *ngIf="!sortie.resolvedImageUrl" class="img-placeholder">{{ sortie.themes?.icon || '🎯' }}</div>
+          <span *ngIf="sortie.is_premium" class="badge-premium">⭐</span>
+        </div>
+        <div class="card-body">
+          <div class="card-theme">{{ sortie.themes?.icon }} {{ sortie.themes?.name }}</div>
+          <h3 class="card-title">{{ sortie.title }}</h3>
+          <div class="card-meta">
+            <span>📅 {{ formatDate(sortie.date) }}</span>
+            <span>📍 {{ sortie.location }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-sortie-drawer
+  [sortie]="selectedSortie"
+  [isOpen]="drawerOpen"
+  [currentUserId]="userId"
+  (closed)="closeDrawer()"
+  (supprimerClicked)="onSupprimer($event)"
+/>

@@ -95,8 +95,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }));
 
     this.sorties = sorties;
-    this.sortiesFiltrees = sorties;
-    this.groupes = this.grouperParDate(sorties);
+    // Filtre "À venir" par défaut
+    this.onFiltersChanged({ quickPeriod: 'upcoming', themeIds: [], ou: '', dateDebut: '', dateFin: '', prix: '', premium: false });
+    this.groupes = this.grouperParDate(this.sortiesFiltrees);
 
     // Extraire thèmes et villes uniques pour les filtres
     const themesMap = new Map<string, ThemeOption>();
@@ -143,6 +144,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.isInscrit = false;
       const s = this.sorties.find(s => s.id === sortieId);
       if (s && s.inscriptionsCount !== undefined) s.inscriptionsCount--;
+    }
+  }
+
+  async onSupprimer(sortieId: string) {
+    if (!this.userId || !this.selectedSortie) return;
+    const confirmed = window.confirm(`Supprimer la sortie "${this.selectedSortie.title}" ? Les membres inscrits seront notifiés.`);
+    if (!confirmed) return;
+
+    const organizerUsername = this.selectedSortie.profiles?.username ?? 'L\'organisateur';
+    const { error } = await this.sortieService.deleteSortieWithNotifications(
+      sortieId,
+      this.selectedSortie.title,
+      organizerUsername
+    );
+
+    if (!error) {
+      this.sorties = this.sorties.filter(s => s.id !== sortieId);
+      this.onFiltersChanged({ themeIds: [], ou: '', quickPeriod: '', dateDebut: '', dateFin: '', prix: '', premium: false });
+      this.closeDrawer();
     }
   }
 

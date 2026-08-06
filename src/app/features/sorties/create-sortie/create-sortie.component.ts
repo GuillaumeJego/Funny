@@ -151,11 +151,16 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       }
 
       this.sortie.created_by = this.userId;
-      const { error } = await this.sortieService.createSortie(this.sortie);
+      const { data: newSortie, error } = await this.sortieService.createSortie(this.sortie);
 
-      if (error) {
+      if (error || !newSortie) {
         this.errorMessage = 'Erreur lors de la création de la sortie.';
       } else {
+        // Auto-inscrire l'organisateur
+        await this.supabase.client
+          .from('inscriptions')
+          .insert({ sortie_id: newSortie.id, user_id: this.userId, status: 'confirmed' });
+
         this.successMessage = 'Sortie créée avec succès !';
         setTimeout(() => this.router.navigate(['/dashboard']), 1500);
       }
@@ -167,7 +172,10 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   }
 
   onImageReady(blob: Blob) {
-    this.customImageFile = new File([blob], 'sortie.jpg', { type: 'image/jpeg' });
+    console.log('Blob reçu - type:', blob.type, '| taille:', blob.size, 'bytes');
+    const mimeType = blob.type || 'image/jpeg';
+    const ext = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
+    this.customImageFile = new File([blob], `sortie.${ext}`, { type: mimeType });
     this.sortie.image_source = 'custom';
     this.sortie.image_url = '';   // efface l'éventuelle image par défaut sélectionnée
     this.selectedImageUrl = '';

@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DrawerService } from '../../services/drawer.service';
+import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-navbar-main',
@@ -10,7 +12,7 @@ import { DrawerService } from '../../services/drawer.service';
   templateUrl: './navbar-main.component.html',
   styleUrl: './navbar-main.component.scss'
 })
-export class NavbarMainComponent {
+export class NavbarMainComponent implements OnInit {
 
   navItems = [
     { icon: '🏠', label: 'Sorties', route: '/dashboard' },
@@ -20,9 +22,24 @@ export class NavbarMainComponent {
     { icon: '🔔', label: 'Notifications', route: '/notifications' },
   ];
 
-  constructor(public router: Router, private drawerService: DrawerService) {}
+  unreadCount = 0;
+
+  constructor(
+    public router: Router,
+    private drawerService: DrawerService,
+    private auth: AuthService,
+    private notifService: NotificationService
+  ) {}
+
+  async ngOnInit() {
+    const { data: { user } } = await this.auth.getUser();
+    if (user) {
+      this.unreadCount = await this.notifService.countUnread(user.id);
+    }
+  }
 
   navigate(route: string) {
+    if (route === '/notifications') this.unreadCount = 0;
     this.drawerService.closeAll();
     this.router.navigate([route]);
   }

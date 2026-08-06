@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { Sortie } from '../models/sortie.model';
+import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class SortieService {
 
-  constructor(private supabase: SupabaseService) {}
+  constructor(private supabase: SupabaseService, private notifService: NotificationService) {}
 
   // Récupérer toutes les sorties publiées
   async getAllSorties() {
@@ -20,7 +21,7 @@ export class SortieService {
       .order('date');
   }
 
-  // Récupérer le nombre d'inscrits pour une sortie
+  // Récupérer le nombre d'inscrits pour une sortie (hors organisateur)
   async getInscriptionsCount(sortieId: string): Promise<number> {
     const { count } = await this.supabase.client
       .from('inscriptions')
@@ -72,12 +73,88 @@ export class SortieService {
       .eq('id', id);
   }
 
-  // Supprimer une sortie
+  // Supprimer une sortie (simple, sans notifications)
   async deleteSortie(id: string) {
     return await this.supabase.client
       .from('sorties')
       .delete()
       .eq('id', id);
+  }
+
+  // Supprimer une sortie + envoyer des notifications aux inscrits et aux likeurs
+  async deleteSortieWithNotifications(sortieId: string, sortieTitle: string, organizerUsername: string) {
+    // 1. Récupérer inscrits et likeurs avant suppression
+    const [inscrits, likes] = await Promise.all([
+      this.getMembresInscrits(sortieId),
+      this.getMembresLikes(sortieId)
+    ]);
+
+    const inscritsProfiles = ((inscrits.data ?? []) as any[]).map((r: any) => r.profiles).filter(Boolean);
+    const likesProfiles = ((likes.data ?? []) as any[]).map((r: any) => r.profiles).filter(Boolean);
+
+    // 2. Construire les notifications (éviter les doublons)
+    const notifications: { user_id: string; title: string; message: string }[] = [];
+    const seen = new Set<string>();
+
+    for (const p of inscritsProfiles) {
+      if (!p?.id || seen.has(p.id)) continue;
+      seen.add(p.id);
+      notifications.push({
+        user_id: p.id,
+        title: 'Sortie annulée',
+        message: `Vous étiez inscrit à la sortie "${sortieTitle}". L'organisateur ${organizerUsername} a annulé la sortie. Si vous avez payé pour y participer, vous serez remboursé.`
+      });
+    }
+
+    for (const p of likesProfiles) {
+      if (!p?.id || seen.has(p.id)) continue;
+      seen.add(p.id);
+      notifications.push({
+        user_id: p.id,
+        title: 'Sortie annulée',
+        message: `Vous aviez liké la sortie "${sortieTitle}". L'organisateur ${organizerUsername} a annulé la sortie. Si vous avez payé pour y participer, vous serez remboursé.`
+      });
+    }
+
+    // 3. Envoyer les notifications puis supprimer
+    await this.notifService.createMany(notifications);
+    return await this.deleteSortie(sortieId);
+  }
+
+  // Sorties créées par un utilisateur
+  async getSortiesCreatedBy(userId: string) {
+    return await this.supabase.client
+      .from('sorties')
+      .select(`*, themes (name, icon), profiles (username, avatar_url)`)
+      .eq('created_by', userId)
+      .eq('status', 'published')
+      .order('date');
+  }
+
+  // Sorties auxquelles un utilisateur est inscrit
+  async getSortiesRejointes(userId: string) {
+    return await this.supabase.client
+      .from('inscriptions')
+      .select(`sortie_id, sorties (*, themes (name, icon), profiles (username, avatar_url))`)
+      .eq('user_id', userId)
+      .eq('status', 'pending');
+  }
+
+  // Membres inscrits à une sortie (pending = membres, confirmed = organisateur)
+  async getMembresInscrits(sortieId: string) {
+    return await this.supabase.client
+      .from('inscriptions')
+      .select(`user_id, status, profiles (id, username, avatar_url)`)
+      .eq('sortie_id', sortieId)
+      .in('status', ['pending', 'confirmed']);
+  }
+
+  // Membres qui ont liké une sortie
+  async getMembresLikes(sortieId: string) {
+    return await this.supabase.client
+      .from('favoris')
+      .select(`user_id, profiles (id, username, avatar_url)`)
+      .eq('sortie_id', sortieId);
   }
 
   // S'inscrire à une sortie

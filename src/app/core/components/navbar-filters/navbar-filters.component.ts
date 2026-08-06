@@ -33,14 +33,14 @@ export class NavbarFiltersComponent implements OnChanges, OnDestroy {
   @Input() availableLocations: string[] = [];
   @Output() filtersChanged = new EventEmitter<Filters>();
 
-  filters: Filters = {};
+  filters: Filters = { quickPeriod: 'upcoming' };
   openPanel: string | null = null;
 
   // État temporaire
   selectedThemeIds: Set<string> = new Set();
   dateDebut = '';
   dateFin = '';
-  quickPeriod = '';
+  quickPeriod = 'upcoming';
 
   // Autocomplete lieu
   locationQuery = '';

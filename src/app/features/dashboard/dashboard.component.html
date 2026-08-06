@@ -158,9 +158,11 @@
   [userRole]="userRole"
   [isFavori]="selectedSortie ? isFavori(selectedSortie.id) : false"
   [isInscrit]="isInscrit"
+  [currentUserId]="userId"
   (closed)="closeDrawer()"
   (favoriToggled)="onFavoriFromDrawer($event)"
   (rejoindreClicked)="onRejoindre($event)"
   (quitterClicked)="onQuitter($event)"
+  (supprimerClicked)="onSupprimer($event)"
 />
 

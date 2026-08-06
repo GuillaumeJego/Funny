@@ -1,0 +1,97 @@
+@use 'styles' as *;
+
+.membres-page {
+  padding: 1.5rem 1rem 6rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.page-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 1.25rem;
+
+  .total { font-size: 1rem; color: $text-light; font-weight: 400; }
+}
+
+.loading {
+  text-align: center;
+  color: $text-light;
+  padding: 3rem;
+}
+
+.membres-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.membre-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-lg;
+  padding: 0.75rem 1rem;
+  transition: box-shadow 0.2s;
+
+  &:hover { box-shadow: $shadow; }
+}
+
+.avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+
+  .avatar, .avatar-placeholder {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $primary;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .badge-premium, .badge-admin {
+    position: absolute;
+    bottom: -2px;
+    right: -4px;
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+}
+
+.membre-info {
+  min-width: 0;
+
+  .membre-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: $text-dark;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .membre-bio {
+    font-size: 0.78rem;
+    color: $text-light;
+    margin-top: 0.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 480px) {
+  .membres-grid { grid-template-columns: 1fr; }
+}

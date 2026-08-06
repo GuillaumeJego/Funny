@@ -44,8 +44,17 @@
           <span class="badge-theme-img">{{ sortie.themes?.icon }} {{ sortie.themes?.name }}</span>
         </div>
 
-        <!-- Corps -->
-        <div class="drawer-body">
+        <!-- Onglets -->
+        <div class="drawer-tabs">
+          <button class="dtab" [class.active]="activeTab === 'details'" (click)="switchTab('details')">Détails</button>
+          <button class="dtab" [class.active]="activeTab === 'membres'" (click)="switchTab('membres')">
+            Membres
+            <span *ngIf="sortie.inscriptionsCount" class="dtab-count">{{ sortie.inscriptionsCount }}</span>
+          </button>
+        </div>
+
+        <!-- Corps — Détails -->
+        <div class="drawer-body" *ngIf="activeTab === 'details'">
 
           <!-- Titre + actions -->
           <div class="title-row">
@@ -101,23 +110,68 @@
             </div>
           </div>
 
-          <!-- Bouton rejoindre / quitter -->
+          <!-- Bouton supprimer (organisateur uniquement) -->
           <button
-            *ngIf="!isInscrit"
-            class="btn-rejoindre"
-            (click)="rejoindreClicked.emit(sortie.id)"
+            *ngIf="isOrganizer"
+            class="btn-supprimer"
+            (click)="supprimerClicked.emit(sortie.id)"
           >
-            ✅ Rejoindre cette sortie
-          </button>
-          <button
-            *ngIf="isInscrit"
-            class="btn-quitter"
-            (click)="quitterClicked.emit(sortie.id)"
-          >
-            ❌ Quitter cette sortie
+            🗑️ Supprimer la sortie
           </button>
 
+          <!-- Boutons rejoindre / quitter (non-organisateur) -->
+          <ng-container *ngIf="!isOrganizer">
+            <button
+              *ngIf="!isInscrit"
+              class="btn-rejoindre"
+              (click)="rejoindreClicked.emit(sortie.id)"
+            >
+              ✅ Rejoindre cette sortie
+            </button>
+            <button
+              *ngIf="isInscrit"
+              class="btn-quitter"
+              (click)="quitterClicked.emit(sortie.id)"
+            >
+              ❌ Quitter cette sortie
+            </button>
+          </ng-container>
+
         </div>
+
+        <!-- Corps — Membres -->
+        <div class="drawer-body membres-tab" *ngIf="activeTab === 'membres'">
+          <div *ngIf="membresLoading" class="membres-loading">Chargement…</div>
+
+          <ng-container *ngIf="!membresLoading">
+            <!-- Inscrits -->
+            <div class="membres-section">
+              <div class="membres-section-title">✅ Inscrits ({{ membresInscrits.length }})</div>
+              <div *ngIf="membresInscrits.length === 0" class="membres-empty">Aucun inscrit pour le moment.</div>
+              <div class="membres-list">
+                <div *ngFor="let m of membresInscrits" class="membre-item">
+                  <img *ngIf="m.avatar_url" [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
+                  <div *ngIf="!m.avatar_url" class="m-avatar-placeholder">{{ getInitial(m.username) }}</div>
+                  <span class="m-name">{{ m.username }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Likes -->
+            <div class="membres-section">
+              <div class="membres-section-title">❤️ Ont liké ({{ membresLikes.length }})</div>
+              <div *ngIf="membresLikes.length === 0" class="membres-empty">Personne n'a liké cette sortie.</div>
+              <div class="membres-list">
+                <div *ngFor="let m of membresLikes" class="membre-item">
+                  <img *ngIf="m.avatar_url" [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
+                  <div *ngIf="!m.avatar_url" class="m-avatar-placeholder">{{ getInitial(m.username) }}</div>
+                  <span class="m-name">{{ m.username }}</span>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
       </div>
 
     </ng-container>

@@ -1,7 +1,14 @@
-import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SortieWithRelations } from '../../../core/models/sortie.model';
+import { SortieService } from '../../../core/services/sortie.service';
+
+interface MiniProfile {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+}
 
 @Component({
   selector: 'app-sortie-drawer',
@@ -16,12 +23,23 @@ export class SortieDrawerComponent implements OnChanges {
   @Input() userRole = 'user';
   @Input() isFavori = false;
   @Input() isInscrit = false;
+  @Input() currentUserId = '';
   @Output() closed = new EventEmitter<void>();
   @Output() favoriToggled = new EventEmitter<string>();
   @Output() rejoindreClicked = new EventEmitter<string>();
   @Output() quitterClicked = new EventEmitter<string>();
+  @Output() supprimerClicked = new EventEmitter<string>();
 
-  constructor(private router: Router) {}
+  activeTab: 'details' | 'membres' = 'details';
+  membresInscrits: MiniProfile[] = [];
+  membresLikes: MiniProfile[] = [];
+  membresLoading = false;
+
+  constructor(private router: Router, private sortieService: SortieService) {}
+
+  get isOrganizer(): boolean {
+    return !!this.currentUserId && this.currentUserId === this.sortie?.created_by;
+  }
 
   get isPremiumLocked(): boolean {
     if (!this.sortie?.is_premium) return false;
@@ -42,6 +60,25 @@ export class SortieDrawerComponent implements OnChanges {
     }
   }
 
+  async switchTab(tab: 'details' | 'membres') {
+    this.activeTab = tab;
+    if (tab === 'membres' && this.sortie && this.membresInscrits.length === 0 && !this.membresLoading) {
+      await this.loadMembres();
+    }
+  }
+
+  async loadMembres() {
+    if (!this.sortie) return;
+    this.membresLoading = true;
+    const [inscrits, likes] = await Promise.all([
+      this.sortieService.getMembresInscrits(this.sortie.id),
+      this.sortieService.getMembresLikes(this.sortie.id)
+    ]);
+    this.membresInscrits = ((inscrits.data ?? []) as any[]).map((r: any) => r.profiles).filter(Boolean);
+    this.membresLikes = ((likes.data ?? []) as any[]).map((r: any) => r.profiles).filter(Boolean);
+    this.membresLoading = false;
+  }
+
   formatDate(dateStr: string): string {
     const d = new Date(dateStr);
     const jour = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -49,5 +86,15 @@ export class SortieDrawerComponent implements OnChanges {
     return `${jour.charAt(0).toUpperCase() + jour.slice(1)} à ${heure}`;
   }
 
-  ngOnChanges() {}
+  getInitial(username: string): string {
+    return username.charAt(0).toUpperCase();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['sortie'] && this.sortie) {
+      this.activeTab = 'details';
+      this.membresInscrits = [];
+      this.membresLikes = [];
+    }
+  }
 }

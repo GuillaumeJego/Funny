@@ -1,0 +1,87 @@
+@use 'styles' as *;
+
+.notifications-page {
+  padding: 1.5rem 1rem 6rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.page-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 1.25rem;
+}
+
+.loading {
+  text-align: center;
+  color: $text-light;
+  padding: 3rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: $text-light;
+
+  .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+  p { font-size: 0.95rem; margin-bottom: 0.5rem; }
+  .sub { font-size: 0.85rem; max-width: 320px; margin: 0 auto; }
+}
+
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-lg;
+  padding: 1rem 1.1rem;
+  transition: box-shadow 0.2s;
+
+  &.unread {
+    border-left: 3px solid $primary;
+    background: rgba($primary, 0.03);
+  }
+
+  &:hover { box-shadow: $shadow; }
+}
+
+.notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $primary;
+  flex-shrink: 0;
+  margin-top: 0.4rem;
+}
+
+.notif-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: $text-dark;
+  margin-bottom: 0.3rem;
+}
+
+.notif-message {
+  font-size: 0.88rem;
+  color: $text-medium;
+  line-height: 1.5;
+  margin-bottom: 0.4rem;
+}
+
+.notif-date {
+  font-size: 0.75rem;
+  color: $text-light;
+}
