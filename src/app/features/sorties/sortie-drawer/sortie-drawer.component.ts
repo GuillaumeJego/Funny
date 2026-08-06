@@ -8,6 +8,7 @@ interface MiniProfile {
   id: string;
   username: string;
   avatar_url: string | null;
+  isOrganizer?: boolean;
 }
 
 @Component({
@@ -74,8 +75,8 @@ export class SortieDrawerComponent implements OnChanges {
       this.sortieService.getMembresInscrits(this.sortie.id),
       this.sortieService.getMembresLikes(this.sortie.id)
     ]);
-    this.membresInscrits = ((inscrits.data ?? []) as any[]).map((r: any) => r.profiles).filter(Boolean);
-    this.membresLikes = ((likes.data ?? []) as any[]).map((r: any) => r.profiles).filter(Boolean);
+    this.membresInscrits = inscrits;
+    this.membresLikes = likes;
     this.membresLoading = false;
   }
 

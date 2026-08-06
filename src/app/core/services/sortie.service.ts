@@ -89,8 +89,8 @@ export class SortieService {
       this.getMembresLikes(sortieId)
     ]);
 
-    const inscritsProfiles = ((inscrits.data ?? []) as any[]).map((r: any) => r.profiles).filter(Boolean);
-    const likesProfiles = ((likes.data ?? []) as any[]).map((r: any) => r.profiles).filter(Boolean);
+    const inscritsProfiles = inscrits;
+    const likesProfiles = likes;
 
     // 2. Construire les notifications (éviter les doublons)
     const notifications: { user_id: string; title: string; message: string }[] = [];
@@ -142,20 +142,41 @@ export class SortieService {
   }
 
   // Membres inscrits à une sortie (pending = membres, confirmed = organisateur)
-  async getMembresInscrits(sortieId: string) {
-    return await this.supabase.client
+  async getMembresInscrits(sortieId: string): Promise<{ id: string; username: string; avatar_url: string | null; isOrganizer: boolean }[]> {
+    const { data: rows } = await this.supabase.client
       .from('inscriptions')
-      .select(`user_id, status, profiles (id, username, avatar_url)`)
+      .select('user_id, status')
       .eq('sortie_id', sortieId)
       .in('status', ['pending', 'confirmed']);
+    if (!rows || rows.length === 0) return [];
+
+    const userIds = rows.map((r: any) => r.user_id);
+    const { data: profiles } = await this.supabase.client
+      .from('profiles')
+      .select('id, username, avatar_url')
+      .in('id', userIds);
+
+    return (profiles ?? []).map((p: any) => ({
+      ...p,
+      isOrganizer: rows.find((r: any) => r.user_id === p.id)?.status === 'confirmed'
+    }));
   }
 
   // Membres qui ont liké une sortie
-  async getMembresLikes(sortieId: string) {
-    return await this.supabase.client
+  async getMembresLikes(sortieId: string): Promise<{ id: string; username: string; avatar_url: string | null }[]> {
+    const { data: rows } = await this.supabase.client
       .from('favoris')
-      .select(`user_id, profiles (id, username, avatar_url)`)
+      .select('user_id')
       .eq('sortie_id', sortieId);
+    if (!rows || rows.length === 0) return [];
+
+    const userIds = rows.map((r: any) => r.user_id);
+    const { data: profiles } = await this.supabase.client
+      .from('profiles')
+      .select('id, username, avatar_url')
+      .in('id', userIds);
+
+    return (profiles ?? []) as any[];
   }
 
   // S'inscrire à une sortie
