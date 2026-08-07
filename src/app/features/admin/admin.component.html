@@ -70,8 +70,8 @@
             <button
               class="btn-premium-toggle"
               [class.active]="isPremium(m)"
-              (click)="togglePremium(m)"
-              [title]="isPremium(m) ? 'Révoquer le Premium' : 'Accorder le Premium'"
+              (click)="openPremiumModal(m)"
+              [title]="isPremium(m) ? 'Révoquer le Premium (' + remainingDays(m) + ' jours restants)' : 'Accorder le Premium'"
             >⭐</button>
 
             <!-- Accès profils (inutile pour admin/dev qui ont toujours accès) -->
@@ -98,4 +98,31 @@
     </section>
 
   </ng-container>
+</div>
+
+<!-- Modale Premium -->
+<div *ngIf="premiumModal" class="modal-overlay" (click)="premiumModal = null">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3 class="modal-title">⭐ Accorder le Premium</h3>
+    <p class="modal-desc">Durée de l'abonnement pour <strong>{{ premiumModal.membre.username }}</strong> :</p>
+
+    <div class="modal-presets">
+      <button class="preset-btn" (click)="premiumModal.mois = 1"  [class.active]="premiumModal.mois === 1">1 mois</button>
+      <button class="preset-btn" (click)="premiumModal.mois = 3"  [class.active]="premiumModal.mois === 3">3 mois</button>
+      <button class="preset-btn" (click)="premiumModal.mois = 6"  [class.active]="premiumModal.mois === 6">6 mois</button>
+      <button class="preset-btn" (click)="premiumModal.mois = 12" [class.active]="premiumModal.mois === 12">1 an</button>
+    </div>
+
+    <div class="modal-custom">
+      <label>Ou saisir un nombre de mois :</label>
+      <input type="number" [(ngModel)]="premiumModal.mois" min="1" max="120" class="days-input" />
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="premiumModal = null">Annuler</button>
+      <button class="btn-confirm" (click)="confirmPremium()" [disabled]="premiumModal.mois < 1">
+        Accorder {{ premiumModal.mois }} mois
+      </button>
+    </div>
+  </div>
 </div>

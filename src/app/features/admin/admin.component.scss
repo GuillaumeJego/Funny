@@ -253,3 +253,110 @@
   font-size: 0.9rem;
   padding: 1.5rem;
 }
+
+// ─── Modale Premium ───────────────────────────────────────
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal {
+  background: $bg-white;
+  border-radius: $border-radius-lg;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 0.5rem;
+}
+
+.modal-desc {
+  font-size: 0.9rem;
+  color: $text-medium;
+  margin-bottom: 1rem;
+}
+
+.modal-presets {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.preset-btn {
+  padding: 0.4rem 0.85rem;
+  border: 1.5px solid $border-color;
+  border-radius: 999px;
+  background: $bg-light;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $text-medium;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { border-color: $primary; color: $primary; }
+  &.active { background: $primary; border-color: $primary; color: #fff; }
+}
+
+.modal-custom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+
+  label { font-size: 0.82rem; color: $text-medium; }
+}
+
+.days-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  font-size: 0.95rem;
+  color: $text-dark;
+  width: 100%;
+  box-sizing: border-box;
+  &:focus { outline: none; border-color: $primary; }
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.btn-cancel {
+  padding: 0.6rem 1.1rem;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  background: $bg-light;
+  color: $text-medium;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover { background: $border-color; }
+}
+
+.btn-confirm {
+  padding: 0.6rem 1.1rem;
+  border: none;
+  border-radius: $border-radius;
+  background: $warning;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  &:hover { opacity: 0.9; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}

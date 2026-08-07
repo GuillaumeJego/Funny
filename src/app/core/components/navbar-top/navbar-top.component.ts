@@ -44,10 +44,15 @@ export class NavbarTopComponent implements OnInit {
     const diffMs = this.subscriptionEndDate.getTime() - now.getTime();
     if (diffMs <= 0) return 'Expiré';
     const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    if (days === 1) return '1 jour';
+    if (days <= 1) return '1 jour';
     if (days < 30) return `${days} jours`;
-    const months = Math.ceil(days / 30);
-    return `${months} mois`;
+    const months = (this.subscriptionEndDate.getFullYear() - now.getFullYear()) * 12
+      + (this.subscriptionEndDate.getMonth() - now.getMonth());
+    if (months < 12) return `${months} mois`;
+    const years = Math.floor(months / 12);
+    const remMois = months % 12;
+    if (remMois === 0) return `${years} an${years > 1 ? 's' : ''}`;
+    return `${years} an${years > 1 ? 's' : ''} ${remMois} mois`;
   }
 
   toggleMenu() {

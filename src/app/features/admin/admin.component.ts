@@ -62,15 +62,40 @@ export class AdminComponent implements OnInit {
     membre.role = role;
   }
 
+  premiumModal: { membre: Profile; mois: number } | null = null;
+
   isPremium(m: Profile): boolean {
     if (!m.subscription_end_date) return false;
     return new Date(m.subscription_end_date) > new Date();
   }
 
-  async togglePremium(m: Profile) {
-    const newDate = this.isPremium(m) ? null : '2099-12-31T23:59:59Z';
-    await this.profileService.updateProfile(m.id, { subscription_end_date: newDate ?? undefined });
-    m.subscription_end_date = newDate ?? undefined;
+  remainingDays(m: Profile): number {
+    if (!m.subscription_end_date) return 0;
+    const diff = new Date(m.subscription_end_date).getTime() - new Date().getTime();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  }
+
+  openPremiumModal(m: Profile) {
+    if (this.isPremium(m)) {
+      this.revokePremium(m);
+    } else {
+      this.premiumModal = { membre: m, mois: 1 };
+    }
+  }
+
+  async confirmPremium() {
+    if (!this.premiumModal) return;
+    const { membre, mois } = this.premiumModal;
+    const end = new Date();
+    end.setMonth(end.getMonth() + mois);
+    await this.profileService.updateProfile(membre.id, { subscription_end_date: end.toISOString() });
+    membre.subscription_end_date = end.toISOString();
+    this.premiumModal = null;
+  }
+
+  async revokePremium(m: Profile) {
+    await this.profileService.updateProfile(m.id, { subscription_end_date: null as any });
+    m.subscription_end_date = undefined;
   }
 
   get filteredMembres(): Profile[] {
