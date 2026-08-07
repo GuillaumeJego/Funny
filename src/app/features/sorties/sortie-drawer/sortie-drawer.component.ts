@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SortieWithRelations } from '../../../core/models/sortie.model';
 import { SortieService } from '../../../core/services/sortie.service';
+import { InscriptionStatus } from '../../../core/services/inscription.service';
 
 interface MiniProfile {
   id: string;
@@ -23,7 +24,7 @@ export class SortieDrawerComponent implements OnChanges {
   @Input() isOpen = false;
   @Input() userRole = 'user';
   @Input() isFavori = false;
-  @Input() isInscrit = false;
+  @Input() inscriptionStatus: InscriptionStatus = 'none';
   @Input() currentUserId = '';
   @Output() closed = new EventEmitter<void>();
   @Output() favoriToggled = new EventEmitter<string>();
@@ -34,6 +35,8 @@ export class SortieDrawerComponent implements OnChanges {
   activeTab: 'details' | 'membres' = 'details';
   membresInscrits: MiniProfile[] = [];
   membresLikes: MiniProfile[] = [];
+  membresWaiting: MiniProfile[] = [];
+  membresLoaded = false;
   membresLoading = false;
 
   constructor(private router: Router, private sortieService: SortieService) {}
@@ -47,23 +50,21 @@ export class SortieDrawerComponent implements OnChanges {
     return !['admin', 'developer', 'user_premium'].includes(this.userRole);
   }
 
-  goToPremium() {
-    this.router.navigate(['/premium']);
+  get membresTabCount(): number {
+    return this.membresInscrits.length + this.membresWaiting.length;
   }
 
-  close() {
-    this.closed.emit();
-  }
+  goToPremium() { this.router.navigate(['/premium']); }
+
+  close() { this.closed.emit(); }
 
   onBackdropClick(event: MouseEvent) {
-    if ((event.target as HTMLElement).classList.contains('drawer-backdrop')) {
-      this.close();
-    }
+    if ((event.target as HTMLElement).classList.contains('drawer-backdrop')) this.close();
   }
 
   async switchTab(tab: 'details' | 'membres') {
     this.activeTab = tab;
-    if (tab === 'membres' && this.sortie && this.membresInscrits.length === 0 && !this.membresLoading) {
+    if (tab === 'membres' && !this.membresLoaded && !this.membresLoading) {
       await this.loadMembres();
     }
   }
@@ -71,12 +72,15 @@ export class SortieDrawerComponent implements OnChanges {
   async loadMembres() {
     if (!this.sortie) return;
     this.membresLoading = true;
-    const [inscrits, likes] = await Promise.all([
+    const [inscrits, likes, waiting] = await Promise.all([
       this.sortieService.getMembresInscrits(this.sortie.id),
-      this.sortieService.getMembresLikes(this.sortie.id)
+      this.sortieService.getMembresLikes(this.sortie.id),
+      this.sortieService.getMembresWaiting(this.sortie.id)
     ]);
     this.membresInscrits = inscrits;
     this.membresLikes = likes;
+    this.membresWaiting = waiting;
+    this.membresLoaded = true;
     this.membresLoading = false;
   }
 
@@ -96,6 +100,8 @@ export class SortieDrawerComponent implements OnChanges {
       this.activeTab = 'details';
       this.membresInscrits = [];
       this.membresLikes = [];
+      this.membresWaiting = [];
+      this.membresLoaded = false;
     }
   }
 }

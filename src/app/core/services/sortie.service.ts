@@ -162,6 +162,35 @@ export class SortieService {
     }));
   }
 
+  // Membres en liste d'attente pour une sortie
+  async getMembresWaiting(sortieId: string): Promise<{ id: string; username: string; avatar_url: string | null }[]> {
+    const { data: rows } = await this.supabase.client
+      .from('inscriptions')
+      .select('user_id')
+      .eq('sortie_id', sortieId)
+      .eq('status', 'waiting')
+      .order('created_at', { ascending: true });
+    if (!rows || rows.length === 0) return [];
+
+    const userIds = rows.map((r: any) => r.user_id);
+    const { data: profiles } = await this.supabase.client
+      .from('profiles')
+      .select('id, username, avatar_url')
+      .in('id', userIds);
+
+    // Respecter l'ordre d'inscription
+    return userIds
+      .map((uid: string) => (profiles ?? []).find((p: any) => p.id === uid))
+      .filter(Boolean) as any[];
+  }
+
+  // Quitter une sortie — promotion et notification gérées par le trigger DB
+  async quitterSortie(sortieId: string, userId: string): Promise<{ error: any }> {
+    const { error } = await this.supabase.client
+      .rpc('quitter_sortie', { p_user_id: userId, p_sortie_id: sortieId });
+    return { error };
+  }
+
   // Membres qui ont liké une sortie
   async getMembresLikes(sortieId: string): Promise<{ id: string; username: string; avatar_url: string | null }[]> {
     const { data: rows } = await this.supabase.client

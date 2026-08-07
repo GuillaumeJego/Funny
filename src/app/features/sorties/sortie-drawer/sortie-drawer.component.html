@@ -119,22 +119,28 @@
             🗑️ Supprimer la sortie
           </button>
 
-          <!-- Boutons rejoindre / quitter (non-organisateur) -->
+          <!-- Boutons rejoindre / quitter / liste d'attente (non-organisateur) -->
           <ng-container *ngIf="!isOrganizer">
             <button
-              *ngIf="!isInscrit"
+              *ngIf="inscriptionStatus === 'none'"
               class="btn-rejoindre"
               (click)="rejoindreClicked.emit(sortie.id)"
             >
               ✅ Rejoindre cette sortie
             </button>
             <button
-              *ngIf="isInscrit"
+              *ngIf="inscriptionStatus === 'pending'"
               class="btn-quitter"
               (click)="quitterClicked.emit(sortie.id)"
             >
               ❌ Quitter cette sortie
             </button>
+            <div *ngIf="inscriptionStatus === 'waiting'" class="waiting-block">
+              <div class="waiting-badge">⏳ Vous êtes sur liste d'attente</div>
+              <button class="btn-quitter-attente" (click)="quitterClicked.emit(sortie.id)">
+                Quitter la liste d'attente
+              </button>
+            </div>
           </ng-container>
 
         </div>
@@ -150,6 +156,21 @@
               <div *ngIf="membresInscrits.length === 0" class="membres-empty">Aucun inscrit pour le moment.</div>
               <div class="membres-list">
                 <div *ngFor="let m of membresInscrits" class="membre-item">
+                  <img *ngIf="m.avatar_url" [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
+                  <div *ngIf="!m.avatar_url" class="m-avatar-placeholder">{{ getInitial(m.username) }}</div>
+                  <span class="m-name">{{ m.username }}</span>
+                  <span *ngIf="m.isOrganizer" class="m-badge-org">Organisateur</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Liste d'attente -->
+            <div class="membres-section" *ngIf="membresWaiting.length > 0 || sortie?.max_participants">
+              <div class="membres-section-title">⏳ Liste d'attente ({{ membresWaiting.length }})</div>
+              <div *ngIf="membresWaiting.length === 0" class="membres-empty">Personne en liste d'attente.</div>
+              <div class="membres-list">
+                <div *ngFor="let m of membresWaiting; let i = index" class="membre-item">
+                  <span class="m-rank">#{{ i + 1 }}</span>
                   <img *ngIf="m.avatar_url" [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
                   <div *ngIf="!m.avatar_url" class="m-avatar-placeholder">{{ getInitial(m.username) }}</div>
                   <span class="m-name">{{ m.username }}</span>

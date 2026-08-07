@@ -8,7 +8,7 @@ import { FavoriService } from '../../core/services/favori.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { DrawerService } from '../../core/services/drawer.service';
-import { InscriptionService } from '../../core/services/inscription.service';
+import { InscriptionService, InscriptionStatus } from '../../core/services/inscription.service';
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
 
@@ -38,7 +38,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   userRole = 'user';
   selectedSortie: SortieWithRelations | null = null;
   drawerOpen = false;
-  isInscrit = false;
+  inscriptionStatus: InscriptionStatus = 'none';
   availableThemes: ThemeOption[] = [];
   availableLocations: string[] = [];
 
@@ -114,7 +114,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.selectedSortie = sortie;
     this.drawerOpen = true;
     if (this.userId) {
-      this.isInscrit = await this.inscriptionService.isInscrit(this.userId, sortie.id);
+      this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(this.userId, sortie.id);
     }
   }
 
@@ -129,21 +129,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   async onRejoindre(sortieId: string) {
     if (!this.userId) return;
-    const { error } = await this.inscriptionService.rejoindre(this.userId, sortieId);
-    if (!error) {
-      this.isInscrit = true;
-      const s = this.sorties.find(s => s.id === sortieId);
-      if (s && s.inscriptionsCount !== undefined) s.inscriptionsCount++;
+    const { error, status } = await this.inscriptionService.rejoindre(this.userId, sortieId);
+    if (!error && status) {
+      this.inscriptionStatus = status;
+      if (status === 'pending') {
+        const s = this.sorties.find(s => s.id === sortieId);
+        if (s && s.inscriptionsCount !== undefined) s.inscriptionsCount++;
+      }
     }
   }
 
   async onQuitter(sortieId: string) {
     if (!this.userId) return;
+    const wasWaiting = this.inscriptionStatus === 'waiting';
     const { error } = await this.inscriptionService.quitter(this.userId, sortieId);
     if (!error) {
-      this.isInscrit = false;
-      const s = this.sorties.find(s => s.id === sortieId);
-      if (s && s.inscriptionsCount !== undefined) s.inscriptionsCount--;
+      this.inscriptionStatus = 'none';
+      if (!wasWaiting) {
+        const s = this.sorties.find(s => s.id === sortieId);
+        if (s && s.inscriptionsCount !== undefined) s.inscriptionsCount--;
+      }
     }
   }
 
