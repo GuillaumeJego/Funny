@@ -10,12 +10,136 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: $text-dark;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 
   .total { font-size: 1rem; color: $text-light; font-weight: 400; }
 }
 
-.loading {
+// ─── Recherche ────────────────────────────────────────────
+.search-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  align-items: center;
+}
+
+.search-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    font-size: 0.9rem;
+    pointer-events: none;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 0.6rem 2.25rem 0.6rem 2.25rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    font-size: 0.9rem;
+    background: $bg-white;
+    color: $text-dark;
+    &:focus { outline: none; border-color: $primary; }
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: $text-light;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0.25rem;
+    &:hover { color: $text-dark; }
+  }
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  background: $bg-white;
+  color: $text-medium;
+  font-size: 0.88rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s, color 0.2s;
+
+  &.active { border-color: $primary; color: $primary; background: rgba($primary, 0.05); }
+  &:hover { border-color: $primary; color: $primary; }
+}
+
+.filter-badge {
+  background: $primary;
+  color: white;
+  border-radius: 99px;
+  padding: 0 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+// ─── Panneau filtres ──────────────────────────────────────
+.filters-panel {
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-lg;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.filter-group {
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: $text-medium;
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  select {
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    font-size: 0.88rem;
+    background: $bg-light;
+    color: $text-dark;
+    cursor: pointer;
+    &:focus { outline: none; border-color: $primary; }
+  }
+}
+
+.reset-btn {
+  background: none;
+  border: none;
+  color: $text-light;
+  font-size: 0.83rem;
+  cursor: pointer;
+  padding: 0;
+  &:hover { color: $error; }
+}
+
+// ─── Grille membres ───────────────────────────────────────
+.loading, .empty {
   text-align: center;
   color: $text-light;
   padding: 3rem;
@@ -95,4 +219,5 @@
 
 @media (max-width: 480px) {
   .membres-grid { grid-template-columns: 1fr; }
+  .filters-grid { grid-template-columns: 1fr 1fr; }
 }

@@ -1,16 +1,101 @@
 <div class="membres-page">
   <div class="page-header">
-    <h1>Membres <span *ngIf="!loading" class="total">({{ membres.length }})</span></h1>
+    <h1>Membres <span *ngIf="!loading" class="total">({{ filteredMembres.length }})</span></h1>
+  </div>
+
+  <!-- Barre de recherche + bouton filtres -->
+  <div class="search-row">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        placeholder="Rechercher un membre…"
+        class="search-input"
+      />
+      <button *ngIf="searchQuery" class="clear-btn" (click)="searchQuery = ''">✕</button>
+    </div>
+    <button class="filter-btn" [class.active]="activeFilterCount > 0" (click)="filtersOpen = !filtersOpen">
+      ⚙️ Filtres<span *ngIf="activeFilterCount > 0" class="filter-badge">{{ activeFilterCount }}</span>
+    </button>
+  </div>
+
+  <!-- Panneau filtres -->
+  <div *ngIf="filtersOpen" class="filters-panel">
+    <div class="filters-grid">
+
+      <div class="filter-group">
+        <label>Genre</label>
+        <select [(ngModel)]="filterGender">
+          <option value="">Tous</option>
+          <option value="Homme">Homme</option>
+          <option value="Femme">Femme</option>
+          <option value="secret">C'est secret</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Statut conjugal</label>
+        <select [(ngModel)]="filterRelationship">
+          <option value="">Tous</option>
+          <option value="Célibataire">Célibataire</option>
+          <option value="En couple">En couple</option>
+          <option value="secret">C'est secret</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Tabac</label>
+        <select [(ngModel)]="filterSmoking">
+          <option value="">Tous</option>
+          <option value="Pas du tout">Pas du tout</option>
+          <option value="Un peu">Un peu</option>
+          <option value="Beaucoup">Beaucoup</option>
+          <option value="secret">C'est secret</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Vapotage</label>
+        <select [(ngModel)]="filterVaping">
+          <option value="">Tous</option>
+          <option value="Pas du tout">Pas du tout</option>
+          <option value="Un peu">Un peu</option>
+          <option value="Beaucoup">Beaucoup</option>
+          <option value="secret">C'est secret</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Alcool</label>
+        <select [(ngModel)]="filterAlcohol">
+          <option value="">Tous</option>
+          <option value="Pas du tout">Pas du tout</option>
+          <option value="Un peu">Un peu</option>
+          <option value="Beaucoup">Beaucoup</option>
+          <option value="secret">C'est secret</option>
+        </select>
+      </div>
+
+    </div>
+
+    <button *ngIf="activeFilterCount > 0" class="reset-btn" (click)="resetFilters()">
+      ✕ Effacer les filtres
+    </button>
   </div>
 
   <div *ngIf="loading" class="loading">Chargement…</div>
 
+  <div *ngIf="!loading && filteredMembres.length === 0" class="empty">
+    Aucun membre trouvé.
+  </div>
+
   <div *ngIf="!loading" class="membres-grid">
-    <div *ngFor="let m of membres" class="membre-card" (click)="goToProfile(m.id)">
+    <div *ngFor="let m of filteredMembres" class="membre-card" (click)="goToProfile(m.id)">
       <div class="avatar-wrap">
         <img *ngIf="m.avatar_url" [src]="m.avatar_url" [alt]="m.username" class="avatar" />
         <div *ngIf="!m.avatar_url" class="avatar-placeholder">{{ getInitial(m.username) }}</div>
-        <span *ngIf="m.role === 'user_premium'" class="badge-premium" title="Membre Premium">⭐</span>
+        <span *ngIf="isPremium(m)" class="badge-premium" title="Membre Premium">⭐</span>
         <span *ngIf="m.role === 'admin'" class="badge-admin" title="Admin">🛡️</span>
       </div>
       <div class="membre-info">
