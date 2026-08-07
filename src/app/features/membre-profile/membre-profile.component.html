@@ -4,34 +4,81 @@
   (filtersChanged)="onFiltersChanged($event)"
 />
 
-<div class="mes-sorties-page">
+<!-- Chargement -->
+<div *ngIf="loading" class="state-center">
+  <div class="spinner"></div>
+</div>
 
-  <div class="page-header">
-    <h1>Mes sorties</h1>
+<!-- Accès refusé -->
+<div *ngIf="!loading && accessDenied" class="locked-page">
+  <span class="lock-icon">🔒</span>
+  <h2>Accès réservé aux membres Premium</h2>
+  <p>Passez Premium pour consulter les profils des autres membres.</p>
+  <a routerLink="/premium" class="btn-premium">⭐ Passer Premium</a>
+  <button class="btn-back-text" (click)="goBack()">Retour</button>
+</div>
+
+<!-- Profil -->
+<div *ngIf="!loading && !accessDenied && profile" class="profile-page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-cover"></div>
+    <button class="btn-back-hero" (click)="goBack()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="hero-body">
+      <div class="avatar-wrap">
+        <img *ngIf="profile.avatar_url" [src]="profile.avatar_url" class="avatar" alt="" />
+        <div *ngIf="!profile.avatar_url" class="avatar-placeholder">{{ getInitial(profile.username) }}</div>
+      </div>
+      <div class="hero-info">
+        <div class="name-row">
+          <span class="username">{{ profile.username }}</span>
+          <span *ngIf="profile.role === 'admin'" class="chip chip-admin">🛡️ Admin</span>
+          <span *ngIf="isPremium()" class="chip chip-premium">⭐ Premium</span>
+        </div>
+        <span *ngIf="profile.city" class="city">📍 {{ profile.city }}</span>
+        <p *ngIf="profile.bio" class="bio">{{ profile.bio }}</p>
+      </div>
+    </div>
   </div>
 
-  <!-- Sous-onglets -->
-  <div class="tabs">
-    <button class="tab" [class.active]="activeTab === 'creees'" (click)="activeTab = 'creees'">
-      Créées <span class="count">{{ tabCount('creees') }}</span>
-    </button>
-    <button class="tab" [class.active]="activeTab === 'rejointes'" (click)="activeTab = 'rejointes'">
-      Rejointes <span class="count">{{ tabCount('rejointes') }}</span>
-    </button>
-    <button class="tab" [class.active]="activeTab === 'attente'" (click)="activeTab = 'attente'">
-      En attente <span class="count">{{ tabCount('attente') }}</span>
-    </button>
-    <button class="tab" [class.active]="activeTab === 'likees'" (click)="activeTab = 'likees'">
-      Likées <span class="count">{{ tabCount('likees') }}</span>
-    </button>
+  <!-- Infos personnelles -->
+  <div *ngIf="profile.gender || profile.relationship || profile.children || profile.smoking || profile.alcohol" class="info-card">
+    <div class="info-grid">
+      <div *ngIf="profile.gender" class="info-item">
+        <span class="info-label">Genre</span>
+        <span class="info-value">{{ profile.gender }}</span>
+      </div>
+      <div *ngIf="profile.relationship" class="info-item">
+        <span class="info-label">Situation</span>
+        <span class="info-value">{{ profile.relationship }}</span>
+      </div>
+      <div *ngIf="profile.children" class="info-item">
+        <span class="info-label">Enfants</span>
+        <span class="info-value">{{ profile.children }}</span>
+      </div>
+      <div *ngIf="profile.smoking" class="info-item">
+        <span class="info-label">Tabac</span>
+        <span class="info-value">{{ profile.smoking }}</span>
+      </div>
+      <div *ngIf="profile.alcohol" class="info-item">
+        <span class="info-label">Alcool</span>
+        <span class="info-value">{{ profile.alcohol }}</span>
+      </div>
+    </div>
   </div>
 
-  <div *ngIf="loading" class="state-message">
-    <div class="spinner"></div>
-    <p>Chargement…</p>
-  </div>
+  <!-- Section sorties -->
+  <div class="sorties-section">
 
-  <ng-container *ngIf="!loading">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button *ngFor="let t of tabs" class="tab" [class.active]="activeTab === t.key" (click)="activeTab = t.key">
+        {{ t.label }} <span class="count">{{ countFor(t.key) }}</span>
+      </button>
+    </div>
 
     <!-- Toolbar -->
     <div *ngIf="currentList.length > 0" class="toolbar">
@@ -53,24 +100,20 @@
     </div>
 
     <!-- État vide -->
-    <div *ngIf="currentList.length === 0" class="state-message empty">
-      <span class="empty-icon">{{ activeTab === 'creees' ? '📋' : activeTab === 'rejointes' ? '🎯' : activeTab === 'attente' ? '⏳' : '❤️' }}</span>
-      <p *ngIf="activeTab === 'creees'">Vous n'avez pas encore créé de sortie.</p>
-      <p *ngIf="activeTab === 'rejointes'">Vous n'avez pas encore rejoint de sortie.</p>
-      <p *ngIf="activeTab === 'attente'">Vous n'êtes en attente sur aucune sortie.</p>
-      <p *ngIf="activeTab === 'likees'">Vous n'avez pas encore liké de sortie.</p>
+    <div *ngIf="currentList.length === 0" class="empty">
+      <span>{{ activeTab === 'organisees' ? '📋' : activeTab === 'rejointes' ? '✅' : activeTab === 'attente' ? '⏳' : '❤️' }}</span>
+      <p>Aucune sortie à afficher.</p>
     </div>
 
     <!-- ══ VUE GRILLE ══ -->
     <div *ngIf="currentList.length > 0 && viewMode === 'grid'" class="sorties-grid">
-      <div *ngFor="let sortie of currentList; let i = index" class="sortie-card" [class.premium]="sortie.is_premium" (click)="openDrawer(sortie)">
+      <div *ngFor="let sortie of currentList" class="sortie-card" [class.premium]="sortie.is_premium">
         <div class="card-image">
           <img *ngIf="sortie.resolvedImageUrl" [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
           <div *ngIf="!sortie.resolvedImageUrl" class="card-image-placeholder"><span>{{ sortie.themes?.icon || '🎯' }}</span></div>
           <span *ngIf="sortie.is_premium" class="badge-premium">⭐ Premium</span>
           <span class="badge-theme">{{ sortie.themes?.icon }} {{ sortie.themes?.name }}</span>
           <span class="badge-prix-grid" [class.gratuit]="sortie.price === 0">{{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}</span>
-          <span *ngIf="activeTab === 'attente'" class="badge-attente">#{{ i + 1 }} en attente</span>
         </div>
         <div class="card-body">
           <h3 class="card-title">{{ sortie.title }}</h3>
@@ -80,23 +123,13 @@
             <div class="meta-item"><span class="meta-icon">📍</span><span>{{ sortie.location }}</span></div>
             <div *ngIf="sortie.max_participants" class="meta-item"><span class="meta-icon">👥</span><span>{{ sortie.inscriptionsCount ?? '?' }} / {{ sortie.max_participants }}</span></div>
           </div>
-          <div class="card-footer">
-            <div class="organizer" *ngIf="sortie.profiles">
-              <img *ngIf="sortie.profiles.avatar_url" [src]="sortie.profiles.avatar_url" class="avatar" alt="" />
-              <div *ngIf="!sortie.profiles.avatar_url" class="avatar-placeholder">{{ sortie.profiles.username.charAt(0).toUpperCase() }}</div>
-              <span>{{ sortie.profiles.username }}</span>
-            </div>
-            <button class="btn-heart" [class.active]="isFavori(sortie.id)" (click)="toggleFavori($event, sortie.id)">
-              <svg width="18" height="18" viewBox="0 0 24 24" [attr.fill]="isFavori(sortie.id) ? '#ef4444' : 'none'" stroke="currentColor" [attr.stroke]="isFavori(sortie.id) ? '#ef4444' : 'currentColor'" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            </button>
-          </div>
         </div>
       </div>
     </div>
 
     <!-- ══ VUE LISTE ══ -->
     <div *ngIf="currentList.length > 0 && viewMode === 'list'" class="sorties-list">
-      <div *ngFor="let sortie of currentList; let i = index" class="list-card" [class.premium]="sortie.is_premium" (click)="openDrawer(sortie)">
+      <div *ngFor="let sortie of currentList" class="list-card" [class.premium]="sortie.is_premium">
         <div class="list-image">
           <img *ngIf="sortie.resolvedImageUrl" [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
           <div *ngIf="!sortie.resolvedImageUrl" class="list-image-placeholder">{{ sortie.themes?.icon || '🎯' }}</div>
@@ -118,31 +151,10 @@
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               {{ sortie.inscriptionsCount ?? '?' }} / {{ sortie.max_participants }}
             </div>
-            <div *ngIf="activeTab === 'attente'" class="list-attente-badge">#{{ i + 1 }} en attente</div>
           </div>
-        </div>
-        <div class="list-actions">
-          <div *ngIf="sortie.profiles">
-            <img *ngIf="sortie.profiles.avatar_url" [src]="sortie.profiles.avatar_url" class="list-avatar" alt="" />
-            <div *ngIf="!sortie.profiles.avatar_url" class="list-avatar-placeholder">{{ sortie.profiles.username.charAt(0).toUpperCase() }}</div>
-          </div>
-          <button class="btn-heart" [class.active]="isFavori(sortie.id)" (click)="toggleFavori($event, sortie.id)">
-            <svg width="20" height="20" viewBox="0 0 24 24" [attr.fill]="isFavori(sortie.id) ? '#ef4444' : 'none'" stroke="currentColor" [attr.stroke]="isFavori(sortie.id) ? '#ef4444' : 'currentColor'" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </button>
         </div>
       </div>
     </div>
 
-  </ng-container>
+  </div>
 </div>
-
-<app-sortie-drawer
-  [sortie]="selectedSortie"
-  [isOpen]="drawerOpen"
-  [currentUserId]="userId"
-  [userRole]="userRole"
-  [inscriptionStatus]="inscriptionStatus"
-  (closed)="closeDrawer()"
-  (supprimerClicked)="onSupprimer($event)"
-  (quitterClicked)="onQuitter($event)"
-/>

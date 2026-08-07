@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { DrawerService } from '../../services/drawer.service';
 import { AuthService } from '../../services/auth.service';
+import { ProfileService } from '../../services/profile.service';
 import { NotificationService } from '../../services/notification.service';
 
 @Component({
@@ -23,18 +24,25 @@ export class NavbarMainComponent implements OnInit {
   ];
 
   unreadCount = 0;
+  isAdmin = false;
 
   constructor(
     public router: Router,
     private drawerService: DrawerService,
     private auth: AuthService,
+    private profileService: ProfileService,
     private notifService: NotificationService
   ) {}
 
   async ngOnInit() {
     const { data: { user } } = await this.auth.getUser();
     if (user) {
-      this.unreadCount = await this.notifService.countUnread(user.id);
+      const [count, profile] = await Promise.all([
+        this.notifService.countUnread(user.id),
+        this.profileService.getMyProfile(user.id)
+      ]);
+      this.unreadCount = count;
+      this.isAdmin = profile.data?.role === 'admin';
     }
   }
 

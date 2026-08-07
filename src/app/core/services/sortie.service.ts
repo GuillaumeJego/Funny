@@ -239,6 +239,24 @@ export class SortieService {
     return (profiles ?? []) as any[];
   }
 
+  // Sorties likées par un utilisateur
+  async getSortiesLikees(userId: string): Promise<SortieWithRelations[]> {
+    const { data: rows } = await this.supabase.client
+      .from('favoris')
+      .select('sortie_id')
+      .eq('user_id', userId);
+    if (!rows || rows.length === 0) return [];
+
+    const ids = rows.map((r: any) => r.sortie_id);
+    const { data } = await this.supabase.client
+      .from('sorties')
+      .select('*, themes (name, icon), profiles (username, avatar_url)')
+      .in('id', ids)
+      .eq('status', 'published')
+      .order('date');
+    return (data ?? []) as SortieWithRelations[];
+  }
+
   // S'inscrire à une sortie
   async inscrire(sortieId: string, userId: string) {
     return await this.supabase.client

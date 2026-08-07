@@ -347,6 +347,15 @@
   gap: 0.5rem;
 }
 
+.membre-clickable {
+  cursor: pointer;
+  border-radius: $border-radius;
+  transition: background 0.15s;
+  padding: 0.2rem 0.4rem;
+  margin: 0 -0.4rem;
+  &:hover { background: $bg-light; }
+}
+
 .membre-item {
   display: flex;
   align-items: center;

@@ -14,4 +14,13 @@
     </div>
     <span class="nav-label">{{ item.label }}</span>
   </div>
+  <div
+    *ngIf="isAdmin"
+    class="nav-item admin-item"
+    [class.active]="isActive('/admin')"
+    (click)="navigate('/admin')"
+  >
+    <span class="nav-icon">🛡️</span>
+    <span class="nav-label">Admin</span>
+  </div>
 </nav>

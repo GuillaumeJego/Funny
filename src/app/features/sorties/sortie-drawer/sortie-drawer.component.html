@@ -155,7 +155,7 @@
               <div class="membres-section-title">✅ Inscrits ({{ membresInscrits.length }})</div>
               <div *ngIf="membresInscrits.length === 0" class="membres-empty">Aucun inscrit pour le moment.</div>
               <div class="membres-list">
-                <div *ngFor="let m of membresInscrits" class="membre-item">
+                <div *ngFor="let m of membresInscrits" class="membre-item membre-clickable" (click)="goToProfile(m.id)">
                   <img *ngIf="m.avatar_url" [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
                   <div *ngIf="!m.avatar_url" class="m-avatar-placeholder">{{ getInitial(m.username) }}</div>
                   <span class="m-name">{{ m.username }}</span>
@@ -169,7 +169,7 @@
               <div class="membres-section-title">⏳ Liste d'attente ({{ membresWaiting.length }})</div>
               <div *ngIf="membresWaiting.length === 0" class="membres-empty">Personne en liste d'attente.</div>
               <div class="membres-list">
-                <div *ngFor="let m of membresWaiting; let i = index" class="membre-item">
+                <div *ngFor="let m of membresWaiting; let i = index" class="membre-item membre-clickable" (click)="goToProfile(m.id)">
                   <span class="m-rank">#{{ i + 1 }}</span>
                   <img *ngIf="m.avatar_url" [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
                   <div *ngIf="!m.avatar_url" class="m-avatar-placeholder">{{ getInitial(m.username) }}</div>
@@ -183,7 +183,7 @@
               <div class="membres-section-title">❤️ Ont liké ({{ membresLikes.length }})</div>
               <div *ngIf="membresLikes.length === 0" class="membres-empty">Personne n'a liké cette sortie.</div>
               <div class="membres-list">
-                <div *ngFor="let m of membresLikes" class="membre-item">
+                <div *ngFor="let m of membresLikes" class="membre-item membre-clickable" (click)="goToProfile(m.id)">
                   <img *ngIf="m.avatar_url" [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
                   <div *ngIf="!m.avatar_url" class="m-avatar-placeholder">{{ getInitial(m.username) }}</div>
                   <span class="m-name">{{ m.username }}</span>

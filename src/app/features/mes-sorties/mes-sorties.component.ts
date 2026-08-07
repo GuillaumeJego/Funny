@@ -6,33 +6,36 @@ import { SortieService } from '../../core/services/sortie.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { InscriptionService, InscriptionStatus } from '../../core/services/inscription.service';
 import { FavoriService } from '../../core/services/favori.service';
+import { NavbarFiltersComponent, Filters, ThemeOption } from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
 
 @Component({
   selector: 'app-mes-sorties',
   standalone: true,
-  imports: [CommonModule, SortieDrawerComponent],
+  imports: [CommonModule, SortieDrawerComponent, NavbarFiltersComponent],
   templateUrl: './mes-sorties.component.html',
   styleUrl: './mes-sorties.component.scss'
 })
 export class MesSortiesComponent implements OnInit {
-  activeTab: 'creees' | 'rejointes' | 'attente' = 'creees';
+  activeTab: 'creees' | 'rejointes' | 'attente' | 'likees' = 'creees';
   viewMode: 'grid' | 'list' = 'list';
   sortiesCreees: SortieWithRelations[] = [];
   sortiesRejointes: SortieWithRelations[] = [];
   sortiesEnAttente: SortieWithRelations[] = [];
+  sortiesLikees: SortieWithRelations[] = [];
   loading = true;
   userId = '';
   userRole = 'user';
+  organizerUsername = '';
+  favorisIds: Set<string> = new Set();
+  currentFilters: Filters = { quickPeriod: 'upcoming' };
+  availableThemes: ThemeOption[] = [];
+  availableLocations: string[] = [];
 
   selectedSortie: SortieWithRelations | null = null;
   drawerOpen = false;
   inscriptionStatus: InscriptionStatus = 'none';
-
-  organizerUsername = '';
-
-  favorisIds: Set<string> = new Set();
 
   constructor(
     private auth: AuthService,
@@ -59,31 +62,76 @@ export class MesSortiesComponent implements OnInit {
 
   async loadAll() {
     this.loading = true;
-    const [creees, rejointes, attente] = await Promise.all([
+    const [creees, rejointes, attente, likees] = await Promise.all([
       this.sortieService.getSortiesCreatedBy(this.userId),
       this.sortieService.getSortiesRejointes(this.userId),
-      this.sortieService.getSortiesEnAttente(this.userId)
+      this.sortieService.getSortiesEnAttente(this.userId),
+      this.sortieService.getSortiesLikees(this.userId),
     ]);
-
-    const all = [
-      ...((creees.data ?? []) as SortieWithRelations[]),
-      ...rejointes,
-      ...attente
-    ];
-    await Promise.all(all.map(async s => {
-      if (s.image_url) {
-        s.resolvedImageUrl = s.image_url;
-      } else if (s.theme_id) {
-        s.resolvedImageUrl = await this.sortieService.getFirstThemeImage(s.theme_id) ?? undefined;
-      }
-      s.inscriptionsCount = await this.sortieService.getInscriptionsCount(s.id);
-    }));
 
     this.sortiesCreees = (creees.data ?? []) as SortieWithRelations[];
     this.sortiesRejointes = rejointes;
     this.sortiesEnAttente = attente;
+    this.sortiesLikees = likees;
+
+    const all = [...this.sortiesCreees, ...this.sortiesRejointes, ...this.sortiesEnAttente, ...this.sortiesLikees];
+    await Promise.all(all.map(async s => {
+      if (s.image_url) s.resolvedImageUrl = s.image_url;
+      else if (s.theme_id) s.resolvedImageUrl = await this.sortieService.getFirstThemeImage(s.theme_id) ?? undefined;
+      s.inscriptionsCount = await this.sortieService.getInscriptionsCount(s.id);
+    }));
+
+    // Thèmes et villes disponibles
+    const themesMap = new Map<string, ThemeOption>();
+    const locationsSet = new Set<string>();
+    for (const s of all) {
+      if (s.theme_id && s.themes) themesMap.set(s.theme_id, { id: s.theme_id, name: s.themes.name, icon: s.themes.icon });
+      if (s.location) locationsSet.add(s.location);
+    }
+    this.availableThemes = [...themesMap.values()];
+    this.availableLocations = [...locationsSet].sort();
 
     this.loading = false;
+  }
+
+  onFiltersChanged(f: Filters) {
+    this.currentFilters = f;
+  }
+
+  private applyFilters(list: SortieWithRelations[]): SortieWithRelations[] {
+    const now = new Date();
+    const f = this.currentFilters;
+    return list.filter(s => {
+      if (f.themeIds?.length && !f.themeIds.includes(s.theme_id ?? '')) return false;
+      if (f.ou && s.location !== f.ou) return false;
+      if (f.quickPeriod === 'past' && new Date(s.date) >= now) return false;
+      if (f.quickPeriod === 'upcoming' && new Date(s.date) < now) return false;
+      if (!f.quickPeriod && (f.dateDebut || f.dateFin)) {
+        const d = new Date(s.date);
+        if (f.dateDebut && d < new Date(f.dateDebut)) return false;
+        if (f.dateFin) { const fin = new Date(f.dateFin); fin.setHours(23,59,59); if (d > fin) return false; }
+      }
+      if (f.prix === 'gratuit' && s.price > 0) return false;
+      if (f.prix === 'payant' && s.price === 0) return false;
+      if (f.premium && !s.is_premium) return false;
+      return true;
+    });
+  }
+
+  get currentList(): SortieWithRelations[] {
+    const base = this.activeTab === 'creees' ? this.sortiesCreees
+      : this.activeTab === 'rejointes' ? this.sortiesRejointes
+      : this.activeTab === 'attente' ? this.sortiesEnAttente
+      : this.sortiesLikees;
+    return this.applyFilters(base);
+  }
+
+  tabCount(tab: 'creees' | 'rejointes' | 'attente' | 'likees'): number {
+    const base = tab === 'creees' ? this.sortiesCreees
+      : tab === 'rejointes' ? this.sortiesRejointes
+      : tab === 'attente' ? this.sortiesEnAttente
+      : this.sortiesLikees;
+    return this.applyFilters(base).length;
   }
 
   async openDrawer(sortie: SortieWithRelations) {
@@ -92,20 +140,9 @@ export class MesSortiesComponent implements OnInit {
     this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(this.userId, sortie.id);
   }
 
-  closeDrawer() {
-    this.drawerOpen = false;
-    this.selectedSortie = null;
-  }
+  closeDrawer() { this.drawerOpen = false; this.selectedSortie = null; }
 
-  get currentList(): SortieWithRelations[] {
-    if (this.activeTab === 'creees') return this.sortiesCreees;
-    if (this.activeTab === 'rejointes') return this.sortiesRejointes;
-    return this.sortiesEnAttente;
-  }
-
-  isFavori(sortieId: string): boolean {
-    return this.favorisIds.has(sortieId);
-  }
+  isFavori(sortieId: string): boolean { return this.favorisIds.has(sortieId); }
 
   async toggleFavori(event: Event, sortieId: string) {
     event.stopPropagation();
@@ -122,19 +159,10 @@ export class MesSortiesComponent implements OnInit {
 
   async onSupprimer(sortieId: string) {
     if (!this.selectedSortie) return;
-    const confirmed = window.confirm(`Supprimer la sortie "${this.selectedSortie.title}" ? Les membres inscrits seront notifiés.`);
+    const confirmed = window.confirm(`Supprimer "${this.selectedSortie.title}" ? Les membres inscrits seront notifiés.`);
     if (!confirmed) return;
-
-    const { error } = await this.sortieService.deleteSortieWithNotifications(
-      sortieId,
-      this.selectedSortie.title,
-      this.organizerUsername
-    );
-
-    if (!error) {
-      this.sortiesCreees = this.sortiesCreees.filter(s => s.id !== sortieId);
-      this.closeDrawer();
-    }
+    const { error } = await this.sortieService.deleteSortieWithNotifications(sortieId, this.selectedSortie.title, this.organizerUsername);
+    if (!error) { this.sortiesCreees = this.sortiesCreees.filter(s => s.id !== sortieId); this.closeDrawer(); }
   }
 
   async onQuitter(sortieId: string) {
@@ -142,20 +170,15 @@ export class MesSortiesComponent implements OnInit {
     const wasWaiting = this.inscriptionStatus === 'waiting';
     const { error } = await this.inscriptionService.quitter(this.userId, sortieId);
     if (!error) {
-      if (wasWaiting) {
-        this.sortiesEnAttente = this.sortiesEnAttente.filter(s => s.id !== sortieId);
-      } else {
-        this.sortiesRejointes = this.sortiesRejointes.filter(s => s.id !== sortieId);
-      }
+      if (wasWaiting) this.sortiesEnAttente = this.sortiesEnAttente.filter(s => s.id !== sortieId);
+      else this.sortiesRejointes = this.sortiesRejointes.filter(s => s.id !== sortieId);
       this.inscriptionStatus = 'none';
       this.closeDrawer();
     }
   }
 
   formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('fr-FR', {
-      day: 'numeric', month: 'short', year: 'numeric'
-    });
+    return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
   formatDateCourte(dateStr: string): string {

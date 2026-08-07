@@ -1,0 +1,219 @@
+@use 'styles' as *;
+
+.admin-page {
+  padding: 1.25rem 1rem 6rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.page-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 1.5rem;
+}
+
+.state-message {
+  display: flex;
+  justify-content: center;
+  padding: 4rem;
+}
+
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid $border-color;
+  border-top-color: $primary;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ─── Section ──────────────────────────────────────────────
+.section {
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-lg;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 0.75rem;
+}
+
+.section-desc {
+  font-size: 0.85rem;
+  color: $text-medium;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+// ─── Toggle switch ────────────────────────────────────────
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.setting-info {
+  flex: 1;
+}
+
+.setting-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: $text-dark;
+  margin-bottom: 0.2rem;
+}
+
+.setting-desc {
+  font-size: 0.82rem;
+  color: $text-light;
+  line-height: 1.5;
+}
+
+.toggle {
+  flex-shrink: 0;
+  width: 48px;
+  height: 26px;
+  border-radius: 999px;
+  border: none;
+  background: $border-color;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  padding: 0;
+
+  &.on { background: $primary; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .toggle-knob {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+  }
+
+  &.on .toggle-knob { transform: translateX(22px); }
+}
+
+// ─── Recherche ────────────────────────────────────────────
+.search-wrap {
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  font-size: 0.9rem;
+  background: $bg-light;
+  color: $text-dark;
+  outline: none;
+  box-sizing: border-box;
+  &:focus { border-color: $primary; background: $bg-white; }
+}
+
+// ─── Table membres ────────────────────────────────────────
+.membres-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.membre-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0.85rem;
+  background: $bg-light;
+  border-radius: $border-radius;
+}
+
+.membre-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.m-avatar-wrap { flex-shrink: 0; }
+
+.m-avatar, .m-avatar-placeholder {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.m-avatar-placeholder {
+  background: $primary;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.m-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text-dark;
+  margin-bottom: 0.15rem;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+
+  &.tag-admin   { background: rgba($primary, 0.12); color: $primary; }
+  &.tag-allowed { background: rgba($success, 0.15); color: darken(#22c55e, 15%); }
+  &.tag-denied  { background: rgba($error,   0.12); color: $error; }
+  &.tag-default { background: $border-color; color: $text-light; }
+}
+
+// ─── Boutons d'action ─────────────────────────────────────
+.membre-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.btn-action {
+  width: 32px; height: 32px;
+  border-radius: $border-radius;
+  border: 1px solid $border-color;
+  background: $bg-white;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  &.allow {
+    color: $success;
+    &:hover, &.active { background: $success; color: #fff; border-color: $success; }
+  }
+
+  &.deny {
+    color: $error;
+    &:hover, &.active { background: $error; color: #fff; border-color: $error; }
+  }
+}
+
+.empty {
+  text-align: center;
+  color: $text-light;
+  font-size: 0.9rem;
+  padding: 1.5rem;
+}

@@ -56,6 +56,11 @@ export class SortieDrawerComponent implements OnChanges {
 
   goToPremium() { this.router.navigate(['/premium']); }
 
+  goToProfile(userId: string) {
+    this.close();
+    this.router.navigate(['/membres', userId]);
+  }
+
   close() { this.closed.emit(); }
 
   onBackdropClick(event: MouseEvent) {

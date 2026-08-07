@@ -1,0 +1,82 @@
+<div class="admin-page">
+  <div class="page-header">
+    <h1>Administration</h1>
+  </div>
+
+  <div *ngIf="loading" class="state-message">
+    <div class="spinner"></div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- ── Paramètres globaux ── -->
+    <section class="section">
+      <h2 class="section-title">Paramètres globaux</h2>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Profils membres — réservé aux Premium</div>
+          <div class="setting-desc">
+            Si activé, seuls les abonnés Premium (et les membres avec accès accordé) peuvent voir les profils.
+          </div>
+        </div>
+        <button
+          class="toggle"
+          [class.on]="profilePagePremiumOnly"
+          (click)="togglePremiumOnly()"
+          [disabled]="saving"
+        >
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ── Gestion des accès individuels ── -->
+    <section class="section">
+      <h2 class="section-title">Accès individuel aux profils</h2>
+      <p class="section-desc">Accordez ou refusez l'accès à un membre spécifique, quelle que soit la règle globale.</p>
+
+      <div class="search-wrap">
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Rechercher un membre…"
+          class="search-input"
+        />
+      </div>
+
+      <div class="membres-table">
+        <div *ngFor="let m of filteredMembres" class="membre-row">
+          <div class="membre-info">
+            <div class="m-avatar-wrap">
+              <img *ngIf="m.avatar_url" [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
+              <div *ngIf="!m.avatar_url" class="m-avatar-placeholder">{{ m.username.charAt(0).toUpperCase() }}</div>
+            </div>
+            <div>
+              <div class="m-name">{{ m.username }}</div>
+              <span class="tag" [class]="getAccessClass(m)">{{ getAccessLabel(m) }}</span>
+            </div>
+          </div>
+
+          <div class="membre-actions" *ngIf="m.role !== 'admin'">
+            <button
+              class="btn-action allow"
+              [class.active]="m.can_view_profiles === true"
+              (click)="setCanViewProfiles(m, m.can_view_profiles === true ? null : true)"
+              title="Accorder l'accès"
+            >✓</button>
+            <button
+              class="btn-action deny"
+              [class.active]="m.can_view_profiles === false"
+              (click)="setCanViewProfiles(m, m.can_view_profiles === false ? null : false)"
+              title="Refuser l'accès"
+            >✗</button>
+          </div>
+        </div>
+
+        <div *ngIf="filteredMembres.length === 0" class="empty">Aucun membre trouvé.</div>
+      </div>
+    </section>
+
+  </ng-container>
+</div>

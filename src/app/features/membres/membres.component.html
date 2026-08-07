@@ -6,7 +6,7 @@
   <div *ngIf="loading" class="loading">Chargement…</div>
 
   <div *ngIf="!loading" class="membres-grid">
-    <div *ngFor="let m of membres" class="membre-card">
+    <div *ngFor="let m of membres" class="membre-card" (click)="goToProfile(m.id)">
       <div class="avatar-wrap">
         <img *ngIf="m.avatar_url" [src]="m.avatar_url" [alt]="m.username" class="avatar" />
         <div *ngIf="!m.avatar_url" class="avatar-placeholder">{{ getInitial(m.username) }}</div>

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { ProfileService } from '../../core/services/profile.service';
 
 interface MembreProfile {
@@ -21,12 +22,16 @@ export class MembresComponent implements OnInit {
   membres: MembreProfile[] = [];
   loading = true;
 
-  constructor(private profileService: ProfileService) {}
+  constructor(private profileService: ProfileService, private router: Router) {}
 
   async ngOnInit() {
     const { data } = await this.profileService.getAllProfiles();
     this.membres = (data ?? []) as MembreProfile[];
     this.loading = false;
+  }
+
+  goToProfile(id: string) {
+    this.router.navigate(['/membres', id]);
   }
 
   getInitial(username: string): string {

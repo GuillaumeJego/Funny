@@ -9,6 +9,8 @@ import { MesSortiesComponent } from './features/mes-sorties/mes-sorties.componen
 import { MembresComponent } from './features/membres/membres.component';
 import { NotificationsComponent } from './features/notifications/notifications.component';
 import { authGuard } from './core/guards/auth.guard';
+import { MembreProfileComponent } from './features/membre-profile/membre-profile.component';
+import { AdminComponent } from './features/admin/admin.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -21,4 +23,6 @@ export const routes: Routes = [
   { path: 'mes-sorties', component: MesSortiesComponent, canActivate: [authGuard] },
   { path: 'membres', component: MembresComponent, canActivate: [authGuard] },
   { path: 'notifications', component: NotificationsComponent, canActivate: [authGuard] },
+  { path: 'membres/:id', component: MembreProfileComponent, canActivate: [authGuard] },
+  { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
 ];
