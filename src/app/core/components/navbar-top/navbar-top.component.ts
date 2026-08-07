@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -53,6 +53,14 @@ export class NavbarTopComponent implements OnInit {
     const remMois = months % 12;
     if (remMois === 0) return `${years} an${years > 1 ? 's' : ''}`;
     return `${years} an${years > 1 ? 's' : ''} ${remMois} mois`;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('app-navbar-top')) {
+      this.menuOpen = false;
+    }
   }
 
   toggleMenu() {
