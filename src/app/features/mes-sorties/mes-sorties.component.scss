@@ -1,9 +1,10 @@
 @use 'styles' as *;
 
 .mes-sorties-page {
-  padding: 1.5rem 1rem 6rem;
-  max-width: 800px;
+  padding: 1rem;
+  max-width: 1200px;
   margin: 0 auto;
+  padding-bottom: 6rem;
 }
 
 .page-header h1 {
@@ -13,18 +14,18 @@
   margin-bottom: 1.25rem;
 }
 
+// ─── Onglets ──────────────────────────────────────────────
 .tabs {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.25rem;
   margin-bottom: 1.25rem;
   border-bottom: 2px solid $border-color;
-  padding-bottom: 0;
 
   .tab {
-    padding: 0.6rem 1.2rem;
+    padding: 0.6rem 1.1rem;
     border: none;
     background: none;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: $text-light;
     cursor: pointer;
@@ -52,96 +53,337 @@
   }
 }
 
-.loading {
-  text-align: center;
-  color: $text-light;
-  padding: 3rem;
+// ─── Toolbar ──────────────────────────────────────────────
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+
+  .results-count {
+    font-size: 0.85rem;
+    color: $text-light;
+  }
+
+  .view-toggle {
+    display: flex;
+    gap: 0.25rem;
+    background: $bg-white;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    padding: 0.2rem;
+
+    .toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: $text-light;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+
+      &:hover { background: $bg-light; color: $text-dark; }
+      &.active { background: $primary; color: #fff; }
+    }
+  }
 }
 
-.empty {
-  text-align: center;
-  padding: 3rem 1rem;
-  color: $text-light;
-
-  .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
-  p { font-size: 0.95rem; }
-}
-
-.sortie-list {
+// ─── États vides / chargement ─────────────────────────────
+.state-message {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 1rem;
+  color: $text-light;
+  text-align: center;
+
+  .empty-icon { font-size: 3rem; }
+  p { font-size: 1rem; line-height: 1.6; }
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid $border-color;
+  border-top-color: $primary;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ─── VUE GRILLE ───────────────────────────────────────────
+.sorties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
 }
 
 .sortie-card {
-  display: flex;
-  gap: 1rem;
   background: $bg-white;
-  border: 1px solid $border-color;
   border-radius: $border-radius-lg;
+  box-shadow: $shadow;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.2s;
+  border: 2px solid transparent;
 
-  &:hover { box-shadow: $shadow; transform: translateY(-1px); }
+  &:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.13); }
 
-  &.premium { border-color: #f5c518; box-shadow: 0 0 0 1px rgba(245, 197, 24, 0.3); }
+  &.premium {
+    border-color: #f5c518;
+    box-shadow: 0 0 0 1px #f5c518, 0 4px 18px rgba(245,197,24,0.25);
+  }
 }
 
 .card-image {
   position: relative;
-  width: 90px;
-  flex-shrink: 0;
+  width: 100%;
+  aspect-ratio: 1;
+  background: $primary-light;
+  overflow: hidden;
 
   img { width: 100%; height: 100%; object-fit: cover; }
 
-  .img-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    background: $bg-light;
+  .card-image-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem;
   }
 
   .badge-premium {
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    background: rgba(245, 197, 24, 0.85);
-    border-radius: 4px;
-    font-size: 0.75rem;
-    padding: 1px 4px;
+    position: absolute; top: 0.5rem; right: 0.5rem;
+    background: linear-gradient(135deg, #f5c518, #e8a800);
+    color: #5a3e00;
+    font-size: 0.68rem; font-weight: 800;
+    padding: 0.2rem 0.6rem; border-radius: 20px;
+  }
+
+  .badge-theme {
+    position: absolute; bottom: 0.5rem; left: 0.5rem;
+    background: rgba(0,0,0,0.55); color: #fff;
+    font-size: 0.72rem; padding: 0.2rem 0.5rem;
+    border-radius: 20px; backdrop-filter: blur(4px);
+  }
+
+  .badge-prix-grid {
+    position: absolute; bottom: 0.5rem; right: 0.5rem;
+    background: $primary; color: #fff;
+    font-size: 0.72rem; font-weight: 700;
+    padding: 0.2rem 0.55rem; border-radius: 20px;
+    &.gratuit { background: $success; }
+  }
+
+  .badge-attente {
+    position: absolute; top: 0.5rem; left: 0.5rem;
+    background: rgba($warning, 0.9); color: #fff;
+    font-size: 0.68rem; font-weight: 700;
+    padding: 0.2rem 0.55rem; border-radius: 20px;
   }
 }
 
 .card-body {
-  flex: 1;
-  padding: 0.75rem 0.75rem 0.75rem 0;
-  min-width: 0;
-}
-
-.card-theme {
-  font-size: 0.75rem;
-  color: $text-light;
-  margin-bottom: 0.2rem;
+  padding: 1rem; flex: 1;
+  display: flex; flex-direction: column; gap: 0.5rem;
 }
 
 .card-title {
-  font-size: 1rem;
+  font-size: 1rem; font-weight: 700;
+  color: $text-dark; line-height: 1.3;
+}
+
+.card-desc {
+  font-size: 0.85rem; color: $text-medium; line-height: 1.4;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.card-meta {
+  display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.25rem;
+
+  .meta-item {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.82rem; color: $text-medium;
+    .meta-icon { font-size: 0.9rem; flex-shrink: 0; }
+  }
+}
+
+.card-footer {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-top: auto; padding-top: 0.75rem;
+  border-top: 1px solid $border-color;
+
+  .organizer {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.82rem; color: $text-medium;
+    span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  }
+
+  .avatar, .avatar-placeholder {
+    width: 28px; height: 28px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0;
+  }
+
+  .avatar-placeholder {
+    background: $primary-light; color: $primary;
+    font-weight: 700; font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+}
+
+// ─── VUE LISTE ────────────────────────────────────────────
+.sorties-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.list-card {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 0.85rem;
+  background: $bg-white;
+  border-radius: $border-radius-lg;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 0.65rem;
+  transition: box-shadow 0.2s;
+  border: 2px solid transparent;
+
+  &:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+
+  &.premium {
+    border-color: #f5c518;
+    box-shadow: 0 0 0 1px #f5c518, 0 2px 10px rgba(245,197,24,0.2);
+  }
+}
+
+.list-image {
+  position: relative;
+  width: 90px;
+  min-width: 90px;
+  aspect-ratio: 1;
+  border-radius: $border-radius;
+  overflow: hidden;
+  background: $primary-light;
+  flex-shrink: 0;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+
+  .list-image-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+  }
+
+  .badge-prix {
+    position: absolute; top: 0.3rem; left: 0.3rem;
+    border-radius: 20px; padding: 0.15rem 0.45rem;
+    font-size: 0.65rem; font-weight: 700;
+    background: $primary; color: #fff;
+    &.gratuit { background: $success; }
+  }
+
+  .badge-premium-list {
+    position: absolute; top: 0.3rem; right: 0.3rem;
+    background: rgba(245, 197, 24, 0.45);
+    backdrop-filter: blur(4px);
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+  }
+}
+
+.list-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.list-title {
+  font-size: 0.95rem;
   font-weight: 700;
-  color: $text-dark;
-  margin-bottom: 0.4rem;
+  color: $primary;
+  line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.card-meta {
+.list-time {
+  display: flex; align-items: center; gap: 0.35rem;
+  font-size: 0.8rem; color: $text-medium;
+  svg { flex-shrink: 0; color: $text-light; }
+}
+
+.list-bottom {
+  display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+}
+
+.list-location, .list-participants {
+  display: flex; align-items: center; gap: 0.3rem;
+  font-size: 0.78rem; color: $text-medium;
+  svg { flex-shrink: 0; color: $text-light; }
+}
+
+.list-location {
+  overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; max-width: 160px;
+}
+
+.list-attente-badge {
+  font-size: 0.72rem; font-weight: 700;
+  color: darken(#f5c518, 25%);
+  background: rgba($warning, 0.15);
+  border-radius: 20px;
+  padding: 0.1rem 0.5rem;
+}
+
+.list-actions {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
-  font-size: 0.8rem;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.list-avatar, .list-avatar-placeholder {
+  width: 36px; height: 36px;
+  border-radius: 50%; object-fit: cover;
+}
+
+.list-avatar-placeholder {
+  background: $primary-light; color: $primary;
+  font-weight: 700; font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.btn-heart {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem;
   color: $text-light;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s, transform 0.15s;
+  &:hover, &.active { color: #ef4444; transform: scale(1.15); }
+}
+
+// ─── Responsive ───────────────────────────────────────────
+@media (min-width: 768px) {
+  .list-image { width: 130px; min-width: 130px; }
+  .list-title { font-size: 1rem; }
+  .list-time, .list-location, .list-participants { font-size: 0.83rem; }
+  .list-location { max-width: 240px; }
 }

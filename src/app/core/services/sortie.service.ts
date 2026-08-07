@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { Sortie } from '../models/sortie.model';
+import { Sortie, SortieWithRelations } from '../models/sortie.model';
 import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
@@ -131,14 +131,45 @@ export class SortieService {
       .order('date');
   }
 
-  // Sorties auxquelles un utilisateur est inscrit (exclut cancelled et confirmed=organisateur)
-  async getSortiesRejointes(userId: string) {
-    return await this.supabase.client
+  // Sorties auxquelles un utilisateur est inscrit (status pending uniquement)
+  async getSortiesRejointes(userId: string): Promise<SortieWithRelations[]> {
+    const { data: rows } = await this.supabase.client
       .from('inscriptions')
-      .select(`sortie_id, sorties (*, themes (name, icon), profiles (username, avatar_url))`)
+      .select('sortie_id')
       .eq('user_id', userId)
-      .neq('status', 'cancelled')
-      .neq('status', 'confirmed');
+      .eq('status', 'pending');
+    if (!rows || rows.length === 0) return [];
+
+    const ids = rows.map((r: any) => r.sortie_id);
+    const { data } = await this.supabase.client
+      .from('sorties')
+      .select('*, themes (name, icon), profiles (username, avatar_url)')
+      .in('id', ids)
+      .eq('status', 'published')
+      .order('date');
+    return (data ?? []) as SortieWithRelations[];
+  }
+
+  // Sorties en liste d'attente pour un utilisateur (ordonnées par position)
+  async getSortiesEnAttente(userId: string): Promise<SortieWithRelations[]> {
+    const { data: rows } = await this.supabase.client
+      .from('inscriptions')
+      .select('sortie_id')
+      .eq('user_id', userId)
+      .eq('status', 'waiting')
+      .order('created_at', { ascending: true });
+    if (!rows || rows.length === 0) return [];
+
+    const ids = rows.map((r: any) => r.sortie_id);
+    const { data } = await this.supabase.client
+      .from('sorties')
+      .select('*, themes (name, icon), profiles (username, avatar_url)')
+      .in('id', ids)
+      .eq('status', 'published');
+    // Respecter l'ordre d'inscription
+    return ids
+      .map((id: string) => (data ?? []).find((s: any) => s.id === id))
+      .filter(Boolean) as SortieWithRelations[];
   }
 
   // Membres inscrits à une sortie (pending = membres, confirmed = organisateur)
