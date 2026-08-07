@@ -159,6 +159,7 @@
   [isFavori]="selectedSortie ? isFavori(selectedSortie.id) : false"
   [inscriptionStatus]="inscriptionStatus"
   [currentUserId]="userId"
+  [userIsPremium]="userIsPremium"
   (closed)="closeDrawer()"
   (favoriToggled)="onFavoriFromDrawer($event)"
   (rejoindreClicked)="onRejoindre($event)"

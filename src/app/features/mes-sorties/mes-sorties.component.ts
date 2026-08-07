@@ -27,6 +27,7 @@ export class MesSortiesComponent implements OnInit {
   loading = true;
   userId = '';
   userRole = 'user';
+  userIsPremium = false;
   organizerUsername = '';
   favorisIds: Set<string> = new Set();
   currentFilters: Filters = { quickPeriod: 'upcoming' };
@@ -56,6 +57,8 @@ export class MesSortiesComponent implements OnInit {
     ]);
     this.organizerUsername = profileRes.data?.username ?? 'L\'organisateur';
     this.userRole = profileRes.data?.role ?? 'user';
+    this.userIsPremium = ['admin', 'developer', 'user_premium'].includes(profileRes.data?.role || '')
+      || (!!profileRes.data?.subscription_end_date && new Date(profileRes.data.subscription_end_date) > new Date());
     this.favorisIds = new Set(favoris);
     await this.loadAll();
   }

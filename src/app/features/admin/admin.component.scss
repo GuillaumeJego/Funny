@@ -131,12 +131,17 @@
 
 .membre-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.65rem 0.85rem;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.85rem;
   background: $bg-light;
   border-radius: $border-radius;
+
+  @media (min-width: 520px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
 .membre-info {
@@ -144,6 +149,7 @@
   align-items: center;
   gap: 0.75rem;
   min-width: 0;
+  flex: 1;
 }
 
 .m-avatar-wrap { flex-shrink: 0; }
@@ -176,17 +182,47 @@
   padding: 0.1rem 0.5rem;
   border-radius: 999px;
 
-  &.tag-admin   { background: rgba($primary, 0.12); color: $primary; }
-  &.tag-allowed { background: rgba($success, 0.15); color: darken(#22c55e, 15%); }
-  &.tag-denied  { background: rgba($error,   0.12); color: $error; }
-  &.tag-default { background: $border-color; color: $text-light; }
+  &.tag-admin     { background: rgba($primary, 0.12); color: $primary; }
+  &.tag-developer { background: rgba(#8b5cf6, 0.12); color: #7c3aed; }
+  &.tag-allowed   { background: rgba($success, 0.15); color: darken(#22c55e, 15%); }
+  &.tag-denied    { background: rgba($error,   0.12); color: $error; }
+  &.tag-default   { background: $border-color; color: $text-light; }
+}
+
+// ─── Sélecteur de rôle ────────────────────────────────────
+.role-select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  background: $bg-white;
+  font-size: 0.82rem;
+  color: $text-dark;
+  cursor: pointer;
+  outline: none;
+  &:focus { border-color: $primary; }
 }
 
 // ─── Boutons d'action ─────────────────────────────────────
 .membre-actions {
   display: flex;
+  align-items: center;
   gap: 0.4rem;
   flex-shrink: 0;
+}
+
+.btn-premium-toggle {
+  width: 32px; height: 32px;
+  border-radius: $border-radius;
+  border: 1px solid $border-color;
+  background: $bg-white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+  opacity: 0.4;
+
+  &:hover { opacity: 0.7; }
+  &.active { background: rgba(#f5c518, 0.2); border-color: #f5c518; opacity: 1; }
 }
 
 .btn-action {

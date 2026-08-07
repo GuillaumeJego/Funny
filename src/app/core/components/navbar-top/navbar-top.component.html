@@ -1,10 +1,17 @@
 <nav class="navbar-top">
 
   <!-- Menu burger -->
-  <div class="menu-btn" (click)="toggleMenu()">
-    <span></span>
-    <span></span>
-    <span></span>
+  <div class="menu-wrap">
+    <div class="menu-btn" (click)="toggleMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <!-- Menu déroulant ancré sous le burger -->
+    <div class="dropdown-menu" *ngIf="menuOpen">
+      <div class="menu-item" (click)="logout()">🚪 Déconnexion</div>
+    </div>
   </div>
 
   <!-- Logo / Nom de l'app -->
@@ -39,11 +46,8 @@
     </div>
   </div>
 
-  <!-- Menu déroulant -->
-  <div class="dropdown-menu" *ngIf="menuOpen">
-    <div class="menu-item" (click)="logout()">
-      🚪 Déconnexion
-    </div>
-  </div>
 
 </nav>
+
+<!-- Overlay invisible pour fermer en cliquant dehors -->
+<div *ngIf="menuOpen" class="menu-overlay" (click)="menuOpen = false"></div>

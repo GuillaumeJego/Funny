@@ -54,23 +54,42 @@
             </div>
             <div>
               <div class="m-name">{{ m.username }}</div>
-              <span class="tag" [class]="getAccessClass(m)">{{ getAccessLabel(m) }}</span>
+              <span class="tag" [class]="getRoleClass(m)">{{ getRoleLabel(m) }}</span>
             </div>
           </div>
 
-          <div class="membre-actions" *ngIf="m.role !== 'admin'">
+          <div class="membre-actions">
+            <!-- Sélecteur de rôle -->
+            <select class="role-select" [value]="m.role || 'user'" (change)="setRole(m, $any($event.target).value)">
+              <option value="user">👤 Membre</option>
+              <option value="developer">🛠️ Développeur</option>
+              <option value="admin">🛡️ Admin</option>
+            </select>
+
+            <!-- Premium manuel -->
             <button
-              class="btn-action allow"
-              [class.active]="m.can_view_profiles === true"
-              (click)="setCanViewProfiles(m, m.can_view_profiles === true ? null : true)"
-              title="Accorder l'accès"
-            >✓</button>
-            <button
-              class="btn-action deny"
-              [class.active]="m.can_view_profiles === false"
-              (click)="setCanViewProfiles(m, m.can_view_profiles === false ? null : false)"
-              title="Refuser l'accès"
-            >✗</button>
+              class="btn-premium-toggle"
+              [class.active]="isPremium(m)"
+              (click)="togglePremium(m)"
+              [title]="isPremium(m) ? 'Révoquer le Premium' : 'Accorder le Premium'"
+            >⭐</button>
+
+            <!-- Accès profils (inutile pour admin/dev qui ont toujours accès) -->
+            <ng-container *ngIf="m.role !== 'admin' && m.role !== 'developer'">
+              <span class="tag" [class]="getAccessClass(m)" title="Accès aux profils">{{ getAccessLabel(m) }}</span>
+              <button
+                class="btn-action allow"
+                [class.active]="m.can_view_profiles === true"
+                (click)="setCanViewProfiles(m, m.can_view_profiles === true ? null : true)"
+                title="Accorder l'accès aux profils"
+              >✓</button>
+              <button
+                class="btn-action deny"
+                [class.active]="m.can_view_profiles === false"
+                (click)="setCanViewProfiles(m, m.can_view_profiles === false ? null : false)"
+                title="Refuser l'accès aux profils"
+              >✗</button>
+            </ng-container>
           </div>
         </div>
 

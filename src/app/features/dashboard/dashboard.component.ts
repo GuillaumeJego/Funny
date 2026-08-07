@@ -36,6 +36,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   favorisIds: Set<string> = new Set();
   userId = '';
   userRole = 'user';
+  userIsPremium = false;
   selectedSortie: SortieWithRelations | null = null;
   drawerOpen = false;
   inscriptionStatus: InscriptionStatus = 'none';
@@ -74,6 +75,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.favorisIds = new Set(favoris);
       if (profile.data?.view_mode) this.viewMode = profile.data.view_mode;
       if (profile.data?.role) this.userRole = profile.data.role;
+      this.userIsPremium = ['admin', 'developer', 'user_premium'].includes(profile.data?.role || '')
+        || (!!profile.data?.subscription_end_date && new Date(profile.data.subscription_end_date) > new Date());
     }
 
     const { data, error } = await this.sortieService.getAllSorties();

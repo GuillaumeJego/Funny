@@ -29,10 +29,11 @@ export class NavbarTopComponent implements OnInit {
       const { data } = await this.profileService.getMyProfile(user.id);
       if (data) {
         this.avatarUrl = data.avatar_url;
-        this.isPremium = ['user_premium', 'admin', 'developer'].includes(data.role || '');
         if (data.subscription_end_date) {
           this.subscriptionEndDate = new Date(data.subscription_end_date);
         }
+        this.isPremium = ['user_premium', 'admin', 'developer'].includes(data.role || '')
+          || (!!this.subscriptionEndDate && this.subscriptionEndDate > new Date());
       }
     }
   }

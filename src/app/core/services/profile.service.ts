@@ -29,7 +29,7 @@ export class ProfileService {
   async getAllProfiles() {
     return await this.supabase.client
       .from('profiles')
-      .select('id, username, avatar_url, bio, role')
+      .select('id, username, avatar_url, bio, role, can_view_profiles, subscription_end_date')
       .order('username');
   }
 

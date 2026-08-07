@@ -33,7 +33,7 @@ export class AdminComponent implements OnInit {
     if (!user) { this.router.navigate(['/login']); return; }
 
     const { data: profile } = await this.profileService.getMyProfile(user.id);
-    if (profile?.role !== 'admin') { this.router.navigate(['/dashboard']); return; }
+    if (profile?.role !== 'admin' && profile?.role !== 'developer') { this.router.navigate(['/dashboard']); return; }
 
     const [setting, membres] = await Promise.all([
       this.settingsService.get('profile_page_premium_only'),
@@ -57,21 +57,49 @@ export class AdminComponent implements OnInit {
     membre.can_view_profiles = value;
   }
 
+  async setRole(membre: Profile, role: string) {
+    await this.profileService.updateProfile(membre.id, { role });
+    membre.role = role;
+  }
+
+  isPremium(m: Profile): boolean {
+    if (!m.subscription_end_date) return false;
+    return new Date(m.subscription_end_date) > new Date();
+  }
+
+  async togglePremium(m: Profile) {
+    const newDate = this.isPremium(m) ? null : '2099-12-31T23:59:59Z';
+    await this.profileService.updateProfile(m.id, { subscription_end_date: newDate ?? undefined });
+    m.subscription_end_date = newDate ?? undefined;
+  }
+
   get filteredMembres(): Profile[] {
     if (!this.searchQuery.trim()) return this.membres;
     const q = this.searchQuery.toLowerCase();
     return this.membres.filter(m => m.username.toLowerCase().includes(q));
   }
 
+  getRoleLabel(m: Profile): string {
+    if (m.role === 'admin') return '🛡️ Admin';
+    if (m.role === 'developer') return '🛠️ Développeur';
+    return '👤 Membre';
+  }
+
+  getRoleClass(m: Profile): string {
+    if (m.role === 'admin') return 'tag-admin';
+    if (m.role === 'developer') return 'tag-developer';
+    return 'tag-default';
+  }
+
   getAccessLabel(m: Profile): string {
-    if (m.role === 'admin') return 'Admin';
-    if (m.can_view_profiles === true) return 'Accès accordé';
-    if (m.can_view_profiles === false) return 'Accès refusé';
-    return 'Règle globale';
+    if (m.role === 'admin' || m.role === 'developer') return '—';
+    if (m.can_view_profiles === true) return 'Accordé';
+    if (m.can_view_profiles === false) return 'Refusé';
+    return 'Globale';
   }
 
   getAccessClass(m: Profile): string {
-    if (m.role === 'admin') return 'tag-admin';
+    if (m.role === 'admin' || m.role === 'developer') return 'tag-admin';
     if (m.can_view_profiles === true) return 'tag-allowed';
     if (m.can_view_profiles === false) return 'tag-denied';
     return 'tag-default';

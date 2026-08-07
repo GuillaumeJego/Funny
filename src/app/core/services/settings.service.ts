@@ -26,7 +26,7 @@ export class SettingsService {
 
   // Vérifie si le viewer peut voir les profils
   async canViewProfiles(viewerProfile: Profile): Promise<boolean> {
-    if (viewerProfile.role === 'admin') return true;
+    if (viewerProfile.role === 'admin' || viewerProfile.role === 'developer') return true;
     if (viewerProfile.can_view_profiles === true) return true;
     if (viewerProfile.can_view_profiles === false) return false;
 

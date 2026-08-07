@@ -102,10 +102,14 @@
     }
   }
 
+  .menu-wrap {
+    position: relative;
+  }
+
   .dropdown-menu {
     position: absolute;
-    top: 56px;
-    right: 1rem;
+    top: calc(100% + 0.5rem);
+    left: 0;
     background-color: $bg-white;
     border: 1px solid $border-color;
     border-radius: $border-radius;
@@ -118,6 +122,7 @@
       cursor: pointer;
       color: $text-dark;
       font-size: 0.95rem;
+      white-space: nowrap;
 
       &:hover {
         background-color: $bg-light;
@@ -130,4 +135,10 @@
   @media (min-width: 769px) {
     left: 240px;
   }
+}
+
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
 }

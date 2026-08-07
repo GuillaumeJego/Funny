@@ -26,6 +26,7 @@ export class SortieDrawerComponent implements OnChanges {
   @Input() isFavori = false;
   @Input() inscriptionStatus: InscriptionStatus = 'none';
   @Input() currentUserId = '';
+  @Input() userIsPremium = false;
   @Output() closed = new EventEmitter<void>();
   @Output() favoriToggled = new EventEmitter<string>();
   @Output() rejoindreClicked = new EventEmitter<string>();
@@ -47,6 +48,7 @@ export class SortieDrawerComponent implements OnChanges {
 
   get isPremiumLocked(): boolean {
     if (!this.sortie?.is_premium) return false;
+    if (this.userIsPremium) return false;
     return !['admin', 'developer', 'user_premium'].includes(this.userRole);
   }
 
