@@ -6,6 +6,8 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { GeoService, GeoFullPlace } from '../../../core/services/geo.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ProfileService } from '../../../core/services/profile.service';
+import { SettingsService } from '../../../core/services/settings.service';
 import { SortieService } from '../../../core/services/sortie.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
@@ -57,19 +59,29 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   private locationSearch$ = new Subject<string>();
   private locationSub!: Subscription;
 
+  accessDenied = false;
+
   constructor(
     private authService: AuthService,
     private sortieService: SortieService,
     private themeService: ThemeService,
     private supabase: SupabaseService,
-    private router: Router,
-    private geo: GeoService
+    public router: Router,
+    private geo: GeoService,
+    private profileService: ProfileService,
+    private settingsService: SettingsService
   ) {}
 
   async ngOnInit() {
     const { data: { user } } = await this.authService.getUser();
     if (!user) { this.router.navigate(['/login']); return; }
     this.userId = user.id;
+
+    const { data: profile } = await this.profileService.getMyProfile(user.id);
+    if (profile) {
+      const canCreate = await this.settingsService.canCreateSortie(profile);
+      if (!canCreate) { this.accessDenied = true; return; }
+    }
 
     const { data: themes } = await this.themeService.getAllThemes();
     if (themes) this.themes = themes;

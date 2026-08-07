@@ -31,6 +31,36 @@
       </div>
     </section>
 
+    <!-- ── Création de sorties ── -->
+    <section class="section">
+      <h2 class="section-title">Création de sorties</h2>
+      <p class="section-desc">Qui peut créer une sortie ?</p>
+
+      <div class="radio-group">
+        <label class="radio-option" [class.active]="sortieCreationAccess === 'all'" (click)="setSortieCreationAccess('all')">
+          <span class="radio-dot" [class.checked]="sortieCreationAccess === 'all'"></span>
+          <div>
+            <div class="radio-label">🌍 Tout le monde</div>
+            <div class="radio-desc">Tout utilisateur connecté peut créer une sortie</div>
+          </div>
+        </label>
+        <label class="radio-option" [class.active]="sortieCreationAccess === 'premium'" (click)="setSortieCreationAccess('premium')">
+          <span class="radio-dot" [class.checked]="sortieCreationAccess === 'premium'"></span>
+          <div>
+            <div class="radio-label">⭐ Abonnés uniquement</div>
+            <div class="radio-desc">Seuls les abonnés Premium (et admins) peuvent créer</div>
+          </div>
+        </label>
+        <label class="radio-option" [class.active]="sortieCreationAccess === 'admin'" (click)="setSortieCreationAccess('admin')">
+          <span class="radio-dot" [class.checked]="sortieCreationAccess === 'admin'"></span>
+          <div>
+            <div class="radio-label">🛡️ Admins uniquement</div>
+            <div class="radio-desc">Seuls les admins peuvent créer</div>
+          </div>
+        </label>
+      </div>
+    </section>
+
     <!-- ── Gestion des accès individuels ── -->
     <section class="section">
       <h2 class="section-title">Accès individuel aux profils</h2>

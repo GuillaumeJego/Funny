@@ -1,5 +1,54 @@
 @use 'styles' as *;
 
+.access-denied-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: $bg-light;
+}
+
+.access-denied-card {
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-lg;
+  padding: 2.5rem 2rem;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+
+  .access-denied-icon { font-size: 3rem; margin-bottom: 1rem; }
+  h2 { font-size: 1.3rem; font-weight: 700; color: $text-dark; margin-bottom: 0.5rem; }
+  p { font-size: 0.9rem; color: $text-medium; margin-bottom: 1.5rem; }
+
+  .btn-premium {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba($warning, 0.15);
+    color: $warning;
+    border: 1px solid rgba($warning, 0.4);
+    border-radius: $border-radius;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 0.75rem;
+    &:hover { background: rgba($warning, 0.25); }
+  }
+
+  .btn-back-home {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    background: $bg-light;
+    color: $text-medium;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    cursor: pointer;
+    &:hover { background: $border-color; }
+  }
+}
+
 .create-sortie-container {
   display: flex;
   justify-content: center;

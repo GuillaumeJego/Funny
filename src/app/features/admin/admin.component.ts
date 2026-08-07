@@ -18,6 +18,7 @@ export class AdminComponent implements OnInit {
   loading = true;
   saving = false;
   profilePagePremiumOnly = false;
+  sortieCreationAccess: 'all' | 'premium' | 'admin' = 'all';
   membres: Profile[] = [];
   searchQuery = '';
 
@@ -35,14 +36,21 @@ export class AdminComponent implements OnInit {
     const { data: profile } = await this.profileService.getMyProfile(user.id);
     if (profile?.role !== 'admin' && profile?.role !== 'developer') { this.router.navigate(['/dashboard']); return; }
 
-    const [setting, membres] = await Promise.all([
+    const [setting, creationSetting, membres] = await Promise.all([
       this.settingsService.get('profile_page_premium_only'),
+      this.settingsService.get('sortie_creation_access'),
       this.profileService.getAllProfiles()
     ]);
 
     this.profilePagePremiumOnly = setting === true;
+    this.sortieCreationAccess = creationSetting ?? 'all';
     this.membres = (membres.data ?? []) as Profile[];
     this.loading = false;
+  }
+
+  async setSortieCreationAccess(value: 'all' | 'premium' | 'admin') {
+    this.sortieCreationAccess = value;
+    await this.settingsService.set('sortie_creation_access', value);
   }
 
   async togglePremiumOnly() {

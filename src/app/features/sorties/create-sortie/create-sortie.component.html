@@ -1,4 +1,14 @@
-<div class="create-sortie-container">
+<div *ngIf="accessDenied" class="access-denied-wrap">
+  <div class="access-denied-card">
+    <div class="access-denied-icon">🔒</div>
+    <h2>Accès restreint</h2>
+    <p>La création de sorties est réservée aux abonnés Premium.</p>
+    <button class="btn-premium" (click)="router.navigate(['/premium'])">⭐ Passer Premium</button>
+    <button class="btn-back-home" (click)="router.navigate(['/dashboard'])">← Retour</button>
+  </div>
+</div>
+
+<div *ngIf="!accessDenied" class="create-sortie-container">
   <div class="create-sortie-card">
 
     <!-- Header -->

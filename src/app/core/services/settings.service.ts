@@ -24,6 +24,19 @@ export class SettingsService {
     return { error };
   }
 
+  async canCreateSortie(profile: Profile): Promise<boolean> {
+    if (profile.role === 'admin' || profile.role === 'developer') return true;
+    const setting = await this.get('sortie_creation_access') ?? 'all';
+    if (setting === 'all') return true;
+    if (setting === 'admin') return false;
+    // premium
+    if (['user_premium'].includes(profile.role || '')) return true;
+    if (profile.subscription_end_date) {
+      return new Date(profile.subscription_end_date) > new Date();
+    }
+    return false;
+  }
+
   // Vérifie si le viewer peut voir les profils
   async canViewProfiles(viewerProfile: Profile): Promise<boolean> {
     if (viewerProfile.role === 'admin' || viewerProfile.role === 'developer') return true;
