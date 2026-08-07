@@ -42,7 +42,7 @@ export class NavbarMainComponent implements OnInit {
         this.profileService.getMyProfile(user.id)
       ]);
       this.unreadCount = count;
-      this.isAdmin = profile.data?.role === 'admin';
+      this.isAdmin = profile.data?.role === 'admin' || profile.data?.role === 'developer';
     }
   }
 
