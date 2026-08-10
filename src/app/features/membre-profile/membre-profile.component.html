@@ -29,7 +29,7 @@
     </button>
     <div class="hero-body">
       <div class="avatar-wrap">
-        <img *ngIf="profile.avatar_url" [src]="profile.avatar_url" class="avatar" alt="" />
+        <img *ngIf="profile.avatar_url" [src]="profile.avatar_url" class="avatar" alt="" (click)="lightboxOpen = true" style="cursor:zoom-in" />
         <div *ngIf="!profile.avatar_url" class="avatar-placeholder">{{ getInitial(profile.username) }}</div>
       </div>
       <div class="hero-info">
@@ -157,6 +157,12 @@
     </div>
 
   </div>
+</div>
+
+<!-- Lightbox avatar -->
+<div *ngIf="lightboxOpen && profile?.avatar_url" class="lightbox-overlay" (click)="lightboxOpen = false">
+  <button class="lightbox-close" (click)="lightboxOpen = false">✕</button>
+  <img [src]="profile!.avatar_url" class="lightbox-img" (click)="$event.stopPropagation()" />
 </div>
 
 <app-sortie-drawer

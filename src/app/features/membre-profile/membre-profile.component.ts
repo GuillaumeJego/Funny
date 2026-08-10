@@ -38,6 +38,7 @@ export class MembreProfileComponent implements OnInit {
   sortiesAttente: SortieWithRelations[] = [];
   sortiesLikees: SortieWithRelations[] = [];
 
+  lightboxOpen = false;
   selectedSortie: SortieWithRelations | null = null;
   drawerOpen = false;
   viewerUserId = '';
