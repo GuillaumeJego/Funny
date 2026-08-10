@@ -107,7 +107,7 @@
 
     <!-- ══ VUE GRILLE ══ -->
     <div *ngIf="currentList.length > 0 && viewMode === 'grid'" class="sorties-grid">
-      <div *ngFor="let sortie of currentList" class="sortie-card" [class.premium]="sortie.is_premium">
+      <div *ngFor="let sortie of currentList" class="sortie-card" [class.premium]="sortie.is_premium" (click)="openDrawer(sortie)" style="cursor:pointer">
         <div class="card-image">
           <img *ngIf="sortie.resolvedImageUrl" [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
           <div *ngIf="!sortie.resolvedImageUrl" class="card-image-placeholder"><span>{{ sortie.themes?.icon || '🎯' }}</span></div>
@@ -129,7 +129,7 @@
 
     <!-- ══ VUE LISTE ══ -->
     <div *ngIf="currentList.length > 0 && viewMode === 'list'" class="sorties-list">
-      <div *ngFor="let sortie of currentList" class="list-card" [class.premium]="sortie.is_premium">
+      <div *ngFor="let sortie of currentList" class="list-card" [class.premium]="sortie.is_premium" (click)="openDrawer(sortie)" style="cursor:pointer">
         <div class="list-image">
           <img *ngIf="sortie.resolvedImageUrl" [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
           <div *ngIf="!sortie.resolvedImageUrl" class="list-image-placeholder">{{ sortie.themes?.icon || '🎯' }}</div>
@@ -158,3 +158,18 @@
 
   </div>
 </div>
+
+<app-sortie-drawer
+  [sortie]="selectedSortie"
+  [isOpen]="drawerOpen"
+  [userRole]="viewerRole"
+  [isFavori]="selectedSortie ? isFavori(selectedSortie.id) : false"
+  [inscriptionStatus]="inscriptionStatus"
+  [currentUserId]="viewerUserId"
+  [userIsPremium]="viewerIsPremium"
+  (closed)="closeDrawer()"
+  (favoriToggled)="onFavoriFromDrawer($event)"
+  (rejoindreClicked)="onRejoindre($event)"
+  (quitterClicked)="onQuitter($event)"
+  (supprimerClicked)="closeDrawer()"
+/>

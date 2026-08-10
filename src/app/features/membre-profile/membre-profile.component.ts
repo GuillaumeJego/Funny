@@ -6,15 +6,18 @@ import { ProfileService } from '../../core/services/profile.service';
 import { SortieService } from '../../core/services/sortie.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { NavbarFiltersComponent, Filters, ThemeOption } from '../../core/components/navbar-filters/navbar-filters.component';
+import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
 import { Profile } from '../../core/models/profile.model';
 import { SortieWithRelations } from '../../core/models/sortie.model';
+import { InscriptionService, InscriptionStatus } from '../../core/services/inscription.service';
+import { FavoriService } from '../../core/services/favori.service';
 
 type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees';
 
 @Component({
   selector: 'app-membre-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarFiltersComponent],
+  imports: [CommonModule, RouterModule, NavbarFiltersComponent, SortieDrawerComponent],
   templateUrl: './membre-profile.component.html',
   styleUrl: './membre-profile.component.scss'
 })
@@ -35,6 +38,14 @@ export class MembreProfileComponent implements OnInit {
   sortiesAttente: SortieWithRelations[] = [];
   sortiesLikees: SortieWithRelations[] = [];
 
+  selectedSortie: SortieWithRelations | null = null;
+  drawerOpen = false;
+  viewerUserId = '';
+  viewerRole = 'user';
+  viewerIsPremium = false;
+  viewerFavoris: Set<string> = new Set();
+  inscriptionStatus: InscriptionStatus = 'none';
+
   tabs: { key: TabKey; label: string; icon: string }[] = [
     { key: 'organisees', label: 'Organisées', icon: '📋' },
     { key: 'rejointes',  label: 'Rejointes',  icon: '✅' },
@@ -48,7 +59,9 @@ export class MembreProfileComponent implements OnInit {
     private auth: AuthService,
     private profileService: ProfileService,
     private sortieService: SortieService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private inscriptionService: InscriptionService,
+    private favoriService: FavoriService
   ) {}
 
   async ngOnInit() {
@@ -58,15 +71,22 @@ export class MembreProfileComponent implements OnInit {
     const { data: { user } } = await this.auth.getUser();
     if (!user) { this.router.navigate(['/login']); return; }
 
+    this.viewerUserId = user.id;
     this.isOwnProfile = user.id === targetId;
 
-    if (!this.isOwnProfile) {
-      const { data: viewerProfile } = await this.profileService.getMyProfile(user.id);
-      if (viewerProfile) {
+    const { data: viewerProfile } = await this.profileService.getMyProfile(user.id);
+    if (viewerProfile) {
+      this.viewerRole = viewerProfile.role ?? 'user';
+      this.viewerIsPremium = ['admin', 'developer', 'user_premium'].includes(viewerProfile.role ?? '')
+        || (!!viewerProfile.subscription_end_date && new Date(viewerProfile.subscription_end_date) > new Date());
+      if (!this.isOwnProfile) {
         const canView = await this.settingsService.canViewProfiles(viewerProfile);
         if (!canView) { this.accessDenied = true; this.loading = false; return; }
       }
     }
+
+    const favorisIds = await this.favoriService.getFavoris(user.id);
+    this.viewerFavoris = new Set(favorisIds);
 
     const [profileRes, organisees, rejointes, attente, likees] = await Promise.all([
       this.profileService.getProfileById(targetId),
@@ -163,4 +183,44 @@ export class MembreProfileComponent implements OnInit {
   }
 
   goBack() { window.history.back(); }
+
+  async openDrawer(sortie: SortieWithRelations) {
+    this.selectedSortie = sortie;
+    this.drawerOpen = true;
+    this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(this.viewerUserId, sortie.id);
+  }
+
+  closeDrawer() {
+    this.drawerOpen = false;
+    this.selectedSortie = null;
+  }
+
+  isFavori(id: string): boolean { return this.viewerFavoris.has(id); }
+
+  async onFavoriFromDrawer(sortieId: string) {
+    if (this.isFavori(sortieId)) {
+      this.viewerFavoris.delete(sortieId);
+      await this.favoriService.removeFavori(this.viewerUserId, sortieId);
+    } else {
+      this.viewerFavoris.add(sortieId);
+      await this.favoriService.addFavori(this.viewerUserId, sortieId);
+    }
+    this.viewerFavoris = new Set(this.viewerFavoris);
+  }
+
+  async onRejoindre(sortieId: string) {
+    await this.inscriptionService.rejoindre(sortieId, this.viewerUserId);
+    this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(this.viewerUserId, sortieId);
+    if (this.selectedSortie) {
+      this.selectedSortie.inscriptionsCount = await this.sortieService.getInscriptionsCount(sortieId);
+    }
+  }
+
+  async onQuitter(sortieId: string) {
+    await this.inscriptionService.quitter(sortieId, this.viewerUserId);
+    this.inscriptionStatus = 'none';
+    if (this.selectedSortie) {
+      this.selectedSortie.inscriptionsCount = await this.sortieService.getInscriptionsCount(sortieId);
+    }
+  }
 }
