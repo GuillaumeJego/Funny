@@ -53,13 +53,37 @@
   &:hover { box-shadow: $shadow; }
 }
 
+.notif-avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.actor-avatar, .actor-placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.actor-placeholder {
+  background: $secondary;
+  color: $bg-white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .notif-dot {
-  width: 8px;
-  height: 8px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: $primary;
-  flex-shrink: 0;
-  margin-top: 0.4rem;
+  border: 2px solid $bg-white;
 }
 
 .notif-body {

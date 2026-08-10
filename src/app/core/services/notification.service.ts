@@ -8,6 +8,8 @@ export interface Notification {
   message: string;
   read: boolean;
   created_at: string;
+  actor_id?: string;
+  actor?: { username: string; avatar_url: string | null };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -17,7 +19,7 @@ export class NotificationService {
   async getMyNotifications(userId: string) {
     return await this.supabase.client
       .from('notifications')
-      .select('*')
+      .select('*, actor:profiles!actor_id(username, avatar_url)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
   }
@@ -73,6 +75,6 @@ export class NotificationService {
       liked:   { title: '❤️ Nouveau like',           message: `${actor} a aimé votre sortie « ${sortieTitle} »` },
     };
     const { title, message } = msgs[type];
-    await this.supabase.client.from('notifications').insert({ user_id: organizerId, title, message });
+    await this.supabase.client.from('notifications').insert({ user_id: organizerId, title, message, actor_id: actorId });
   }
 }

@@ -17,7 +17,13 @@
       class="notif-item"
       [class.unread]="!n.read"
     >
-      <div class="notif-dot" *ngIf="!n.read"></div>
+      <div class="notif-avatar">
+        <img *ngIf="n.actor?.avatar_url" [src]="n.actor!.avatar_url!" class="actor-avatar" [alt]="n.actor?.username" />
+        <div *ngIf="!n.actor?.avatar_url" class="actor-placeholder">
+          {{ n.actor?.username ? n.actor!.username.charAt(0).toUpperCase() : '?' }}
+        </div>
+        <div class="notif-dot" *ngIf="!n.read"></div>
+      </div>
       <div class="notif-body">
         <div class="notif-title">{{ n.title }}</div>
         <div class="notif-message">{{ n.message }}</div>
