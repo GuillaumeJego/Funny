@@ -21,6 +21,7 @@ export class AdminComponent implements OnInit {
   sortieCreationAccess: 'all' | 'premium' | 'admin' = 'all';
   membres: Profile[] = [];
   searchQuery = '';
+  currentUserRole = '';
 
   constructor(
     private auth: AuthService,
@@ -35,6 +36,7 @@ export class AdminComponent implements OnInit {
 
     const { data: profile } = await this.profileService.getMyProfile(user.id);
     if (profile?.role !== 'admin' && profile?.role !== 'developer') { this.router.navigate(['/dashboard']); return; }
+    this.currentUserRole = profile.role ?? '';
 
     const [setting, creationSetting, membres] = await Promise.all([
       this.settingsService.get('profile_page_premium_only'),
@@ -65,7 +67,27 @@ export class AdminComponent implements OnInit {
     membre.can_view_profiles = value;
   }
 
+  canEditRole(membre: Profile): boolean {
+    if (membre.role === 'developer' && this.currentUserRole !== 'developer') return false;
+    return true;
+  }
+
+  availableRoles(): { value: string; label: string }[] {
+    if (this.currentUserRole === 'developer') {
+      return [
+        { value: 'user', label: '👤 Membre' },
+        { value: 'admin', label: '🛡️ Admin' },
+        { value: 'developer', label: '🛠️ Développeur' },
+      ];
+    }
+    return [
+      { value: 'user', label: '👤 Membre' },
+      { value: 'admin', label: '🛡️ Admin' },
+    ];
+  }
+
   async setRole(membre: Profile, role: string) {
+    if (!this.canEditRole(membre)) return;
     await this.profileService.updateProfile(membre.id, { role });
     membre.role = role;
   }

@@ -90,10 +90,14 @@
 
           <div class="membre-actions">
             <!-- Sélecteur de rôle -->
-            <select class="role-select" [value]="m.role || 'user'" (change)="setRole(m, $any($event.target).value)">
-              <option value="user">👤 Membre</option>
-              <option value="developer">🛠️ Développeur</option>
-              <option value="admin">🛡️ Admin</option>
+            <select
+              class="role-select"
+              [value]="m.role || 'user'"
+              (change)="setRole(m, $any($event.target).value)"
+              [disabled]="!canEditRole(m)"
+              [title]="!canEditRole(m) ? 'Seul un développeur peut modifier ce rôle' : ''"
+            >
+              <option *ngFor="let r of availableRoles()" [value]="r.value">{{ r.label }}</option>
             </select>
 
             <!-- Premium manuel -->
