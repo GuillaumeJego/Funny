@@ -6,6 +6,7 @@ import { SortieService } from '../../core/services/sortie.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { InscriptionService, InscriptionStatus } from '../../core/services/inscription.service';
 import { FavoriService } from '../../core/services/favori.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { NavbarFiltersComponent, Filters, ThemeOption } from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
@@ -44,6 +45,7 @@ export class MesSortiesComponent implements OnInit {
     private profileService: ProfileService,
     private inscriptionService: InscriptionService,
     private favoriService: FavoriService,
+    private notificationService: NotificationService,
     private router: Router
   ) {}
 
@@ -156,6 +158,9 @@ export class MesSortiesComponent implements OnInit {
     } else {
       this.favorisIds.add(sortieId);
       await this.favoriService.addFavori(this.userId, sortieId);
+      if (this.selectedSortie?.created_by) {
+        this.notificationService.notifyOrganizer(this.selectedSortie.created_by, this.userId, this.selectedSortie.title, 'liked');
+      }
     }
     this.favorisIds = new Set(this.favorisIds);
   }
@@ -176,6 +181,9 @@ export class MesSortiesComponent implements OnInit {
       if (wasWaiting) this.sortiesEnAttente = this.sortiesEnAttente.filter(s => s.id !== sortieId);
       else this.sortiesRejointes = this.sortiesRejointes.filter(s => s.id !== sortieId);
       this.inscriptionStatus = 'none';
+      if (this.selectedSortie.created_by) {
+        this.notificationService.notifyOrganizer(this.selectedSortie.created_by, this.userId, this.selectedSortie.title, 'left');
+      }
       this.closeDrawer();
     }
   }

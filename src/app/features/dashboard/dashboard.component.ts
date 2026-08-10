@@ -9,6 +9,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { DrawerService } from '../../core/services/drawer.service';
 import { InscriptionService, InscriptionStatus } from '../../core/services/inscription.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
 
@@ -50,6 +51,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private drawerService: DrawerService,
     private inscriptionService: InscriptionService,
+    private notificationService: NotificationService,
     private router: Router
   ) {}
 
@@ -139,6 +141,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
         const s = this.sorties.find(s => s.id === sortieId);
         if (s && s.inscriptionsCount !== undefined) s.inscriptionsCount++;
       }
+      if (this.selectedSortie?.created_by) {
+        const type = status === 'waiting' ? 'waiting' : 'joined';
+        this.notificationService.notifyOrganizer(this.selectedSortie.created_by, this.userId, this.selectedSortie.title, type);
+      }
     }
   }
 
@@ -151,6 +157,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       if (!wasWaiting) {
         const s = this.sorties.find(s => s.id === sortieId);
         if (s && s.inscriptionsCount !== undefined) s.inscriptionsCount--;
+      }
+      if (this.selectedSortie?.created_by) {
+        this.notificationService.notifyOrganizer(this.selectedSortie.created_by, this.userId, this.selectedSortie.title, 'left');
       }
     }
   }
@@ -184,6 +193,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } else {
       this.favorisIds.add(sortieId);
       await this.favoriService.addFavori(this.userId, sortieId);
+      const sortie = this.sorties.find(s => s.id === sortieId);
+      if (sortie?.created_by) {
+        this.notificationService.notifyOrganizer(sortie.created_by, this.userId, sortie.title, 'liked');
+      }
     }
     // Forcer la détection de changement
     this.favorisIds = new Set(this.favorisIds);

@@ -11,6 +11,7 @@ import { Profile } from '../../core/models/profile.model';
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { InscriptionService, InscriptionStatus } from '../../core/services/inscription.service';
 import { FavoriService } from '../../core/services/favori.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees';
 
@@ -62,7 +63,8 @@ export class MembreProfileComponent implements OnInit {
     private sortieService: SortieService,
     private settingsService: SettingsService,
     private inscriptionService: InscriptionService,
-    private favoriService: FavoriService
+    private favoriService: FavoriService,
+    private notificationService: NotificationService
   ) {}
 
   async ngOnInit() {
@@ -207,23 +209,37 @@ export class MembreProfileComponent implements OnInit {
     } else {
       this.viewerFavoris.add(sortieId);
       await this.favoriService.addFavori(this.viewerUserId, sortieId);
+      if (this.selectedSortie?.created_by) {
+        this.notificationService.notifyOrganizer(this.selectedSortie.created_by, this.viewerUserId, this.selectedSortie.title, 'liked');
+      }
     }
     this.viewerFavoris = new Set(this.viewerFavoris);
   }
 
   async onRejoindre(sortieId: string) {
-    await this.inscriptionService.rejoindre(sortieId, this.viewerUserId);
-    this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(this.viewerUserId, sortieId);
-    if (this.selectedSortie) {
-      this.selectedSortie.inscriptionsCount = await this.sortieService.getInscriptionsCount(sortieId);
+    const { error, status } = await this.inscriptionService.rejoindre(this.viewerUserId, sortieId);
+    if (!error && status) {
+      this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(this.viewerUserId, sortieId);
+      if (this.selectedSortie) {
+        this.selectedSortie.inscriptionsCount = await this.sortieService.getInscriptionsCount(sortieId);
+        if (this.selectedSortie.created_by) {
+          const type = status === 'waiting' ? 'waiting' : 'joined';
+          this.notificationService.notifyOrganizer(this.selectedSortie.created_by, this.viewerUserId, this.selectedSortie.title, type);
+        }
+      }
     }
   }
 
   async onQuitter(sortieId: string) {
-    await this.inscriptionService.quitter(sortieId, this.viewerUserId);
-    this.inscriptionStatus = 'none';
-    if (this.selectedSortie) {
-      this.selectedSortie.inscriptionsCount = await this.sortieService.getInscriptionsCount(sortieId);
+    const { error } = await this.inscriptionService.quitter(sortieId, this.viewerUserId);
+    if (!error) {
+      this.inscriptionStatus = 'none';
+      if (this.selectedSortie) {
+        this.selectedSortie.inscriptionsCount = await this.sortieService.getInscriptionsCount(sortieId);
+        if (this.selectedSortie.created_by) {
+          this.notificationService.notifyOrganizer(this.selectedSortie.created_by, this.viewerUserId, this.selectedSortie.title, 'left');
+        }
+      }
     }
   }
 }
