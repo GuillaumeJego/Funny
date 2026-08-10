@@ -27,7 +27,7 @@ export class AdminComponent implements OnInit {
     private auth: AuthService,
     private profileService: ProfileService,
     private settingsService: SettingsService,
-    private router: Router
+    public router: Router
   ) {}
 
   async ngOnInit() {
