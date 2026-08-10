@@ -92,8 +92,8 @@
             <!-- Sélecteur de rôle -->
             <select
               class="role-select"
-              [value]="m.role || 'user'"
-              (change)="setRole(m, $any($event.target).value)"
+              [(ngModel)]="m.role"
+              (ngModelChange)="setRole(m, $event)"
               [disabled]="!canEditRole(m)"
               [title]="!canEditRole(m) ? 'Seul un développeur peut modifier ce rôle' : ''"
             >

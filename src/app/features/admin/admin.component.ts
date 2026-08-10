@@ -88,8 +88,11 @@ export class AdminComponent implements OnInit {
 
   async setRole(membre: Profile, role: string) {
     if (!this.canEditRole(membre)) return;
-    await this.profileService.updateProfile(membre.id, { role });
-    membre.role = role;
+    const previousRole = membre.role;
+    const { error } = await this.profileService.updateProfile(membre.id, { role });
+    if (error) {
+      membre.role = previousRole; // revert si erreur DB
+    }
   }
 
   premiumModal: { membre: Profile; mois: number } | null = null;
