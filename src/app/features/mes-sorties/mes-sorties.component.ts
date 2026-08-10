@@ -181,13 +181,15 @@ export class MesSortiesComponent implements OnInit {
   }
 
   formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+    const d = new Date(dateStr);
+    const j = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    return j.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }
 
   formatDateCourte(dateStr: string): string {
     const d = new Date(dateStr);
-    const j = d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
-    return j.charAt(0).toUpperCase() + j.slice(1);
+    const j = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    return j.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }
 
   formatHeure(dateStr: string): string {

@@ -220,8 +220,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const map = new Map<string, SortieWithRelations[]>();
     for (const s of sorties) {
       const d = new Date(s.date);
-      const key = d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
-      const label = key.charAt(0).toUpperCase() + key.slice(1);
+      const key = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+      const label = key.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
       if (!map.has(label)) map.set(label, []);
       map.get(label)!.push(s);
     }
@@ -241,12 +241,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   formatDateCourte(dateStr: string): string {
     const d = new Date(dateStr);
-    const j = d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
-    return j.charAt(0).toUpperCase() + j.slice(1);
+    const j = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    return j.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }
 
   formatDate(dateStr: string): string {
     const d = new Date(dateStr);
-    return d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const j = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    const label = j.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    return `${label} - ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
   }
 }
