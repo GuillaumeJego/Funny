@@ -173,6 +173,92 @@
   svg { color: $text-light; flex-shrink: 0; }
 }
 
+// ─── Actions amis ────────────────────────────────────────
+.friend-actions {
+  padding: 0.75rem 1rem 0;
+}
+
+.friend-btn-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-friend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: $border-radius;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s, background 0.15s;
+
+  &:disabled { opacity: 0.6; cursor: default; }
+
+  &.add     { background: $primary; color: #fff; &:not(:disabled):hover { opacity: 0.9; } }
+  &.pending { background: $bg-light; color: $text-light; border: 1px solid $border-color; }
+  &.cancel  { background: transparent; color: $text-light; border: 1px solid $border-color; &:hover { background: $bg-light; } }
+  &.accept  { background: $success; color: #fff; &:not(:disabled):hover { opacity: 0.9; } }
+  &.message { background: $primary; color: #fff; flex: 1; justify-content: center; &:hover { opacity: 0.9; } }
+  &.remove  { background: $bg-light; color: $text-medium; border: 1px solid $border-color; &:hover { background: rgba(red, 0.05); color: red; border-color: red; } }
+}
+
+// ─── Section amis ─────────────────────────────────────────
+.friends-count {
+  background: $bg-light;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  padding: 0.1rem 0.5rem;
+  color: $text-light;
+  margin-left: 0.35rem;
+}
+
+.friends-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.friend-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  width: 64px;
+
+  &:hover .friend-avatar-img,
+  &:hover .friend-avatar-placeholder { box-shadow: 0 0 0 2px $primary; }
+}
+
+.friend-avatar-img, .friend-avatar-placeholder {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: box-shadow 0.15s;
+}
+
+.friend-avatar-placeholder {
+  background: $primary;
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.friend-name {
+  font-size: 0.72rem;
+  color: $text-medium;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 64px;
+}
+
 // ─── Section cards ────────────────────────────────────────
 .section-card {
   margin: 0.75rem 1rem;

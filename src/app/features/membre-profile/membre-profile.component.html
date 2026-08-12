@@ -54,11 +54,44 @@
     </div>
   </div>
 
+  <!-- ── Actions amis (si profil autre) ── -->
+  <div *ngIf="!isOwnProfile" class="friend-actions">
+    <ng-container [ngSwitch]="friendshipStatus">
+      <div *ngSwitchCase="'none'" class="friend-btn-row">
+        <button class="btn-friend add" [disabled]="friendshipLoading" (click)="sendFriendRequest()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          Ajouter comme ami
+        </button>
+      </div>
+      <div *ngSwitchCase="'pending_sent'" class="friend-btn-row">
+        <button class="btn-friend pending" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Demande envoyée
+        </button>
+        <button class="btn-friend cancel" [disabled]="friendshipLoading" (click)="declineFriend()">Annuler</button>
+      </div>
+      <div *ngSwitchCase="'pending_received'" class="friend-btn-row">
+        <button class="btn-friend accept" [disabled]="friendshipLoading" (click)="acceptFriend()">✓ Accepter</button>
+        <button class="btn-friend cancel" [disabled]="friendshipLoading" (click)="declineFriend()">Refuser</button>
+      </div>
+      <div *ngSwitchCase="'accepted'" class="friend-btn-row">
+        <button class="btn-friend message" (click)="openChat()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Envoyer un message
+        </button>
+        <button class="btn-friend remove" [disabled]="friendshipLoading" (click)="removeFriend()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          Ami ✓
+        </button>
+      </div>
+    </ng-container>
+  </div>
+
   <!-- ── À propos de moi ── -->
   <div *ngIf="profile.bio" class="section-card">
     <div class="section-header">
       <span class="section-title">À propos de moi</span>
-      <a *ngIf="isOwnProfile" routerLink="/edit-profile" class="btn-edit-inline">
+      <a *ngIf="isOwnProfile" routerLink="/profile/edit" class="btn-edit-inline">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         Modifier
       </a>
@@ -75,7 +108,7 @@
   <div *ngIf="hasExtraInfo()" class="section-card">
     <div class="section-header">
       <span class="section-title">En savoir plus</span>
-      <a *ngIf="isOwnProfile" routerLink="/edit-profile" class="btn-edit-inline">
+      <a *ngIf="isOwnProfile" routerLink="/profile/edit" class="btn-edit-inline">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         Modifier
       </a>
@@ -104,6 +137,24 @@
       <div *ngIf="profile.alcohol" class="info-row">
         <span class="info-label">Alcool</span>
         <span class="info-value">{{ profile.alcohol }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Amis ── -->
+  <div *ngIf="friends.length > 0" class="section-card">
+    <div class="section-header">
+      <span class="section-title">Amis <span class="friends-count">{{ friends.length }}</span></span>
+    </div>
+    <div class="friends-grid">
+      <div *ngFor="let f of friends" class="friend-chip" (click)="router.navigate(['/membres', getFriendProfile(f)?.id])">
+        <div class="friend-avatar">
+          <img *ngIf="getFriendProfile(f)?.avatar_url" [src]="getFriendProfile(f)!.avatar_url!" class="friend-avatar-img" alt="" />
+          <div *ngIf="!getFriendProfile(f)?.avatar_url" class="friend-avatar-placeholder">
+            {{ getFriendProfile(f)?.username?.charAt(0)?.toUpperCase() }}
+          </div>
+        </div>
+        <span class="friend-name">{{ getFriendProfile(f)?.username }}</span>
       </div>
     </div>
   </div>
@@ -195,7 +246,7 @@
 
   <!-- ── Boutons bas de page (profil propre) ── -->
   <div *ngIf="isOwnProfile" class="bottom-actions">
-    <a routerLink="/edit-profile" class="bottom-btn">✏️ Mes paramètres</a>
+    <a routerLink="/profile/edit" class="bottom-btn">✏️ Mes paramètres</a>
     <a routerLink="/mes-sorties" class="bottom-btn bottom-btn-primary">📋 Mes sorties</a>
   </div>
 

@@ -12,13 +12,16 @@ import { SortieWithRelations } from '../../core/models/sortie.model';
 import { InscriptionService, InscriptionStatus } from '../../core/services/inscription.service';
 import { FavoriService } from '../../core/services/favori.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { FriendshipService } from '../../core/services/friendship.service';
+import { ConversationService } from '../../core/services/conversation.service';
+import { Friendship } from '../../core/models/friendship.model';
 
 type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees';
 
 @Component({
   selector: 'app-membre-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarFiltersComponent, SortieDrawerComponent],
+  imports: [CommonModule, RouterModule, SortieDrawerComponent],
   templateUrl: './membre-profile.component.html',
   styleUrl: './membre-profile.component.scss'
 })
@@ -41,6 +44,10 @@ export class MembreProfileComponent implements OnInit {
 
   lightboxOpen = false;
   bioExpanded = false;
+
+  friendship: Friendship | null = null;
+  friendshipLoading = false;
+  friends: Friendship[] = [];
   selectedSortie: SortieWithRelations | null = null;
   drawerOpen = false;
   viewerUserId = '';
@@ -58,14 +65,16 @@ export class MembreProfileComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private auth: AuthService,
     private profileService: ProfileService,
     private sortieService: SortieService,
     private settingsService: SettingsService,
     private inscriptionService: InscriptionService,
     private favoriService: FavoriService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private friendshipService: FriendshipService,
+    private conversationService: ConversationService
   ) {}
 
   async ngOnInit() {
@@ -123,6 +132,11 @@ export class MembreProfileComponent implements OnInit {
     }
     this.availableThemes = [...themesMap.values()];
     this.availableLocations = [...locationsSet].sort();
+
+    if (!this.isOwnProfile) {
+      this.friendship = await this.friendshipService.getFriendshipStatus(this.viewerUserId, targetId);
+    }
+    this.friends = await this.friendshipService.getFriends(targetId);
 
     this.loading = false;
   }
@@ -208,6 +222,61 @@ export class MembreProfileComponent implements OnInit {
   }
 
   goBack() { window.history.back(); }
+
+  get friendshipStatus(): 'none' | 'pending_sent' | 'pending_received' | 'accepted' {
+    if (!this.friendship) return 'none';
+    if (this.friendship.status === 'accepted') return 'accepted';
+    if (this.friendship.status === 'pending') {
+      return this.friendship.requester_id === this.viewerUserId ? 'pending_sent' : 'pending_received';
+    }
+    return 'none';
+  }
+
+  async sendFriendRequest() {
+    this.friendshipLoading = true;
+    const targetId = this.route.snapshot.paramMap.get('id')!;
+    await this.friendshipService.sendRequest(this.viewerUserId, targetId);
+    this.friendship = await this.friendshipService.getFriendshipStatus(this.viewerUserId, targetId);
+    this.friendshipLoading = false;
+  }
+
+  async acceptFriend() {
+    if (!this.friendship) return;
+    this.friendshipLoading = true;
+    await this.friendshipService.acceptRequest(this.friendship.id);
+    this.friendship = { ...this.friendship, status: 'accepted' };
+    const targetId = this.route.snapshot.paramMap.get('id')!;
+    this.friends = await this.friendshipService.getFriends(targetId);
+    this.friendshipLoading = false;
+  }
+
+  async declineFriend() {
+    if (!this.friendship) return;
+    this.friendshipLoading = true;
+    await this.friendshipService.declineRequest(this.friendship.id);
+    this.friendship = null;
+    this.friendshipLoading = false;
+  }
+
+  async removeFriend() {
+    if (!this.friendship) return;
+    this.friendshipLoading = true;
+    await this.friendshipService.removeFriend(this.friendship.id);
+    this.friendship = null;
+    const targetId = this.route.snapshot.paramMap.get('id')!;
+    this.friends = await this.friendshipService.getFriends(targetId);
+    this.friendshipLoading = false;
+  }
+
+  async openChat() {
+    const targetId = this.route.snapshot.paramMap.get('id')!;
+    const convId = await this.conversationService.getOrCreateConversation(this.viewerUserId, targetId);
+    this.router.navigate(['/messages', convId]);
+  }
+
+  getFriendProfile(f: Friendship) {
+    return this.friendshipService.getFriendProfile(f, this.route.snapshot.paramMap.get('id')!);
+  }
 
   async openDrawer(sortie: SortieWithRelations) {
     this.selectedSortie = sortie;

@@ -20,7 +20,8 @@ export class NavbarMainComponent implements OnInit {
     { icon: '⭐', label: 'Mes sorties', route: '/mes-sorties' },
     { icon: '➕', label: 'Créer', route: '/sorties/creer' },
     { icon: '👥', label: 'Membres', route: '/membres' },
-    { icon: '🔔', label: 'Notifications', route: '/notifications' },
+    { icon: '💬', label: 'Messages', route: '/messages' },
+    { icon: '🔔', label: 'Notifs', route: '/notifications' },
   ];
 
   unreadCount = 0;

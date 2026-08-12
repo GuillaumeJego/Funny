@@ -11,6 +11,8 @@ import { NotificationsComponent } from './features/notifications/notifications.c
 import { authGuard } from './core/guards/auth.guard';
 import { MembreProfileComponent } from './features/membre-profile/membre-profile.component';
 import { AdminComponent } from './features/admin/admin.component';
+import { MessagesComponent } from './features/messages/messages.component';
+import { ChatComponent } from './features/chat/chat.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -25,4 +27,6 @@ export const routes: Routes = [
   { path: 'notifications', component: NotificationsComponent, canActivate: [authGuard] },
   { path: 'membres/:id', component: MembreProfileComponent, canActivate: [authGuard] },
   { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
+  { path: 'messages', component: MessagesComponent, canActivate: [authGuard] },
+  { path: 'messages/:id', component: ChatComponent, canActivate: [authGuard] },
 ];

@@ -1,0 +1,143 @@
+<div class="chat-page" (click)="closeReactionPicker()">
+
+  <!-- Header -->
+  <div class="chat-header">
+    <button class="btn-back" (click)="goBack()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="header-identity">
+      <div class="header-avatar">
+        <img *ngIf="friendAvatar" [src]="friendAvatar" class="h-avatar-img" alt="" />
+        <div *ngIf="!friendAvatar" class="h-avatar-placeholder">{{ friendName.charAt(0).toUpperCase() || '?' }}</div>
+      </div>
+      <span class="header-name">{{ friendName || 'Conversation' }}</span>
+    </div>
+  </div>
+
+  <!-- Spinner -->
+  <div *ngIf="loading" class="state-center"><div class="spinner"></div></div>
+
+  <!-- Messages -->
+  <div *ngIf="!loading" class="messages-area">
+
+    <div *ngFor="let msg of messages; let i = index">
+
+      <!-- Séparateur de jour -->
+      <div *ngIf="showDayDivider(i)" class="day-divider">
+        <span>{{ formatDay(msg.created_at) }}</span>
+      </div>
+
+      <!-- Bulle de message -->
+      <div class="msg-row" [class.own]="isOwn(msg)">
+
+        <!-- Avatar expéditeur (messages reçus) -->
+        <div *ngIf="!isOwn(msg)" class="msg-avatar">
+          <img *ngIf="msg.sender?.avatar_url" [src]="msg.sender!.avatar_url!" class="sender-avatar" alt="" />
+          <div *ngIf="!msg.sender?.avatar_url" class="sender-avatar-placeholder">{{ msg.sender?.username?.charAt(0)?.toUpperCase() }}</div>
+        </div>
+
+        <div class="bubble-wrap">
+          <!-- Réponse citée -->
+          <div *ngIf="msg.reply_to" class="reply-preview" [class.own-reply]="isOwn(msg)">
+            <span class="reply-author">{{ msg.reply_to.sender?.username }}</span>
+            <span class="reply-content">
+              <ng-container *ngIf="msg.reply_to.type === 'image'">📷 Photo</ng-container>
+              <ng-container *ngIf="msg.reply_to.type === 'video'">🎥 Vidéo</ng-container>
+              <ng-container *ngIf="msg.reply_to.type === 'text'">{{ msg.reply_to.content }}</ng-container>
+            </span>
+          </div>
+
+          <!-- Bulle -->
+          <div class="bubble" [class.own]="isOwn(msg)" (click)="openReactionPicker($event, msg)">
+            <!-- Image -->
+            <img *ngIf="msg.type === 'image' && msg.media_url" [src]="msg.media_url" class="msg-media" alt="Photo" />
+            <!-- Vidéo -->
+            <video *ngIf="msg.type === 'video' && msg.media_url" [src]="msg.media_url" class="msg-media" controls playsinline></video>
+            <!-- Texte -->
+            <p *ngIf="msg.content" class="bubble-text">{{ msg.content }}</p>
+            <span class="bubble-time">{{ formatTime(msg.created_at) }}</span>
+          </div>
+
+          <!-- Réactions -->
+          <div *ngIf="reactionGroups(msg).length > 0" class="reactions" [class.own]="isOwn(msg)">
+            <span *ngFor="let r of reactionGroups(msg)"
+              class="reaction-chip"
+              [class.mine]="myReaction(msg) === r.emoji"
+              (click)="react(r.emoji); $event.stopPropagation()">
+              {{ r.emoji }} <span *ngIf="r.count > 1">{{ r.count }}</span>
+            </span>
+          </div>
+
+          <!-- Bouton répondre (visible au hover) -->
+          <button class="btn-reply" [class.own]="isOwn(msg)"
+            (click)="setReply(msg); $event.stopPropagation()" title="Répondre">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div #messagesEnd></div>
+  </div>
+
+  <!-- Picker de réactions -->
+  <div *ngIf="reactionTarget"
+    class="reaction-picker"
+    [style.top.px]="reactionPickerPos.top"
+    [style.left.px]="reactionPickerPos.left"
+    (click)="$event.stopPropagation()">
+    <button *ngFor="let e of emojis" class="emoji-btn" (click)="react(e)">{{ e }}</button>
+    <button class="emoji-btn reply-btn" (click)="setReply(reactionTarget!)" title="Répondre">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
+    </button>
+  </div>
+
+  <!-- Barre d'input -->
+  <div class="input-area">
+    <!-- Réponse en cours -->
+    <div *ngIf="replyTo" class="reply-bar">
+      <div class="reply-bar-content">
+        <span class="reply-bar-author">{{ replyTo.sender?.username || 'Vous' }}</span>
+        <span class="reply-bar-text">
+          <ng-container *ngIf="replyTo.type === 'image'">📷 Photo</ng-container>
+          <ng-container *ngIf="replyTo.type === 'video'">🎥 Vidéo</ng-container>
+          <ng-container *ngIf="replyTo.type === 'text'">{{ replyTo.content }}</ng-container>
+        </span>
+      </div>
+      <button class="btn-cancel-reply" (click)="cancelReply()">✕</button>
+    </div>
+
+    <div class="input-row">
+      <!-- Bouton média -->
+      <button class="btn-attach" (click)="triggerFileInput('image')" title="Photo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </button>
+      <button class="btn-attach" (click)="triggerFileInput('video')" title="Vidéo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      </button>
+
+      <textarea
+        class="msg-input"
+        [(ngModel)]="text"
+        placeholder="Message…"
+        rows="1"
+        (keydown)="onKeydown($event)"
+        (input)="$any($event.target).style.height='auto'; $any($event.target).style.height=$any($event.target).scrollHeight+'px'"
+      ></textarea>
+
+      <button class="btn-send" [disabled]="!text.trim() || sending" (click)="send()">
+        <svg *ngIf="!sending" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        <div *ngIf="sending" class="spinner-sm"></div>
+      </button>
+    </div>
+
+    <input #fileInput type="file" style="display:none" (change)="onFileSelected($event)" />
+  </div>
+
+  <!-- Indicateur upload -->
+  <div *ngIf="uploading" class="upload-indicator">
+    <div class="spinner-sm"></div>
+    <span>Envoi en cours…</span>
+  </div>
+
+</div>
