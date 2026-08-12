@@ -1,9 +1,3 @@
-<app-navbar-filters
-  [availableThemes]="availableThemes"
-  [availableLocations]="availableLocations"
-  (filtersChanged)="onFiltersChanged($event)"
-/>
-
 <!-- Chargement -->
 <div *ngIf="loading" class="state-center">
   <div class="spinner"></div>
@@ -21,57 +15,118 @@
 <!-- Profil -->
 <div *ngIf="!loading && !accessDenied && profile" class="profile-page">
 
-  <!-- Hero -->
-  <div class="hero">
-    <div class="hero-cover"></div>
-    <button class="btn-back-hero" (click)="goBack()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <div class="hero-body">
-      <div class="avatar-wrap">
-        <img *ngIf="profile.avatar_url" [src]="profile.avatar_url" class="avatar" alt="" (click)="lightboxOpen = true" style="cursor:zoom-in" />
-        <div *ngIf="!profile.avatar_url" class="avatar-placeholder">{{ getInitial(profile.username) }}</div>
+  <!-- ── Photo héro plein largeur ── -->
+  <div class="hero-photo">
+    <img *ngIf="profile.avatar_url" [src]="profile.avatar_url" class="hero-img" alt="" (click)="lightboxOpen = true" />
+    <div *ngIf="!profile.avatar_url" class="hero-placeholder">{{ getInitial(profile.username) }}</div>
+
+    <!-- Overlay top bar -->
+    <div class="hero-topbar">
+      <button class="btn-back-hero" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="hero-title">
+        <span class="hero-name">{{ profile.username }}</span>
       </div>
-      <div class="hero-info">
-        <div class="name-row">
-          <span class="username">{{ profile.username }}</span>
-          <span *ngIf="profile.role === 'admin'" class="chip chip-admin">🛡️ Admin</span>
-          <span *ngIf="isPremium()" class="chip chip-premium">⭐ Premium</span>
-        </div>
-        <span *ngIf="profile.city" class="city">📍 {{ profile.city }}</span>
-        <p *ngIf="profile.bio" class="bio">{{ profile.bio }}</p>
+      <div class="hero-topbar-right">
+        <span *ngIf="profile.gender === 'Homme'" class="gender-icon">♂</span>
+        <span *ngIf="profile.gender === 'Femme'" class="gender-icon">♀</span>
       </div>
+    </div>
+
+    <!-- Chips badges bas de photo -->
+    <div class="hero-bottom-chips">
+      <span *ngIf="profile.role === 'admin'" class="chip chip-admin">🛡️ Admin</span>
+      <span *ngIf="isPremium()" class="chip chip-premium">⭐ Premium</span>
     </div>
   </div>
 
-  <!-- Infos personnelles -->
-  <div *ngIf="profile.gender || profile.relationship || profile.children || profile.smoking || profile.alcohol" class="info-card">
-    <div class="info-grid">
-      <div *ngIf="profile.gender" class="info-item">
+  <!-- ── Identité ── -->
+  <div class="identity-section">
+    <h1 class="identity-name">{{ profile.username }}</h1>
+    <div class="stats-row">
+      <div *ngIf="profile.city" class="stat-chip">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        {{ profile.city }}
+      </div>
+      <div *ngIf="getAge()" class="stat-chip">{{ getAge() }} ans</div>
+      <div class="stat-chip">{{ totalSorties }} sortie{{ totalSorties > 1 ? 's' : '' }}</div>
+    </div>
+  </div>
+
+  <!-- ── À propos de moi ── -->
+  <div *ngIf="profile.bio" class="section-card">
+    <div class="section-header">
+      <span class="section-title">À propos de moi</span>
+      <a *ngIf="isOwnProfile" routerLink="/edit-profile" class="btn-edit-inline">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Modifier
+      </a>
+    </div>
+    <p class="bio-text" [class.bio-collapsed]="!bioExpanded && (profile.bio?.length ?? 0) > 150">{{ profile.bio }}</p>
+    <button *ngIf="(profile.bio?.length ?? 0) > 150" class="btn-show-more" (click)="bioExpanded = !bioExpanded">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           [style.transform]="bioExpanded ? 'rotate(180deg)' : 'rotate(0)'"><polyline points="6 9 12 15 18 9"/></svg>
+      {{ bioExpanded ? 'Réduire' : 'Afficher la suite' }}
+    </button>
+  </div>
+
+  <!-- ── En savoir plus ── -->
+  <div *ngIf="hasExtraInfo()" class="section-card">
+    <div class="section-header">
+      <span class="section-title">En savoir plus</span>
+      <a *ngIf="isOwnProfile" routerLink="/edit-profile" class="btn-edit-inline">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Modifier
+      </a>
+    </div>
+    <div class="info-list">
+      <div *ngIf="profile.relationship" class="info-row">
+        <span class="info-label">Côté cœur</span>
+        <span class="info-value">{{ profile.relationship }}</span>
+      </div>
+      <div *ngIf="profile.gender" class="info-row">
         <span class="info-label">Genre</span>
         <span class="info-value">{{ profile.gender }}</span>
       </div>
-      <div *ngIf="profile.relationship" class="info-item">
-        <span class="info-label">Situation</span>
-        <span class="info-value">{{ profile.relationship }}</span>
-      </div>
-      <div *ngIf="profile.children" class="info-item">
+      <div *ngIf="profile.children" class="info-row">
         <span class="info-label">Enfants</span>
         <span class="info-value">{{ profile.children }}</span>
       </div>
-      <div *ngIf="profile.smoking" class="info-item">
+      <div *ngIf="profile.smoking" class="info-row">
         <span class="info-label">Tabac</span>
         <span class="info-value">{{ profile.smoking }}</span>
       </div>
-      <div *ngIf="profile.alcohol" class="info-item">
+      <div *ngIf="profile.vaping" class="info-row">
+        <span class="info-label">Vapotage</span>
+        <span class="info-value">{{ profile.vaping }}</span>
+      </div>
+      <div *ngIf="profile.alcohol" class="info-row">
         <span class="info-label">Alcool</span>
         <span class="info-value">{{ profile.alcohol }}</span>
       </div>
     </div>
   </div>
 
-  <!-- Section sorties -->
-  <div class="sorties-section">
+  <!-- ── Mon activité ── -->
+  <div class="section-card sorties-section">
+    <div class="section-header">
+      <span class="section-title">Mon activité</span>
+      <div class="view-toggle">
+        <button class="toggle-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grille">
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor">
+            <rect x="0" y="0" width="7" height="7" rx="1"/><rect x="11" y="0" width="7" height="7" rx="1"/>
+            <rect x="0" y="11" width="7" height="7" rx="1"/><rect x="11" y="11" width="7" height="7" rx="1"/>
+          </svg>
+        </button>
+        <button class="toggle-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Liste">
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor">
+            <rect x="0" y="1" width="18" height="3" rx="1"/><rect x="0" y="7" width="18" height="3" rx="1"/>
+            <rect x="0" y="13" width="18" height="3" rx="1"/>
+          </svg>
+        </button>
+      </div>
+    </div>
 
     <!-- Tabs -->
     <div class="tabs">
@@ -80,32 +135,13 @@
       </button>
     </div>
 
-    <!-- Toolbar -->
-    <div *ngIf="currentList.length > 0" class="toolbar">
-      <span class="results-count">{{ currentList.length }} sortie{{ currentList.length > 1 ? 's' : '' }}</span>
-      <div class="view-toggle">
-        <button class="toggle-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Vue grille">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-            <rect x="0" y="0" width="7" height="7" rx="1"/><rect x="11" y="0" width="7" height="7" rx="1"/>
-            <rect x="0" y="11" width="7" height="7" rx="1"/><rect x="11" y="11" width="7" height="7" rx="1"/>
-          </svg>
-        </button>
-        <button class="toggle-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Vue liste">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-            <rect x="0" y="1" width="18" height="3" rx="1"/><rect x="0" y="7" width="18" height="3" rx="1"/>
-            <rect x="0" y="13" width="18" height="3" rx="1"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
     <!-- État vide -->
     <div *ngIf="currentList.length === 0" class="empty">
       <span>{{ activeTab === 'organisees' ? '📋' : activeTab === 'rejointes' ? '✅' : activeTab === 'attente' ? '⏳' : '❤️' }}</span>
       <p>Aucune sortie à afficher.</p>
     </div>
 
-    <!-- ══ VUE GRILLE ══ -->
+    <!-- VUE GRILLE -->
     <div *ngIf="currentList.length > 0 && viewMode === 'grid'" class="sorties-grid">
       <div *ngFor="let sortie of currentList" class="sortie-card" [class.premium]="sortie.is_premium" (click)="openDrawer(sortie)" style="cursor:pointer">
         <div class="card-image">
@@ -127,7 +163,7 @@
       </div>
     </div>
 
-    <!-- ══ VUE LISTE ══ -->
+    <!-- VUE LISTE -->
     <div *ngIf="currentList.length > 0 && viewMode === 'list'" class="sorties-list">
       <div *ngFor="let sortie of currentList" class="list-card" [class.premium]="sortie.is_premium" (click)="openDrawer(sortie)" style="cursor:pointer">
         <div class="list-image">
@@ -155,8 +191,14 @@
         </div>
       </div>
     </div>
-
   </div>
+
+  <!-- ── Boutons bas de page (profil propre) ── -->
+  <div *ngIf="isOwnProfile" class="bottom-actions">
+    <a routerLink="/edit-profile" class="bottom-btn">✏️ Mes paramètres</a>
+    <a routerLink="/mes-sorties" class="bottom-btn bottom-btn-primary">📋 Mes sorties</a>
+  </div>
+
 </div>
 
 <!-- Lightbox avatar -->

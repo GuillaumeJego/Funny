@@ -40,6 +40,7 @@ export class MembreProfileComponent implements OnInit {
   sortiesLikees: SortieWithRelations[] = [];
 
   lightboxOpen = false;
+  bioExpanded = false;
   selectedSortie: SortieWithRelations | null = null;
   drawerOpen = false;
   viewerUserId = '';
@@ -170,6 +171,25 @@ export class MembreProfileComponent implements OnInit {
   }
 
   getInitial(username: string): string { return username.charAt(0).toUpperCase(); }
+
+  getAge(): number | null {
+    if (!this.profile?.birthdate) return null;
+    const birth = new Date(this.profile.birthdate);
+    const now = new Date();
+    let age = now.getFullYear() - birth.getFullYear();
+    const m = now.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+    return age;
+  }
+
+  hasExtraInfo(): boolean {
+    const p = this.profile;
+    return !!(p?.relationship || p?.children || p?.smoking || p?.vaping || p?.alcohol || p?.gender);
+  }
+
+  get totalSorties(): number {
+    return this.sortiesOrganisees.length + this.sortiesRejointes.length;
+  }
 
   formatDate(dateStr: string): string {
     const d = new Date(dateStr);

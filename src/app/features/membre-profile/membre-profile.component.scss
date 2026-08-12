@@ -1,16 +1,5 @@
 @use 'styles' as *;
 
-.profile-page {
-  padding: 1rem;
-  padding-top: calc(48px + 1rem);
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-bottom: 6rem;
-  width: 100%;
-  box-sizing: border-box;
-  overflow-x: hidden;
-}
-
 // ─── États ────────────────────────────────────────────────
 .state-center {
   display: flex; justify-content: center; padding: 4rem;
@@ -48,260 +37,310 @@
   }
 }
 
-// ─── Lightbox ─────────────────────────────────────────────
-.lightbox-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.15s ease;
+// ─── Page ─────────────────────────────────────────────────
+.profile-page {
+  padding-bottom: 7rem;
+  max-width: 700px;
+  margin: 0 auto;
+  overflow-x: hidden;
 }
 
-@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-
-.lightbox-img {
-  max-width: 90vw;
-  max-height: 85vh;
-  border-radius: 12px;
-  object-fit: contain;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-  animation: zoomIn 0.15s ease;
-}
-
-@keyframes zoomIn { from { transform: scale(0.92); opacity: 0 } to { transform: scale(1); opacity: 1 } }
-
-.lightbox-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255,255,255,0.15);
-  color: #fff;
-  font-size: 1.1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s;
-  &:hover { background: rgba(255,255,255,0.3); }
-}
-
-// ─── Hero ─────────────────────────────────────────────────
-.hero {
+// ─── Hero photo ───────────────────────────────────────────
+.hero-photo {
   position: relative;
-  margin-bottom: 1rem;
+  width: 100%;
+  height: 52vw;
+  max-height: 420px;
+  min-height: 220px;
+  background: $bg-light;
+  overflow: hidden;
 }
 
-.hero-cover {
-  height: 110px;
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  cursor: zoom-in;
+}
+
+.hero-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  font-weight: 800;
+  color: #fff;
   background: linear-gradient(135deg, $primary 0%, lighten(#6366f1, 20%) 100%);
-  border-radius: 0 0 24px 24px;
+}
+
+.hero-topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 100%);
 }
 
 .btn-back-hero {
-  position: absolute;
-  top: 0.75rem; left: 0.85rem;
-  background: rgba(255,255,255,0.25);
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.2);
   backdrop-filter: blur(6px);
   border: none; border-radius: 50%;
-  width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: #fff;
+  cursor: pointer; color: #fff; flex-shrink: 0;
   transition: background 0.15s;
-  &:hover { background: rgba(255,255,255,0.4); }
+  &:hover { background: rgba(255,255,255,0.35); }
 }
 
-.hero-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 1.25rem 1rem;
-  margin-top: -48px;
-  gap: 0.5rem;
-}
-
-.avatar-wrap {
-  .avatar, .avatar-placeholder {
-    width: 96px; height: 96px;
-    border-radius: 50%; object-fit: cover;
-    border: 4px solid $bg-white;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  }
-
-  .avatar-placeholder {
-    background: $primary; color: #fff;
-    font-size: 2.2rem; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-  }
-}
-
-.hero-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
+.hero-title {
+  flex: 1;
   text-align: center;
+  padding: 0 0.5rem;
 }
 
-.name-row {
-  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
-  justify-content: center;
+.hero-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.4);
 }
 
-.username {
-  font-size: 1.4rem; font-weight: 800; color: $text-dark;
+.hero-topbar-right {
+  width: 36px;
+  display: flex;
+  justify-content: flex-end;
 }
 
+.gender-icon {
+  color: #fff;
+  font-size: 1.3rem;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.4);
+}
+
+.hero-bottom-chips {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.85rem;
+  display: flex;
+  gap: 0.4rem;
+}
+
+// ─── Chips ────────────────────────────────────────────────
 .chip {
   display: inline-flex; align-items: center;
-  font-size: 0.7rem; font-weight: 700;
-  padding: 0.15rem 0.55rem; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 700;
+  padding: 0.2rem 0.6rem; border-radius: 999px;
+  backdrop-filter: blur(6px);
 
-  &.chip-admin   { background: rgba($primary, 0.12); color: $primary; }
-  &.chip-premium { background: rgba($warning, 0.15); color: darken(#f5c518, 20%); }
+  &.chip-admin   { background: rgba($primary, 0.85); color: #fff; }
+  &.chip-premium { background: rgba(#f5c518, 0.9); color: #5a3e00; }
 }
 
-.city {
-  font-size: 0.85rem; color: $text-light;
+// ─── Identité ─────────────────────────────────────────────
+.identity-section {
+  padding: 1rem 1.25rem 0.5rem;
+  border-bottom: 1px solid $border-color;
 }
 
-.bio {
-  font-size: 0.9rem; color: $text-medium; line-height: 1.6;
-  max-width: 320px;
+.identity-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: $text-dark;
+  margin: 0 0 0.5rem;
 }
 
-// ─── Infos personnelles ───────────────────────────────────
-.info-card {
-  margin-bottom: 1.25rem;
+.stats-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: $bg-light;
+  border: 1px solid $border-color;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.82rem;
+  color: $text-medium;
+  font-weight: 500;
+
+  svg { color: $text-light; flex-shrink: 0; }
+}
+
+// ─── Section cards ────────────────────────────────────────
+.section-card {
+  margin: 0.75rem 1rem;
   background: $bg-white;
   border: 1px solid $border-color;
   border-radius: $border-radius-lg;
-  padding: 1rem 1.25rem;
+  padding: 1rem 1.1rem;
 }
 
-.info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
 }
 
-.info-item {
-  display: flex; flex-direction: column; gap: 0.1rem;
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.btn-edit-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $text-light;
+  background: $bg-light;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  padding: 0.3rem 0.7rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  &:hover { color: $primary; background: rgba($primary, 0.05); }
+}
+
+// ─── Bio ──────────────────────────────────────────────────
+.bio-text {
+  font-size: 0.9rem;
+  color: $text-medium;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  margin: 0;
+
+  &.bio-collapsed {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+.btn-show-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.6rem;
+  background: none;
+  border: none;
+  color: $primary;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+
+  svg { transition: transform 0.2s; }
+}
+
+// ─── En savoir plus ───────────────────────────────────────
+.info-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid $border-color;
+
+  &:last-child { border-bottom: none; }
 }
 
 .info-label {
-  font-size: 0.68rem; text-transform: uppercase;
-  letter-spacing: 0.06em; color: $text-light; font-weight: 700;
+  font-size: 0.88rem;
+  color: $text-dark;
+  font-weight: 500;
 }
 
 .info-value {
-  font-size: 0.9rem; color: $text-dark; font-weight: 500;
+  font-size: 0.88rem;
+  color: $text-light;
 }
 
-// ─── Section sorties ──────────────────────────────────────
+// ─── Mon activité ─────────────────────────────────────────
 .sorties-section {
-  margin-top: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 0.2rem;
+  background: $bg-light;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  padding: 0.15rem;
+
+  .toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px; height: 30px;
+    border: none; border-radius: 6px;
+    background: transparent;
+    color: $text-light;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover { background: $bg-white; color: $text-dark; }
+    &.active { background: $primary; color: #fff; }
+  }
 }
 
 // ─── Tabs ─────────────────────────────────────────────────
 .tabs {
   display: flex;
-  flex-wrap: wrap;
   gap: 0;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
   border-bottom: 2px solid $border-color;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 
   .tab {
     flex: 1;
+    min-width: max-content;
     text-align: center;
-    padding: 0.6rem 0.5rem;
-    border: none;
-    background: none;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: $text-light;
-    cursor: pointer;
+    padding: 0.55rem 0.5rem;
+    border: none; background: none;
+    font-size: 0.82rem; font-weight: 600;
+    color: $text-light; cursor: pointer;
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
     white-space: nowrap;
     transition: color 0.2s, border-color 0.2s;
 
-    &.active {
-      color: $primary;
-      border-bottom-color: $primary;
-    }
+    &.active { color: $primary; border-bottom-color: $primary; }
 
     .count {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: $bg-light;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      min-width: 1.4rem;
-      height: 1.4rem;
-      padding: 0 0.35rem;
-      margin-left: 0.4rem;
-    }
-  }
-}
-
-// ─── Toolbar ──────────────────────────────────────────────
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-
-  .results-count {
-    font-size: 0.85rem;
-    color: $text-light;
-  }
-
-  .view-toggle {
-    display: flex;
-    gap: 0.25rem;
-    background: $bg-white;
-    border: 1px solid $border-color;
-    border-radius: $border-radius;
-    padding: 0.2rem;
-
-    .toggle-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 34px;
-      height: 34px;
-      border: none;
-      border-radius: 6px;
-      background: transparent;
-      color: $text-light;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-
-      &:hover { background: $bg-light; color: $text-dark; }
-      &.active { background: $primary; color: #fff; }
+      display: inline-flex; align-items: center; justify-content: center;
+      background: $bg-light; border-radius: 999px;
+      font-size: 0.72rem; min-width: 1.3rem; height: 1.3rem;
+      padding: 0 0.3rem; margin-left: 0.35rem;
     }
   }
 }
 
 // ─── État vide ────────────────────────────────────────────
 .empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  text-align: center;
-  color: $text-light;
-  font-size: 0.9rem;
-  padding: 2.5rem 1rem;
-
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.5rem; text-align: center;
+  color: $text-light; font-size: 0.9rem; padding: 2rem 1rem;
   span { font-size: 2rem; }
   p { font-style: italic; }
 }
@@ -309,8 +348,8 @@
 // ─── VUE GRILLE ───────────────────────────────────────────
 .sorties-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
 }
 
 .sortie-card {
@@ -318,194 +357,126 @@
   border-radius: $border-radius-lg;
   box-shadow: $shadow;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   transition: transform 0.2s, box-shadow 0.2s;
   border: 2px solid transparent;
 
   &:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.13); }
-
-  &.premium {
-    border-color: #f5c518;
-    box-shadow: 0 0 0 1px #f5c518, 0 4px 18px rgba(245,197,24,0.25);
-  }
+  &.premium { border-color: #f5c518; box-shadow: 0 0 0 1px #f5c518, 0 4px 18px rgba(245,197,24,0.25); }
 }
 
 .card-image {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1;
-  background: $primary-light;
-  overflow: hidden;
-
+  position: relative; width: 100%; aspect-ratio: 1;
+  background: $primary-light; overflow: hidden;
   img { width: 100%; height: 100%; object-fit: cover; }
-
-  .card-image-placeholder {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 3rem;
-  }
-
-  .badge-premium {
-    position: absolute; top: 0.5rem; right: 0.5rem;
-    background: linear-gradient(135deg, #f5c518, #e8a800);
-    color: #5a3e00;
-    font-size: 0.68rem; font-weight: 800;
-    padding: 0.2rem 0.6rem; border-radius: 20px;
-  }
-
-  .badge-theme {
-    position: absolute; bottom: 0.5rem; left: 0.5rem;
-    background: rgba(0,0,0,0.55); color: #fff;
-    font-size: 0.72rem; padding: 0.2rem 0.5rem;
-    border-radius: 20px; backdrop-filter: blur(4px);
-  }
-
-  .badge-prix-grid {
-    position: absolute; bottom: 0.5rem; right: 0.5rem;
-    background: $primary; color: #fff;
-    font-size: 0.72rem; font-weight: 700;
-    padding: 0.2rem 0.55rem; border-radius: 20px;
-    &.gratuit { background: $success; }
-  }
+  .card-image-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+  .badge-premium { position: absolute; top: 0.5rem; right: 0.5rem; background: linear-gradient(135deg, #f5c518, #e8a800); color: #5a3e00; font-size: 0.68rem; font-weight: 800; padding: 0.2rem 0.6rem; border-radius: 20px; }
+  .badge-theme { position: absolute; bottom: 0.5rem; left: 0.5rem; background: rgba(0,0,0,0.55); color: #fff; font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 20px; backdrop-filter: blur(4px); }
+  .badge-prix-grid { position: absolute; bottom: 0.5rem; right: 0.5rem; background: $primary; color: #fff; font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 20px; &.gratuit { background: $success; } }
 }
 
-.card-body {
-  padding: 1rem; flex: 1;
-  display: flex; flex-direction: column; gap: 0.5rem;
-}
-
-.card-title {
-  font-size: 1rem; font-weight: 700;
-  color: $text-dark; line-height: 1.3;
-}
-
-.card-desc {
-  font-size: 0.85rem; color: $text-medium; line-height: 1.4;
-  display: -webkit-box; -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical; overflow: hidden;
-}
-
+.card-body { padding: 0.85rem; flex: 1; display: flex; flex-direction: column; gap: 0.45rem; }
+.card-title { font-size: 0.95rem; font-weight: 700; color: $text-dark; line-height: 1.3; }
+.card-desc { font-size: 0.82rem; color: $text-medium; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .card-meta {
-  display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.25rem;
-
-  .meta-item {
-    display: flex; align-items: center; gap: 0.4rem;
-    font-size: 0.82rem; color: $text-medium;
-    .meta-icon { font-size: 0.9rem; flex-shrink: 0; }
-  }
+  display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.2rem;
+  .meta-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: $text-medium; }
+  .meta-icon { font-size: 0.85rem; flex-shrink: 0; }
 }
 
 // ─── VUE LISTE ────────────────────────────────────────────
-.sorties-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
+.sorties-list { display: flex; flex-direction: column; gap: 0.5rem; }
 
 .list-card {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  background: $bg-white;
-  border-radius: $border-radius-lg;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  padding: 0.65rem;
-  transition: box-shadow 0.2s;
-  border: 2px solid transparent;
-
+  display: flex; align-items: center; gap: 0.75rem;
+  background: $bg-white; border-radius: $border-radius-lg;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07); padding: 0.6rem;
+  transition: box-shadow 0.2s; border: 2px solid transparent;
   &:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
-
-  &.premium {
-    border-color: #f5c518;
-    box-shadow: 0 0 0 1px #f5c518, 0 2px 10px rgba(245,197,24,0.2);
-  }
+  &.premium { border-color: #f5c518; }
 }
 
 .list-image {
-  position: relative;
-  width: 90px;
-  min-width: 90px;
-  aspect-ratio: 1;
-  border-radius: $border-radius;
-  overflow: hidden;
-  background: $primary-light;
-  flex-shrink: 0;
-
+  position: relative; width: 80px; min-width: 80px; aspect-ratio: 1;
+  border-radius: $border-radius; overflow: hidden; background: $primary-light; flex-shrink: 0;
   img { width: 100%; height: 100%; object-fit: cover; }
-
-  .list-image-placeholder {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2rem;
-  }
-
-  .badge-prix {
-    position: absolute; top: 0.3rem; left: 0.3rem;
-    border-radius: 20px; padding: 0.15rem 0.45rem;
-    font-size: 0.65rem; font-weight: 700;
-    background: $primary; color: #fff;
-    &.gratuit { background: $success; }
-  }
-
-  .badge-premium-list {
-    position: absolute; top: 0.3rem; right: 0.3rem;
-    background: rgba(245, 197, 24, 0.45);
-    backdrop-filter: blur(4px);
-    border-radius: 50%;
-    width: 22px; height: 22px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem;
-  }
+  .list-image-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+  .badge-prix { position: absolute; top: 0.25rem; left: 0.25rem; border-radius: 20px; padding: 0.12rem 0.4rem; font-size: 0.62rem; font-weight: 700; background: $primary; color: #fff; &.gratuit { background: $success; } }
+  .badge-premium-list { position: absolute; top: 0.25rem; right: 0.25rem; background: rgba(245,197,24,0.45); backdrop-filter: blur(4px); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
 }
 
-.list-info {
-  flex: 1;
-  min-width: 0;
+.list-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.list-title { font-size: 0.9rem; font-weight: 700; color: $primary; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-time { display: flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; color: $text-medium; svg { flex-shrink: 0; color: $text-light; } }
+.list-bottom { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.list-location, .list-participants { display: flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; color: $text-medium; svg { flex-shrink: 0; color: $text-light; } }
+.list-location { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
+
+// ─── Boutons bas ──────────────────────────────────────────
+.bottom-actions {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
   display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
+  gap: 0;
+  z-index: 100;
+  border-top: 1px solid $border-color;
+  background: $bg-white;
 }
 
-.list-title {
-  font-size: 0.95rem;
+.bottom-btn {
+  flex: 1;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.85rem;
   font-weight: 700;
-  color: $primary;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  background: $bg-white;
+  color: $text-dark;
+  transition: background 0.15s;
+  &:hover { background: $bg-light; }
+
+  &.bottom-btn-primary {
+    background: $primary;
+    color: #fff;
+    &:hover { background: darken(#6366f1, 8%); }
+  }
 }
 
-.list-time {
-  display: flex; align-items: center; gap: 0.35rem;
-  font-size: 0.8rem; color: $text-medium;
-  svg { flex-shrink: 0; color: $text-light; }
+// ─── Lightbox ─────────────────────────────────────────────
+.lightbox-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.15s ease;
 }
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 
-.list-bottom {
-  display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+.lightbox-img {
+  max-width: 90vw; max-height: 85vh;
+  border-radius: 12px; object-fit: contain;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  animation: zoomIn 0.15s ease;
 }
+@keyframes zoomIn { from { transform: scale(0.92); opacity: 0 } to { transform: scale(1); opacity: 1 } }
 
-.list-location, .list-participants {
-  display: flex; align-items: center; gap: 0.3rem;
-  font-size: 0.78rem; color: $text-medium;
-  svg { flex-shrink: 0; color: $text-light; }
-}
-
-.list-location {
-  overflow: hidden; text-overflow: ellipsis;
-  white-space: nowrap; max-width: 160px;
+.lightbox-close {
+  position: absolute; top: 1rem; right: 1rem;
+  width: 40px; height: 40px; border-radius: 50%;
+  border: none; background: rgba(255,255,255,0.15);
+  color: #fff; font-size: 1.1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+  &:hover { background: rgba(255,255,255,0.3); }
 }
 
 // ─── Responsive ───────────────────────────────────────────
-@media (min-width: 768px) {
-  .list-image { width: 130px; min-width: 130px; }
-  .list-title { font-size: 1rem; }
-  .list-time, .list-location, .list-participants { font-size: 0.83rem; }
-  .list-location { max-width: 240px; }
-
-  .hero-body { flex-direction: row; align-items: flex-end; margin-top: -24px; }
-  .hero-info { align-items: flex-start; text-align: left; }
-  .name-row { justify-content: flex-start; }
+@media (min-width: 600px) {
+  .hero-photo { height: 320px; }
+  .list-image { width: 100px; min-width: 100px; }
+  .list-location { max-width: 220px; }
 }
