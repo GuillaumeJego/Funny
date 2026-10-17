@@ -6,7 +6,7 @@ import {
   ElementRef,
   AfterViewChecked,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -18,7 +18,7 @@ const EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss',
 })

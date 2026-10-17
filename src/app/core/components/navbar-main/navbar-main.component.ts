@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { DrawerService } from '../../services/drawer.service';
 import { AuthService } from '../../services/auth.service';
@@ -9,7 +9,7 @@ import { NotificationService } from '../../services/notification.service';
 @Component({
   selector: 'app-navbar-main',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './navbar-main.component.html',
   styleUrl: './navbar-main.component.scss',
 })

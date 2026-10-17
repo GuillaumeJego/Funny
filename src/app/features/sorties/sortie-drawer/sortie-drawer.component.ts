@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { SortieWithRelations } from '../../../core/models/sortie.model';
 import { SortieService } from '../../../core/services/sortie.service';
@@ -15,7 +15,7 @@ interface MiniProfile {
 @Component({
   selector: 'app-sortie-drawer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './sortie-drawer.component.html',
   styleUrl: './sortie-drawer.component.scss',
 })

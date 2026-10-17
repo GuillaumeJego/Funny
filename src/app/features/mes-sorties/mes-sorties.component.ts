@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { SortieService } from '../../core/services/sortie.service';
@@ -18,7 +18,7 @@ import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.co
 @Component({
   selector: 'app-mes-sorties',
   standalone: true,
-  imports: [CommonModule, SortieDrawerComponent, NavbarFiltersComponent],
+  imports: [SortieDrawerComponent, NavbarFiltersComponent],
   templateUrl: './mes-sorties.component.html',
   styleUrl: './mes-sorties.component.scss',
 })

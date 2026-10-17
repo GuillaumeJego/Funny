@@ -48,210 +48,226 @@
   </div>
 
   <!-- ── Panel Quoi : thèmes ── -->
-  <div class="filter-panel" *ngIf="openPanel === 'quoi'" (click)="$event.stopPropagation()">
-    <div class="panel-inner">
-      <label>Sélectionner un ou plusieurs thèmes</label>
-      <div class="theme-list">
-        <div
-          *ngFor="let theme of availableThemes"
-          class="theme-option"
-          [class.selected]="selectedThemeIds.has(theme.id)"
-          (click)="toggleTheme(theme.id)"
-        >
-          <span class="theme-icon">{{ theme.icon }}</span>
-          <span class="theme-name">{{ theme.name }}</span>
-          <span class="check" *ngIf="selectedThemeIds.has(theme.id)">✓</span>
+  @if (openPanel === 'quoi') {
+    <div class="filter-panel" (click)="$event.stopPropagation()">
+      <div class="panel-inner">
+        <label>Sélectionner un ou plusieurs thèmes</label>
+        <div class="theme-list">
+          @for (theme of availableThemes; track theme) {
+            <div
+              class="theme-option"
+              [class.selected]="selectedThemeIds.has(theme.id)"
+              (click)="toggleTheme(theme.id)"
+            >
+              <span class="theme-icon">{{ theme.icon }}</span>
+              <span class="theme-name">{{ theme.name }}</span>
+              @if (selectedThemeIds.has(theme.id)) {
+                <span class="check">✓</span>
+              }
+            </div>
+          }
         </div>
-      </div>
-      <div class="panel-actions">
-        <button class="btn-clear" *ngIf="filters.themeIds?.length" (click)="clearThemes()">
-          ✕ Effacer
-        </button>
-        <button class="btn-apply" (click)="applyThemes()">Appliquer</button>
+        <div class="panel-actions">
+          @if (filters.themeIds?.length) {
+            <button class="btn-clear" (click)="clearThemes()">✕ Effacer</button>
+          }
+          <button class="btn-apply" (click)="applyThemes()">Appliquer</button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
   <!-- ── Panel Où : lieux existants + recherche Nominatim ── -->
-  <div class="filter-panel" *ngIf="openPanel === 'ou'" (click)="$event.stopPropagation()">
-    <div class="panel-inner">
-      <!-- Lieux déjà en base -->
-      <div *ngIf="availableLocations.length">
-        <label>Lieux existants</label>
-        <div class="location-chips">
-          <button
-            *ngFor="let loc of availableLocations"
-            class="chip"
-            [class.active]="filters.ou === loc"
-            (click)="setOuDirect(loc)"
-          >
-            📍 {{ loc }}
-          </button>
+  @if (openPanel === 'ou') {
+    <div class="filter-panel" (click)="$event.stopPropagation()">
+      <div class="panel-inner">
+        <!-- Lieux déjà en base -->
+        @if (availableLocations.length) {
+          <div>
+            <label>Lieux existants</label>
+            <div class="location-chips">
+              @for (loc of availableLocations; track loc) {
+                <button class="chip" [class.active]="filters.ou === loc" (click)="setOuDirect(loc)">
+                  📍 {{ loc }}
+                </button>
+              }
+            </div>
+            <div class="ou-separator">ou rechercher</div>
+          </div>
+        }
+        <!-- Recherche Nominatim -->
+        @if (!availableLocations.length) {
+          <label>Rechercher une ville</label>
+        }
+        <div class="location-search">
+          <input
+            type="text"
+            class="location-input"
+            [(ngModel)]="locationQuery"
+            (input)="onLocationInput()"
+            placeholder="Ex: Paris, Lyon, Rennes…"
+            autocomplete="off"
+          />
+          @if (locationSearching) {
+            <span class="location-spinner">⏳</span>
+          }
         </div>
-        <div class="ou-separator">ou rechercher</div>
-      </div>
-
-      <!-- Recherche Nominatim -->
-      <label *ngIf="!availableLocations.length">Rechercher une ville</label>
-      <div class="location-search">
-        <input
-          type="text"
-          class="location-input"
-          [(ngModel)]="locationQuery"
-          (input)="onLocationInput()"
-          placeholder="Ex: Paris, Lyon, Rennes…"
-          autocomplete="off"
-        />
-        <span class="location-spinner" *ngIf="locationSearching">⏳</span>
-      </div>
-
-      <!-- Ville active (depuis recherche) -->
-      <div class="location-active" *ngIf="filters.ou && !locationSuggestions.length">
-        <span>📍 {{ filters.ou }}</span>
-        <button class="btn-clear-inline" (click)="clearOu()">✕</button>
-      </div>
-
-      <!-- Suggestions Nominatim -->
-      <div class="location-suggestions" *ngIf="locationSuggestions.length">
-        <div
-          *ngFor="let place of locationSuggestions"
-          class="suggestion-item"
-          (click)="setOu(place)"
-        >
-          <span class="sug-icon">📍</span>
-          <span class="sug-city">{{ place.city }}</span>
-          <span class="sug-country">{{ place.country }}</span>
-        </div>
-      </div>
-
-      <div
-        *ngIf="
+        <!-- Ville active (depuis recherche) -->
+        @if (filters.ou && !locationSuggestions.length) {
+          <div class="location-active">
+            <span>📍 {{ filters.ou }}</span>
+            <button class="btn-clear-inline" (click)="clearOu()">✕</button>
+          </div>
+        }
+        <!-- Suggestions Nominatim -->
+        @if (locationSuggestions.length) {
+          <div class="location-suggestions">
+            @for (place of locationSuggestions; track place) {
+              <div class="suggestion-item" (click)="setOu(place)">
+                <span class="sug-icon">📍</span>
+                <span class="sug-city">{{ place.city }}</span>
+                <span class="sug-country">{{ place.country }}</span>
+              </div>
+            }
+          </div>
+        }
+        @if (
           locationQuery.length > 1 &&
           !locationSearching &&
           !locationSuggestions.length &&
           !filters.ou
-        "
-        class="empty-hint"
-      >
-        Aucun résultat
-      </div>
-
-      <div class="panel-actions" *ngIf="filters.ou">
-        <button class="btn-clear" (click)="clearOu()">✕ Effacer</button>
+        ) {
+          <div class="empty-hint">Aucun résultat</div>
+        }
+        @if (filters.ou) {
+          <div class="panel-actions">
+            <button class="btn-clear" (click)="clearOu()">✕ Effacer</button>
+          </div>
+        }
       </div>
     </div>
-  </div>
+  }
 
   <!-- ── Panel Quand : plage de dates ── -->
-  <div class="filter-panel" *ngIf="openPanel === 'quand'" (click)="$event.stopPropagation()">
-    <div class="panel-inner">
-      <label>Raccourcis</label>
-      <div class="chip-list" style="margin-bottom: 0.75rem">
-        <button
-          class="chip"
-          [class.active]="quickPeriod === 'past'"
-          (click)="setQuickPeriod('past')"
-        >
-          📅 Passées
-        </button>
-        <button
-          class="chip"
-          [class.active]="quickPeriod === 'upcoming'"
-          (click)="setQuickPeriod('upcoming')"
-        >
-          🔜 À venir
-        </button>
-        <button
-          class="chip"
-          [class.active]="quickPeriod === 'today'"
-          (click)="setQuickPeriod('today')"
-        >
-          Ce jour
-        </button>
-        <button
-          class="chip"
-          [class.active]="quickPeriod === 'week'"
-          (click)="setQuickPeriod('week')"
-        >
-          Cette semaine
-        </button>
-        <button
-          class="chip"
-          [class.active]="quickPeriod === 'month'"
-          (click)="setQuickPeriod('month')"
-        >
-          Ce mois
-        </button>
-      </div>
-      <label>Ou choisir une plage</label>
-      <div class="date-range">
-        <div class="date-field">
-          <span class="date-label">Du</span>
-          <input
-            type="date"
-            [(ngModel)]="dateDebut"
-            [max]="dateFin || ''"
-            (change)="quickPeriod = ''"
-          />
+  @if (openPanel === 'quand') {
+    <div class="filter-panel" (click)="$event.stopPropagation()">
+      <div class="panel-inner">
+        <label>Raccourcis</label>
+        <div class="chip-list" style="margin-bottom: 0.75rem">
+          <button
+            class="chip"
+            [class.active]="quickPeriod === 'past'"
+            (click)="setQuickPeriod('past')"
+          >
+            📅 Passées
+          </button>
+          <button
+            class="chip"
+            [class.active]="quickPeriod === 'upcoming'"
+            (click)="setQuickPeriod('upcoming')"
+          >
+            🔜 À venir
+          </button>
+          <button
+            class="chip"
+            [class.active]="quickPeriod === 'today'"
+            (click)="setQuickPeriod('today')"
+          >
+            Ce jour
+          </button>
+          <button
+            class="chip"
+            [class.active]="quickPeriod === 'week'"
+            (click)="setQuickPeriod('week')"
+          >
+            Cette semaine
+          </button>
+          <button
+            class="chip"
+            [class.active]="quickPeriod === 'month'"
+            (click)="setQuickPeriod('month')"
+          >
+            Ce mois
+          </button>
         </div>
-        <span class="date-sep">→</span>
-        <div class="date-field">
-          <span class="date-label">Au</span>
-          <input
-            type="date"
-            [(ngModel)]="dateFin"
-            [min]="dateDebut || ''"
-            (change)="quickPeriod = ''"
-          />
+        <label>Ou choisir une plage</label>
+        <div class="date-range">
+          <div class="date-field">
+            <span class="date-label">Du</span>
+            <input
+              type="date"
+              [(ngModel)]="dateDebut"
+              [max]="dateFin || ''"
+              (change)="quickPeriod = ''"
+            />
+          </div>
+          <span class="date-sep">→</span>
+          <div class="date-field">
+            <span class="date-label">Au</span>
+            <input
+              type="date"
+              [(ngModel)]="dateFin"
+              [min]="dateDebut || ''"
+              (change)="quickPeriod = ''"
+            />
+          </div>
         </div>
-      </div>
-      <div class="panel-actions">
-        <button
-          class="btn-clear"
-          *ngIf="filters.dateDebut || filters.dateFin"
-          (click)="clearDates()"
-        >
-          Effacer
-        </button>
-        <button class="btn-apply" (click)="applyDates()">Appliquer</button>
+        <div class="panel-actions">
+          @if (filters.dateDebut || filters.dateFin) {
+            <button class="btn-clear" (click)="clearDates()">Effacer</button>
+          }
+          <button class="btn-apply" (click)="applyDates()">Appliquer</button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
   <!-- ── Panel Prix ── -->
-  <div class="filter-panel" *ngIf="openPanel === 'prix'" (click)="$event.stopPropagation()">
-    <div class="panel-inner">
-      <label>Tarif</label>
-      <div class="chip-list">
-        <button
-          class="chip"
-          [class.active]="filters.prix === 'gratuit'"
-          (click)="setPrix('gratuit')"
-        >
-          🟢 Gratuit
-        </button>
-        <button class="chip" [class.active]="filters.prix === 'payant'" (click)="setPrix('payant')">
-          💶 Payant
-        </button>
-      </div>
-      <div class="panel-actions" *ngIf="filters.prix">
-        <button class="btn-clear" (click)="clearPrix()">✕ Effacer</button>
+  @if (openPanel === 'prix') {
+    <div class="filter-panel" (click)="$event.stopPropagation()">
+      <div class="panel-inner">
+        <label>Tarif</label>
+        <div class="chip-list">
+          <button
+            class="chip"
+            [class.active]="filters.prix === 'gratuit'"
+            (click)="setPrix('gratuit')"
+          >
+            🟢 Gratuit
+          </button>
+          <button
+            class="chip"
+            [class.active]="filters.prix === 'payant'"
+            (click)="setPrix('payant')"
+          >
+            💶 Payant
+          </button>
+        </div>
+        @if (filters.prix) {
+          <div class="panel-actions">
+            <button class="btn-clear" (click)="clearPrix()">✕ Effacer</button>
+          </div>
+        }
       </div>
     </div>
-  </div>
+  }
 
   <!-- ── Panel Premium ── -->
-  <div class="filter-panel" *ngIf="openPanel === 'premium'" (click)="$event.stopPropagation()">
-    <div class="panel-inner">
-      <label>Sorties réservées aux abonnés</label>
-      <div class="chip-list">
-        <button class="chip" [class.active]="filters.premium" (click)="togglePremium()">
-          ⭐ Afficher uniquement les sorties Premium
-        </button>
-      </div>
-      <div class="panel-actions" *ngIf="filters.premium">
-        <button class="btn-clear" (click)="togglePremium(); openPanel = null">✕ Effacer</button>
+  @if (openPanel === 'premium') {
+    <div class="filter-panel" (click)="$event.stopPropagation()">
+      <div class="panel-inner">
+        <label>Sorties réservées aux abonnés</label>
+        <div class="chip-list">
+          <button class="chip" [class.active]="filters.premium" (click)="togglePremium()">
+            ⭐ Afficher uniquement les sorties Premium
+          </button>
+        </div>
+        @if (filters.premium) {
+          <div class="panel-actions">
+            <button class="btn-clear" (click)="togglePremium(); openPanel = null">✕ Effacer</button>
+          </div>
+        }
       </div>
     </div>
-  </div>
+  }
 </nav>

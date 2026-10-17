@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-premium',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './premium.component.html',
   styleUrl: './premium.component.scss',
 })

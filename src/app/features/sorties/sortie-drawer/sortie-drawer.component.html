@@ -1,283 +1,278 @@
-<div class="drawer-backdrop" *ngIf="isOpen" (click)="onBackdropClick($event)">
-  <div class="drawer" [class.open]="isOpen">
-    <!-- Poignée mobile -->
-    <div class="drawer-handle">
-      <div class="handle-bar"></div>
-    </div>
-
-    <!-- Bouton fermer (toujours visible) -->
-    <button class="btn-close" (click)="close()" title="Fermer">
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.5"
-      >
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-      </svg>
-    </button>
-
-    <ng-container *ngIf="sortie">
-      <!-- ══ CAS PREMIUM VERROUILLÉ ══ -->
-      <div *ngIf="isPremiumLocked" class="locked">
-        <div class="locked-image">
-          <img
-            *ngIf="sortie.resolvedImageUrl"
-            [src]="sortie.resolvedImageUrl"
-            alt=""
-            class="blurred"
-          />
-          <div class="lock-overlay">
-            <div class="lock-icon">🔒</div>
-            <h3>Sortie Premium</h3>
-            <p>
-              Abonnez-vous pour accéder aux détails de cette sortie et rejoindre la communauté
-              premium.
-            </p>
-            <button class="btn-subscribe" (click)="goToPremium()">⭐ Passer Premium</button>
-          </div>
-        </div>
-        <div class="locked-info">
-          <h2 class="sortie-title">{{ sortie.title }}</h2>
-          <span class="badge-premium">⭐ Réservé aux abonnés</span>
-        </div>
+@if (isOpen) {
+  <div class="drawer-backdrop" (click)="onBackdropClick($event)">
+    <div class="drawer" [class.open]="isOpen">
+      <!-- Poignée mobile -->
+      <div class="drawer-handle">
+        <div class="handle-bar"></div>
       </div>
-
-      <!-- ══ CAS NORMAL ══ -->
-      <div *ngIf="!isPremiumLocked" class="drawer-content">
-        <!-- Image -->
-        <div class="drawer-image">
-          <img
-            *ngIf="sortie.resolvedImageUrl"
-            [src]="sortie.resolvedImageUrl"
-            [alt]="sortie.title"
-          />
-          <div *ngIf="!sortie.resolvedImageUrl" class="image-placeholder">
-            {{ sortie.themes?.icon || '🎯' }}
+      <!-- Bouton fermer (toujours visible) -->
+      <button class="btn-close" (click)="close()" title="Fermer">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+      @if (sortie) {
+        <!-- ══ CAS PREMIUM VERROUILLÉ ══ -->
+        @if (isPremiumLocked) {
+          <div class="locked">
+            <div class="locked-image">
+              @if (sortie.resolvedImageUrl) {
+                <img [src]="sortie.resolvedImageUrl" alt="" class="blurred" />
+              }
+              <div class="lock-overlay">
+                <div class="lock-icon">🔒</div>
+                <h3>Sortie Premium</h3>
+                <p>
+                  Abonnez-vous pour accéder aux détails de cette sortie et rejoindre la communauté
+                  premium.
+                </p>
+                <button class="btn-subscribe" (click)="goToPremium()">⭐ Passer Premium</button>
+              </div>
+            </div>
+            <div class="locked-info">
+              <h2 class="sortie-title">{{ sortie.title }}</h2>
+              <span class="badge-premium">⭐ Réservé aux abonnés</span>
+            </div>
           </div>
-          <span *ngIf="sortie.is_premium" class="badge-premium-img">⭐ Premium</span>
-          <span class="badge-theme-img">{{ sortie.themes?.icon }} {{ sortie.themes?.name }}</span>
-        </div>
-
-        <!-- Onglets -->
-        <div class="drawer-tabs">
-          <button
-            class="dtab"
-            [class.active]="activeTab === 'details'"
-            (click)="switchTab('details')"
-          >
-            Détails
-          </button>
-          <button
-            class="dtab"
-            [class.active]="activeTab === 'membres'"
-            (click)="switchTab('membres')"
-          >
-            Membres
-            <span *ngIf="sortie.inscriptionsCount" class="dtab-count">{{
-              sortie.inscriptionsCount
-            }}</span>
-          </button>
-        </div>
-
-        <!-- Corps — Détails -->
-        <div class="drawer-body" *ngIf="activeTab === 'details'">
-          <!-- Titre + actions -->
-          <div class="title-row">
-            <h2 class="sortie-title">{{ sortie.title }}</h2>
-            <button
-              class="btn-heart"
-              [class.active]="isFavori"
-              (click)="favoriToggled.emit(sortie.id)"
-              title="Favoris"
-            >
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                [attr.fill]="isFavori ? '#ef4444' : 'none'"
-                stroke="currentColor"
-                [attr.stroke]="isFavori ? '#ef4444' : 'currentColor'"
-                stroke-width="2"
-              >
-                <path
-                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <!-- Description -->
-          <p *ngIf="sortie.description" class="sortie-desc">{{ sortie.description }}</p>
-
-          <!-- Infos -->
-          <div class="info-list">
-            <div class="info-item">
-              <span class="info-icon">📅</span>
-              <span>{{ formatDate(sortie.date) }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-icon">📍</span>
-              <span>{{ sortie.location }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-icon">💶</span>
-              <span>{{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}</span>
-            </div>
-            <div class="info-item" *ngIf="sortie.max_participants">
-              <span class="info-icon">👥</span>
-              <span
-                >{{ sortie.inscriptionsCount }} / {{ sortie.max_participants }} participants</span
+        }
+        <!-- ══ CAS NORMAL ══ -->
+        @if (!isPremiumLocked) {
+          <div class="drawer-content">
+            <!-- Image -->
+            <div class="drawer-image">
+              @if (sortie.resolvedImageUrl) {
+                <img [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
+              }
+              @if (!sortie.resolvedImageUrl) {
+                <div class="image-placeholder">
+                  {{ sortie.themes?.icon || '🎯' }}
+                </div>
+              }
+              @if (sortie.is_premium) {
+                <span class="badge-premium-img">⭐ Premium</span>
+              }
+              <span class="badge-theme-img"
+                >{{ sortie.themes?.icon }} {{ sortie.themes?.name }}</span
               >
             </div>
-          </div>
-
-          <!-- Organisateur -->
-          <div class="organizer" *ngIf="sortie.profiles">
-            <img
-              *ngIf="sortie.profiles.avatar_url"
-              [src]="sortie.profiles.avatar_url"
-              class="avatar"
-              alt=""
-            />
-            <div *ngIf="!sortie.profiles.avatar_url" class="avatar-placeholder">
-              {{ sortie.profiles.username.charAt(0).toUpperCase() }}
-            </div>
-            <div>
-              <div class="organizer-label">Organisé par</div>
-              <div class="organizer-name">{{ sortie.profiles.username }}</div>
-            </div>
-          </div>
-
-          <!-- Bouton supprimer (organisateur uniquement) -->
-          <button
-            *ngIf="isOrganizer"
-            class="btn-supprimer"
-            (click)="supprimerClicked.emit(sortie.id)"
-          >
-            🗑️ Supprimer la sortie
-          </button>
-
-          <!-- Boutons rejoindre / quitter / liste d'attente (non-organisateur) -->
-          <ng-container *ngIf="!isOrganizer">
-            <button
-              *ngIf="inscriptionStatus === 'none'"
-              class="btn-rejoindre"
-              (click)="rejoindreClicked.emit(sortie.id)"
-            >
-              ✅ Rejoindre cette sortie
-            </button>
-            <button
-              *ngIf="inscriptionStatus === 'pending'"
-              class="btn-quitter"
-              (click)="quitterClicked.emit(sortie.id)"
-            >
-              ❌ Quitter cette sortie
-            </button>
-            <div *ngIf="inscriptionStatus === 'waiting'" class="waiting-block">
-              <div class="waiting-badge">⏳ Vous êtes sur liste d'attente</div>
-              <button class="btn-quitter-attente" (click)="quitterClicked.emit(sortie.id)">
-                Quitter la liste d'attente
+            <!-- Onglets -->
+            <div class="drawer-tabs">
+              <button
+                class="dtab"
+                [class.active]="activeTab === 'details'"
+                (click)="switchTab('details')"
+              >
+                Détails
+              </button>
+              <button
+                class="dtab"
+                [class.active]="activeTab === 'membres'"
+                (click)="switchTab('membres')"
+              >
+                Membres
+                @if (sortie.inscriptionsCount) {
+                  <span class="dtab-count">{{ sortie.inscriptionsCount }}</span>
+                }
               </button>
             </div>
-          </ng-container>
-        </div>
-
-        <!-- Corps — Membres -->
-        <div class="drawer-body membres-tab" *ngIf="activeTab === 'membres'">
-          <div *ngIf="membresLoading" class="membres-loading">Chargement…</div>
-
-          <ng-container *ngIf="!membresLoading">
-            <!-- Inscrits -->
-            <div class="membres-section">
-              <div class="membres-section-title">✅ Inscrits ({{ membresInscrits.length }})</div>
-              <div *ngIf="membresInscrits.length === 0" class="membres-empty">
-                Aucun inscrit pour le moment.
-              </div>
-              <div class="membres-list">
-                <div
-                  *ngFor="let m of membresInscrits"
-                  class="membre-item membre-clickable"
-                  (click)="goToProfile(m.id)"
-                >
-                  <img
-                    *ngIf="m.avatar_url"
-                    [src]="m.avatar_url"
-                    class="m-avatar"
-                    [alt]="m.username"
-                  />
-                  <div *ngIf="!m.avatar_url" class="m-avatar-placeholder">
-                    {{ getInitial(m.username) }}
-                  </div>
-                  <span class="m-name">{{ m.username }}</span>
-                  <span *ngIf="m.isOrganizer" class="m-badge-org">Organisateur</span>
+            <!-- Corps — Détails -->
+            @if (activeTab === 'details') {
+              <div class="drawer-body">
+                <!-- Titre + actions -->
+                <div class="title-row">
+                  <h2 class="sortie-title">{{ sortie.title }}</h2>
+                  <button
+                    class="btn-heart"
+                    [class.active]="isFavori"
+                    (click)="favoriToggled.emit(sortie.id)"
+                    title="Favoris"
+                  >
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      [attr.fill]="isFavori ? '#ef4444' : 'none'"
+                      stroke="currentColor"
+                      [attr.stroke]="isFavori ? '#ef4444' : 'currentColor'"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                      />
+                    </svg>
+                  </button>
                 </div>
-              </div>
-            </div>
-
-            <!-- Liste d'attente -->
-            <div
-              class="membres-section"
-              *ngIf="membresWaiting.length > 0 || sortie?.max_participants"
-            >
-              <div class="membres-section-title">
-                ⏳ Liste d'attente ({{ membresWaiting.length }})
-              </div>
-              <div *ngIf="membresWaiting.length === 0" class="membres-empty">
-                Personne en liste d'attente.
-              </div>
-              <div class="membres-list">
-                <div
-                  *ngFor="let m of membresWaiting; let i = index"
-                  class="membre-item membre-clickable"
-                  (click)="goToProfile(m.id)"
-                >
-                  <span class="m-rank">#{{ i + 1 }}</span>
-                  <img
-                    *ngIf="m.avatar_url"
-                    [src]="m.avatar_url"
-                    class="m-avatar"
-                    [alt]="m.username"
-                  />
-                  <div *ngIf="!m.avatar_url" class="m-avatar-placeholder">
-                    {{ getInitial(m.username) }}
+                <!-- Description -->
+                @if (sortie.description) {
+                  <p class="sortie-desc">{{ sortie.description }}</p>
+                }
+                <!-- Infos -->
+                <div class="info-list">
+                  <div class="info-item">
+                    <span class="info-icon">📅</span>
+                    <span>{{ formatDate(sortie.date) }}</span>
                   </div>
-                  <span class="m-name">{{ m.username }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Likes -->
-            <div class="membres-section">
-              <div class="membres-section-title">❤️ Ont liké ({{ membresLikes.length }})</div>
-              <div *ngIf="membresLikes.length === 0" class="membres-empty">
-                Personne n'a liké cette sortie.
-              </div>
-              <div class="membres-list">
-                <div
-                  *ngFor="let m of membresLikes"
-                  class="membre-item membre-clickable"
-                  (click)="goToProfile(m.id)"
-                >
-                  <img
-                    *ngIf="m.avatar_url"
-                    [src]="m.avatar_url"
-                    class="m-avatar"
-                    [alt]="m.username"
-                  />
-                  <div *ngIf="!m.avatar_url" class="m-avatar-placeholder">
-                    {{ getInitial(m.username) }}
+                  <div class="info-item">
+                    <span class="info-icon">📍</span>
+                    <span>{{ sortie.location }}</span>
                   </div>
-                  <span class="m-name">{{ m.username }}</span>
+                  <div class="info-item">
+                    <span class="info-icon">💶</span>
+                    <span>{{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}</span>
+                  </div>
+                  @if (sortie.max_participants) {
+                    <div class="info-item">
+                      <span class="info-icon">👥</span>
+                      <span
+                        >{{ sortie.inscriptionsCount }} /
+                        {{ sortie.max_participants }} participants</span
+                      >
+                    </div>
+                  }
                 </div>
+                <!-- Organisateur -->
+                @if (sortie.profiles) {
+                  <div class="organizer">
+                    @if (sortie.profiles.avatar_url) {
+                      <img [src]="sortie.profiles.avatar_url" class="avatar" alt="" />
+                    }
+                    @if (!sortie.profiles.avatar_url) {
+                      <div class="avatar-placeholder">
+                        {{ sortie.profiles.username.charAt(0).toUpperCase() }}
+                      </div>
+                    }
+                    <div>
+                      <div class="organizer-label">Organisé par</div>
+                      <div class="organizer-name">{{ sortie.profiles.username }}</div>
+                    </div>
+                  </div>
+                }
+                <!-- Bouton supprimer (organisateur uniquement) -->
+                @if (isOrganizer) {
+                  <button class="btn-supprimer" (click)="supprimerClicked.emit(sortie.id)">
+                    🗑️ Supprimer la sortie
+                  </button>
+                }
+                <!-- Boutons rejoindre / quitter / liste d'attente (non-organisateur) -->
+                @if (!isOrganizer) {
+                  @if (inscriptionStatus === 'none') {
+                    <button class="btn-rejoindre" (click)="rejoindreClicked.emit(sortie.id)">
+                      ✅ Rejoindre cette sortie
+                    </button>
+                  }
+                  @if (inscriptionStatus === 'pending') {
+                    <button class="btn-quitter" (click)="quitterClicked.emit(sortie.id)">
+                      ❌ Quitter cette sortie
+                    </button>
+                  }
+                  @if (inscriptionStatus === 'waiting') {
+                    <div class="waiting-block">
+                      <div class="waiting-badge">⏳ Vous êtes sur liste d'attente</div>
+                      <button class="btn-quitter-attente" (click)="quitterClicked.emit(sortie.id)">
+                        Quitter la liste d'attente
+                      </button>
+                    </div>
+                  }
+                }
               </div>
-            </div>
-          </ng-container>
-        </div>
-      </div>
-    </ng-container>
+            }
+            <!-- Corps — Membres -->
+            @if (activeTab === 'membres') {
+              <div class="drawer-body membres-tab">
+                @if (membresLoading) {
+                  <div class="membres-loading">Chargement…</div>
+                }
+                @if (!membresLoading) {
+                  <!-- Inscrits -->
+                  <div class="membres-section">
+                    <div class="membres-section-title">
+                      ✅ Inscrits ({{ membresInscrits.length }})
+                    </div>
+                    @if (membresInscrits.length === 0) {
+                      <div class="membres-empty">Aucun inscrit pour le moment.</div>
+                    }
+                    <div class="membres-list">
+                      @for (m of membresInscrits; track m) {
+                        <div class="membre-item membre-clickable" (click)="goToProfile(m.id)">
+                          @if (m.avatar_url) {
+                            <img [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
+                          }
+                          @if (!m.avatar_url) {
+                            <div class="m-avatar-placeholder">
+                              {{ getInitial(m.username) }}
+                            </div>
+                          }
+                          <span class="m-name">{{ m.username }}</span>
+                          @if (m.isOrganizer) {
+                            <span class="m-badge-org">Organisateur</span>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <!-- Liste d'attente -->
+                  @if (membresWaiting.length > 0 || sortie?.max_participants) {
+                    <div class="membres-section">
+                      <div class="membres-section-title">
+                        ⏳ Liste d'attente ({{ membresWaiting.length }})
+                      </div>
+                      @if (membresWaiting.length === 0) {
+                        <div class="membres-empty">Personne en liste d'attente.</div>
+                      }
+                      <div class="membres-list">
+                        @for (m of membresWaiting; track m; let i = $index) {
+                          <div class="membre-item membre-clickable" (click)="goToProfile(m.id)">
+                            <span class="m-rank">#{{ i + 1 }}</span>
+                            @if (m.avatar_url) {
+                              <img [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
+                            }
+                            @if (!m.avatar_url) {
+                              <div class="m-avatar-placeholder">
+                                {{ getInitial(m.username) }}
+                              </div>
+                            }
+                            <span class="m-name">{{ m.username }}</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                  <!-- Likes -->
+                  <div class="membres-section">
+                    <div class="membres-section-title">❤️ Ont liké ({{ membresLikes.length }})</div>
+                    @if (membresLikes.length === 0) {
+                      <div class="membres-empty">Personne n'a liké cette sortie.</div>
+                    }
+                    <div class="membres-list">
+                      @for (m of membresLikes; track m) {
+                        <div class="membre-item membre-clickable" (click)="goToProfile(m.id)">
+                          @if (m.avatar_url) {
+                            <img [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
+                          }
+                          @if (!m.avatar_url) {
+                            <div class="m-avatar-placeholder">
+                              {{ getInitial(m.username) }}
+                            </div>
+                          }
+                          <span class="m-name">{{ m.username }}</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
   </div>
-</div>
+}

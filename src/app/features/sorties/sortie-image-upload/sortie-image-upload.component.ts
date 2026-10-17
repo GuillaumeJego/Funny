@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 
 @Component({
   selector: 'app-sortie-image-upload',
   standalone: true,
-  imports: [CommonModule, ImageCropperComponent],
+  imports: [ImageCropperComponent],
   templateUrl: './sortie-image-upload.component.html',
   styleUrl: './sortie-image-upload.component.scss',
 })

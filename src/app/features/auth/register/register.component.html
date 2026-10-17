@@ -22,8 +22,12 @@
       />
     </div>
 
-    <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
-    <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
+    @if (errorMessage) {
+      <div class="error">{{ errorMessage }}</div>
+    }
+    @if (successMessage) {
+      <div class="success">{{ successMessage }}</div>
+    }
 
     <button (click)="onRegister()" [disabled]="loading">
       {{ loading ? 'Inscription...' : "S'inscrire" }}

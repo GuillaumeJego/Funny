@@ -1,25 +1,23 @@
 <nav class="navbar-main">
-  <div
-    *ngFor="let item of navItems"
-    class="nav-item"
-    [class.active]="isActive(item.route)"
-    (click)="navigate(item.route)"
-  >
-    <div class="nav-icon-wrap">
-      <span class="nav-icon">{{ item.icon }}</span>
-      <span *ngIf="item.route === '/notifications' && unreadCount > 0" class="notif-badge">{{
-        unreadCount > 99 ? '99+' : unreadCount
-      }}</span>
+  @for (item of navItems; track item) {
+    <div class="nav-item" [class.active]="isActive(item.route)" (click)="navigate(item.route)">
+      <div class="nav-icon-wrap">
+        <span class="nav-icon">{{ item.icon }}</span>
+        @if (item.route === '/notifications' && unreadCount > 0) {
+          <span class="notif-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+        }
+      </div>
+      <span class="nav-label">{{ item.label }}</span>
     </div>
-    <span class="nav-label">{{ item.label }}</span>
-  </div>
-  <div
-    *ngIf="isAdmin"
-    class="nav-item admin-item"
-    [class.active]="isActive('/admin')"
-    (click)="navigate('/admin')"
-  >
-    <span class="nav-icon">🛡️</span>
-    <span class="nav-label">Admin</span>
-  </div>
+  }
+  @if (isAdmin) {
+    <div
+      class="nav-item admin-item"
+      [class.active]="isActive('/admin')"
+      (click)="navigate('/admin')"
+    >
+      <span class="nav-icon">🛡️</span>
+      <span class="nav-label">Admin</span>
+    </div>
+  }
 </nav>

@@ -1,15 +1,11 @@
 <div class="avatar-upload">
   <!-- Affichage avatar actuel -->
   <div class="current-avatar">
-    <img
-      *ngIf="currentAvatarUrl; else defaultAvatar"
-      [src]="currentAvatarUrl"
-      alt="Avatar"
-      class="avatar-img"
-    />
-    <ng-template #defaultAvatar>
+    @if (currentAvatarUrl) {
+      <img [src]="currentAvatarUrl" alt="Avatar" class="avatar-img" />
+    } @else {
       <div class="avatar-placeholder">👤</div>
-    </ng-template>
+    }
 
     <label class="btn-change" for="avatarInput"> 📷 Changer la photo </label>
     <input
@@ -23,59 +19,61 @@
   </div>
 
   <!-- Éditeur de recadrage -->
-  <div class="cropper-container" *ngIf="showCropper">
-    <h3>Recadrer votre photo</h3>
-
-    <image-cropper
-      [imageChangedEvent]="imageChangedEvent"
-      [maintainAspectRatio]="true"
-      [aspectRatio]="1"
-      [resizeToWidth]="400"
-      [resizeToHeight]="400"
-      format="jpeg"
-      output="base64"
-      (imageCropped)="imageCropped($event)"
-    />
-
-    <!-- Prévisualisation avec filtre -->
-    <div class="preview-section" *ngIf="croppedImageUrl">
-      <h4>Prévisualisation</h4>
-      <img
-        [src]="croppedImageUrl"
-        [style.filter]="selectedFilter"
-        class="preview-img"
-        alt="Prévisualisation"
+  @if (showCropper) {
+    <div class="cropper-container">
+      <h3>Recadrer votre photo</h3>
+      <image-cropper
+        [imageChangedEvent]="imageChangedEvent"
+        [maintainAspectRatio]="true"
+        [aspectRatio]="1"
+        [resizeToWidth]="400"
+        [resizeToHeight]="400"
+        format="jpeg"
+        output="base64"
+        (imageCropped)="imageCropped($event)"
       />
-
-      <!-- Filtres -->
-      <h4>Filtres</h4>
-      <div class="filters">
-        <div
-          *ngFor="let filter of filters"
-          class="filter-option"
-          [class.active]="selectedFilter === filter.value"
-          (click)="selectFilter(filter.value)"
-        >
+      <!-- Prévisualisation avec filtre -->
+      @if (croppedImageUrl) {
+        <div class="preview-section">
+          <h4>Prévisualisation</h4>
           <img
             [src]="croppedImageUrl"
-            [style.filter]="filter.value"
-            class="filter-thumb"
-            alt="{{ filter.name }}"
+            [style.filter]="selectedFilter"
+            class="preview-img"
+            alt="Prévisualisation"
           />
-          <span>{{ filter.name }}</span>
+          <!-- Filtres -->
+          <h4>Filtres</h4>
+          <div class="filters">
+            @for (filter of filters; track filter) {
+              <div
+                class="filter-option"
+                [class.active]="selectedFilter === filter.value"
+                (click)="selectFilter(filter.value)"
+              >
+                <img
+                  [src]="croppedImageUrl"
+                  [style.filter]="filter.value"
+                  class="filter-thumb"
+                  alt="{{ filter.name }}"
+                />
+                <span>{{ filter.name }}</span>
+              </div>
+            }
+          </div>
         </div>
+      }
+      <!-- Messages -->
+      @if (errorMessage) {
+        <div class="error">{{ errorMessage }}</div>
+      }
+      <!-- Boutons -->
+      <div class="actions">
+        <button class="btn-secondary" (click)="cancel()">Annuler</button>
+        <button class="btn-primary" (click)="onUpload()" [disabled]="uploading || !croppedImageUrl">
+          {{ uploading ? 'Upload...' : 'Valider la photo' }}
+        </button>
       </div>
     </div>
-
-    <!-- Messages -->
-    <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
-
-    <!-- Boutons -->
-    <div class="actions">
-      <button class="btn-secondary" (click)="cancel()">Annuler</button>
-      <button class="btn-primary" (click)="onUpload()" [disabled]="uploading || !croppedImageUrl">
-        {{ uploading ? 'Upload...' : 'Valider la photo' }}
-      </button>
-    </div>
-  </div>
+  }
 </div>

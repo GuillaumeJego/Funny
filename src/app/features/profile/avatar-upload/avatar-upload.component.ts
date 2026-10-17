@@ -1,12 +1,12 @@
 import { Component, EventEmitter, Input, Output, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 import { SupabaseService } from '../../../core/services/supabase.service';
 
 @Component({
   selector: 'app-avatar-upload',
   standalone: true,
-  imports: [CommonModule, ImageCropperComponent],
+  imports: [ImageCropperComponent],
   templateUrl: './avatar-upload.component.html',
   styleUrl: './avatar-upload.component.scss',
 })

@@ -12,9 +12,11 @@
       <input id="password" type="password" [(ngModel)]="password" placeholder="••••••••" />
     </div>
 
-    <div class="error" *ngIf="errorMessage">
-      {{ errorMessage }}
-    </div>
+    @if (errorMessage) {
+      <div class="error">
+        {{ errorMessage }}
+      </div>
+    }
 
     <button (click)="onLogin()" [disabled]="loading">
       {{ loading ? 'Connexion...' : 'Se connecter' }}

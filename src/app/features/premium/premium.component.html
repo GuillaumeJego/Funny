@@ -22,10 +22,12 @@
   <section class="section">
     <h2>Ce qui vous attend</h2>
     <ul class="avantages">
-      <li *ngFor="let a of avantages" class="avantage-item">
-        <span class="avantage-icon">{{ a.icon }}</span>
-        <span>{{ a.label }}</span>
-      </li>
+      @for (a of avantages; track a) {
+        <li class="avantage-item">
+          <span class="avantage-icon">{{ a.icon }}</span>
+          <span>{{ a.label }}</span>
+        </li>
+      }
     </ul>
   </section>
 
@@ -33,23 +35,28 @@
   <section class="section">
     <h2>Choisissez votre plan</h2>
     <div class="plans">
-      <div
-        *ngFor="let plan of plans; let i = index"
-        class="plan-card"
-        [class.selected]="selectedPlan === i"
-        [class.highlight]="plan.highlight"
-        (click)="selectPlan(i)"
-      >
-        <div class="plan-top">
-          <span class="plan-label">{{ plan.label }}</span>
-          <span *ngIf="plan.note" class="plan-note">{{ plan.note }}</span>
+      @for (plan of plans; track plan; let i = $index) {
+        <div
+          class="plan-card"
+          [class.selected]="selectedPlan === i"
+          [class.highlight]="plan.highlight"
+          (click)="selectPlan(i)"
+        >
+          <div class="plan-top">
+            <span class="plan-label">{{ plan.label }}</span>
+            @if (plan.note) {
+              <span class="plan-note">{{ plan.note }}</span>
+            }
+          </div>
+          <div class="plan-price">
+            <span class="price">{{ plan.price }} €</span>
+            <span class="period">/ {{ plan.period }}</span>
+          </div>
+          @if (selectedPlan === i) {
+            <div class="plan-check">✓</div>
+          }
         </div>
-        <div class="plan-price">
-          <span class="price">{{ plan.price }} €</span>
-          <span class="period">/ {{ plan.period }}</span>
-        </div>
-        <div class="plan-check" *ngIf="selectedPlan === i">✓</div>
-      </div>
+      }
     </div>
 
     <button class="btn-subscribe" (click)="onSubscribe()">⭐ S'abonner maintenant</button>
