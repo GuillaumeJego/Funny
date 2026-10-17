@@ -13,7 +13,6 @@
     <div *ngIf="loading" class="loading">Chargement...</div>
 
     <div *ngIf="!loading">
-
       <!-- Informations de base -->
       <section>
         <h2>Informations générales</h2>
@@ -112,7 +111,7 @@
             <div>
               <div class="sub-label">{{ isPremium ? 'Abonné Premium' : 'Non abonné' }}</div>
               <div class="sub-detail" *ngIf="isPremium && subscriptionEndDate">
-                Expire le {{ subscriptionEndDate | date:'dd/MM/yyyy' }}
+                Expire le {{ subscriptionEndDate | date: 'dd/MM/yyyy' }}
               </div>
               <div class="sub-detail" *ngIf="!isPremium">
                 Accédez aux sorties exclusives et plus encore
@@ -131,16 +130,13 @@
 
       <!-- Boutons -->
       <div class="actions">
-        <button class="btn-secondary" (click)="cancel()">
-          Annuler
-        </button>
+        <button class="btn-secondary" (click)="cancel()">Annuler</button>
         <button class="btn-primary" (click)="onSave()" [disabled]="saving">
           {{ saving ? 'Sauvegarde...' : 'Sauvegarder' }}
         </button>
       </div>
 
       <app-metana-credit />
-
     </div>
   </div>
 </div>

@@ -24,9 +24,19 @@
   padding: 4rem 1rem;
   color: $text-light;
 
-  .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
-  p { font-size: 0.95rem; margin-bottom: 0.5rem; }
-  .sub { font-size: 0.85rem; max-width: 320px; margin: 0 auto; }
+  .empty-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+  }
+  p {
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+  }
+  .sub {
+    font-size: 0.85rem;
+    max-width: 320px;
+    margin: 0 auto;
+  }
 }
 
 .notif-list {
@@ -50,7 +60,9 @@
     background: rgba($primary, 0.03);
   }
 
-  &:hover { box-shadow: $shadow; }
+  &:hover {
+    box-shadow: $shadow;
+  }
 }
 
 .notif-avatar {
@@ -58,7 +70,8 @@
   flex-shrink: 0;
 }
 
-.actor-avatar, .actor-placeholder {
+.actor-avatar,
+.actor-placeholder {
   width: 44px;
   height: 44px;
   border-radius: 50%;

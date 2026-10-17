@@ -12,7 +12,11 @@
   color: $text-dark;
   margin-bottom: 1rem;
 
-  .total { font-size: 1rem; color: $text-light; font-weight: 400; }
+  .total {
+    font-size: 1rem;
+    color: $text-light;
+    font-weight: 400;
+  }
 }
 
 // ─── Recherche ────────────────────────────────────────────
@@ -44,7 +48,10 @@
     font-size: 0.9rem;
     background: $bg-white;
     color: $text-dark;
-    &:focus { outline: none; border-color: $primary; }
+    &:focus {
+      outline: none;
+      border-color: $primary;
+    }
   }
 
   .clear-btn {
@@ -56,7 +63,9 @@
     cursor: pointer;
     font-size: 0.85rem;
     padding: 0.25rem;
-    &:hover { color: $text-dark; }
+    &:hover {
+      color: $text-dark;
+    }
   }
 }
 
@@ -72,10 +81,19 @@
   font-size: 0.88rem;
   cursor: pointer;
   white-space: nowrap;
-  transition: border-color 0.2s, color 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
 
-  &.active { border-color: $primary; color: $primary; background: rgba($primary, 0.05); }
-  &:hover { border-color: $primary; color: $primary; }
+  &.active {
+    border-color: $primary;
+    color: $primary;
+    background: rgba($primary, 0.05);
+  }
+  &:hover {
+    border-color: $primary;
+    color: $primary;
+  }
 }
 
 .filter-badge {
@@ -124,7 +142,10 @@
     background: $bg-light;
     color: $text-dark;
     cursor: pointer;
-    &:focus { outline: none; border-color: $primary; }
+    &:focus {
+      outline: none;
+      border-color: $primary;
+    }
   }
 }
 
@@ -135,11 +156,14 @@
   font-size: 0.83rem;
   cursor: pointer;
   padding: 0;
-  &:hover { color: $error; }
+  &:hover {
+    color: $error;
+  }
 }
 
 // ─── Grille membres ───────────────────────────────────────
-.loading, .empty {
+.loading,
+.empty {
   text-align: center;
   color: $text-light;
   padding: 3rem;
@@ -159,17 +183,23 @@
   border: 1px solid $border-color;
   border-radius: $border-radius-lg;
   padding: 0.75rem 1rem;
-  transition: box-shadow 0.2s, transform 0.15s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.15s;
   cursor: pointer;
 
-  &:hover { box-shadow: $shadow; transform: translateY(-1px); }
+  &:hover {
+    box-shadow: $shadow;
+    transform: translateY(-1px);
+  }
 }
 
 .avatar-wrap {
   position: relative;
   flex-shrink: 0;
 
-  .avatar, .avatar-placeholder {
+  .avatar,
+  .avatar-placeholder {
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -186,7 +216,8 @@
     font-size: 1.1rem;
   }
 
-  .badge-premium, .badge-admin {
+  .badge-premium,
+  .badge-admin {
     position: absolute;
     bottom: -2px;
     right: -4px;
@@ -218,6 +249,10 @@
 }
 
 @media (max-width: 480px) {
-  .membres-grid { grid-template-columns: 1fr; }
-  .filters-grid { grid-template-columns: 1fr 1fr; }
+  .membres-grid {
+    grid-template-columns: 1fr;
+  }
+  .filters-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }

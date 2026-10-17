@@ -10,7 +10,9 @@ export class FriendshipService {
     const { data } = await this.supabase.client
       .from('friendships')
       .select('*')
-      .or(`and(requester_id.eq.${userId},receiver_id.eq.${otherId}),and(requester_id.eq.${otherId},receiver_id.eq.${userId})`)
+      .or(
+        `and(requester_id.eq.${userId},receiver_id.eq.${otherId}),and(requester_id.eq.${otherId},receiver_id.eq.${userId})`,
+      )
       .maybeSingle();
     return data;
   }
@@ -18,7 +20,9 @@ export class FriendshipService {
   async getFriends(userId: string): Promise<Friendship[]> {
     const { data } = await this.supabase.client
       .from('friendships')
-      .select('*, requester:profiles!requester_id(id, username, avatar_url), receiver:profiles!receiver_id(id, username, avatar_url)')
+      .select(
+        '*, requester:profiles!requester_id(id, username, avatar_url), receiver:profiles!receiver_id(id, username, avatar_url)',
+      )
       .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`)
       .eq('status', 'accepted');
     return (data ?? []) as Friendship[];
@@ -54,10 +58,7 @@ export class FriendshipService {
   }
 
   async removeFriend(friendshipId: string) {
-    return await this.supabase.client
-      .from('friendships')
-      .delete()
-      .eq('id', friendshipId);
+    return await this.supabase.client.from('friendships').delete().eq('id', friendshipId);
   }
 
   getFriendProfile(friendship: Friendship, myId: string) {

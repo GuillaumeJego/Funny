@@ -1,5 +1,4 @@
 <div class="avatar-upload">
-
   <!-- Affichage avatar actuel -->
   <div class="current-avatar">
     <img
@@ -12,9 +11,7 @@
       <div class="avatar-placeholder">👤</div>
     </ng-template>
 
-    <label class="btn-change" for="avatarInput">
-      📷 Changer la photo
-    </label>
+    <label class="btn-change" for="avatarInput"> 📷 Changer la photo </label>
     <input
       #fileInput
       id="avatarInput"
@@ -27,7 +24,6 @@
 
   <!-- Éditeur de recadrage -->
   <div class="cropper-container" *ngIf="showCropper">
-
     <h3>Recadrer votre photo</h3>
 
     <image-cropper
@@ -81,6 +77,5 @@
         {{ uploading ? 'Upload...' : 'Valider la photo' }}
       </button>
     </div>
-
   </div>
 </div>

@@ -10,7 +10,7 @@ import { MetanaCreditComponent } from '../../../core/components/metana-credit/me
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, MetanaCreditComponent],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.scss'
+  styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
   email = '';
@@ -20,7 +20,10 @@ export class RegisterComponent {
   successMessage = '';
   loading = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   async onRegister() {
     this.loading = true;
@@ -38,7 +41,8 @@ export class RegisterComponent {
     if (error) {
       this.errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
     } else {
-      this.successMessage = 'Inscription réussie ! Vérifiez votre email pour confirmer votre compte.';
+      this.successMessage =
+        'Inscription réussie ! Vérifiez votre email pour confirmer votre compte.';
     }
 
     this.loading = false;

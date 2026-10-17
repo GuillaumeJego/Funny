@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  AfterViewChecked,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,7 +20,7 @@ const EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.scss'
+  styleUrl: './chat.component.scss',
 })
 export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messagesEnd') messagesEnd!: ElementRef;
@@ -42,20 +49,28 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     private route: ActivatedRoute,
     private router: Router,
     private auth: AuthService,
-    private conversationService: ConversationService
+    private conversationService: ConversationService,
   ) {}
 
   async ngOnInit() {
-    const { data: { user } } = await this.auth.getUser();
-    if (!user) { this.router.navigate(['/login']); return; }
+    const {
+      data: { user },
+    } = await this.auth.getUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
     this.myId = user.id;
 
     this.conversationId = this.route.snapshot.paramMap.get('id') ?? '';
-    if (!this.conversationId) { this.router.navigate(['/messages']); return; }
+    if (!this.conversationId) {
+      this.router.navigate(['/messages']);
+      return;
+    }
 
     const convs = await this.conversationService.getConversations(user.id);
-    const conv = convs.find(c => c.id === this.conversationId);
-    const friend = conv?.participants?.find(p => p.user_id !== user.id)?.user;
+    const conv = convs.find((c) => c.id === this.conversationId);
+    const friend = conv?.participants?.find((p) => p.user_id !== user.id)?.user;
     this.friendName = friend?.username ?? '';
     this.friendAvatar = friend?.avatar_url ?? null;
 
@@ -86,7 +101,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   scrollToBottom() {
-    try { this.messagesEnd?.nativeElement?.scrollIntoView({ behavior: 'smooth' }); } catch {}
+    try {
+      this.messagesEnd?.nativeElement?.scrollIntoView({ behavior: 'smooth' });
+    } catch {}
   }
 
   isOwn(msg: Message): boolean {
@@ -102,7 +119,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.replyTo = null;
 
     const msg = await this.conversationService.sendMessage(
-      this.conversationId, this.myId, content, 'text', replyId
+      this.conversationId,
+      this.myId,
+      content,
+      'text',
+      replyId,
     );
     if (msg) {
       this.messages = [...this.messages, msg];
@@ -132,7 +153,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     const url = await this.conversationService.uploadMedia(file, this.myId);
     if (url) {
       const msg = await this.conversationService.sendMessage(
-        this.conversationId, this.myId, '', type, this.replyTo?.id, url
+        this.conversationId,
+        this.myId,
+        '',
+        type,
+        this.replyTo?.id,
+        url,
       );
       if (msg) {
         this.messages = [...this.messages, msg];
@@ -151,7 +177,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
     this.reactionPickerPos = {
       top: rect.top - 60,
-      left: Math.min(rect.left, window.innerWidth - 220)
+      left: Math.min(rect.left, window.innerWidth - 220),
     };
   }
 
@@ -162,7 +188,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   async react(emoji: string) {
     if (!this.reactionTarget) return;
     const msg = this.reactionTarget;
-    const existing = msg.reactions?.find(r => r.user_id === this.myId);
+    const existing = msg.reactions?.find((r) => r.user_id === this.myId);
     await this.conversationService.toggleReaction(msg.id, this.myId, emoji, existing?.emoji);
     const msgs = await this.conversationService.getMessages(this.conversationId);
     this.messages = msgs;
@@ -170,7 +196,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   myReaction(msg: Message): string | undefined {
-    return msg.reactions?.find(r => r.user_id === this.myId)?.emoji;
+    return msg.reactions?.find((r) => r.user_id === this.myId)?.emoji;
   }
 
   reactionGroups(msg: Message): { emoji: string; count: number }[] {

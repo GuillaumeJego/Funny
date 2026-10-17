@@ -1,17 +1,8 @@
 <div class="sortie-image-upload">
-
   <!-- Bouton sélection -->
   <div class="upload-btn-container">
-    <label class="btn-upload" for="sortieImage">
-      📷 Choisir une image personnalisée
-    </label>
-    <input
-      id="sortieImage"
-      type="file"
-      accept="image/*"
-      (change)="onFileSelected($event)"
-      hidden
-    />
+    <label class="btn-upload" for="sortieImage"> 📷 Choisir une image personnalisée </label>
+    <input id="sortieImage" type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
   </div>
 
   <!-- Éditeur de recadrage -->
@@ -49,5 +40,4 @@
     <img [src]="croppedImageUrl" alt="Image sélectionnée" class="final-img" />
     <button class="btn-change" (click)="showCropper = true">Modifier</button>
   </div>
-
 </div>

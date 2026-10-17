@@ -1,4 +1,12 @@
-import { Component, EventEmitter, HostListener, Input, OnChanges, OnDestroy, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, Subscription } from 'rxjs';
@@ -26,7 +34,7 @@ export interface ThemeOption {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './navbar-filters.component.html',
-  styleUrl: './navbar-filters.component.scss'
+  styleUrl: './navbar-filters.component.scss',
 })
 export class NavbarFiltersComponent implements OnChanges, OnDestroy {
   @Input() availableThemes: ThemeOption[] = [];
@@ -52,24 +60,30 @@ export class NavbarFiltersComponent implements OnChanges, OnDestroy {
   constructor(private geo: GeoService) {}
 
   ngOnInit() {
-    this.locationSub = this.locationSearch$.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(q => {
-        this.locationSearching = true;
-        return this.geo.searchCities(q);
-      })
-    ).subscribe(places => {
-      this.locationSuggestions = places;
-      this.locationSearching = false;
-    });
+    this.locationSub = this.locationSearch$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((q) => {
+          this.locationSearching = true;
+          return this.geo.searchCities(q);
+        }),
+      )
+      .subscribe((places) => {
+        this.locationSuggestions = places;
+        this.locationSearching = false;
+      });
   }
 
   ngOnChanges() {}
 
-  ngOnDestroy() { this.locationSub?.unsubscribe(); }
+  ngOnDestroy() {
+    this.locationSub?.unsubscribe();
+  }
 
-  onLocationInput() { this.locationSearch$.next(this.locationQuery); }
+  onLocationInput() {
+    this.locationSearch$.next(this.locationQuery);
+  }
 
   get activeCount(): number {
     let n = 0;
@@ -85,7 +99,7 @@ export class NavbarFiltersComponent implements OnChanges, OnDestroy {
     const n = this.filters.themeIds?.length ?? 0;
     if (n === 0) return 'Quoi ?';
     if (n === 1) {
-      const t = this.availableThemes.find(t => t.id === this.filters.themeIds![0]);
+      const t = this.availableThemes.find((t) => t.id === this.filters.themeIds![0]);
       return t ? `${t.icon} ${t.name}` : '1 thème';
     }
     return `${n} thèmes`;
@@ -97,7 +111,8 @@ export class NavbarFiltersComponent implements OnChanges, OnDestroy {
     const d = this.filters.dateDebut;
     const f = this.filters.dateFin;
     if (!d && !f) return 'Quand ?';
-    const fmt = (s: string) => new Date(s).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    const fmt = (s: string) =>
+      new Date(s).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
     if (d && f && d === f) return fmt(d);
     if (d && f) return `${fmt(d)} → ${fmt(f)}`;
     if (d) return `Dès ${fmt(d)}`;
@@ -111,8 +126,14 @@ export class NavbarFiltersComponent implements OnChanges, OnDestroy {
       this.openPanel = panel;
       // Sync état temporaire
       if (panel === 'quoi') this.selectedThemeIds = new Set(this.filters.themeIds ?? []);
-      if (panel === 'quand') { this.dateDebut = this.filters.dateDebut ?? ''; this.dateFin = this.filters.dateFin ?? ''; }
-      if (panel === 'ou') { this.locationQuery = this.filters.ou ?? ''; this.locationSuggestions = []; }
+      if (panel === 'quand') {
+        this.dateDebut = this.filters.dateDebut ?? '';
+        this.dateFin = this.filters.dateFin ?? '';
+      }
+      if (panel === 'ou') {
+        this.locationQuery = this.filters.ou ?? '';
+        this.locationSuggestions = [];
+      }
     }
   }
 
@@ -130,7 +151,10 @@ export class NavbarFiltersComponent implements OnChanges, OnDestroy {
   }
 
   applyThemes() {
-    this.filters = { ...this.filters, themeIds: this.selectedThemeIds.size ? [...this.selectedThemeIds] : undefined };
+    this.filters = {
+      ...this.filters,
+      themeIds: this.selectedThemeIds.size ? [...this.selectedThemeIds] : undefined,
+    };
     this.emit();
     this.openPanel = null;
   }
@@ -181,7 +205,8 @@ export class NavbarFiltersComponent implements OnChanges, OnDestroy {
       this.dateDebut = toISO(now);
       this.dateFin = toISO(now);
     } else if (period === 'week') {
-      const end = new Date(now); end.setDate(now.getDate() + 6);
+      const end = new Date(now);
+      end.setDate(now.getDate() + 6);
       this.dateDebut = toISO(now);
       this.dateFin = toISO(end);
     } else if (period === 'month') {
@@ -197,7 +222,10 @@ export class NavbarFiltersComponent implements OnChanges, OnDestroy {
       ...this.filters,
       dateDebut: this.dateDebut || undefined,
       dateFin: this.dateFin || undefined,
-      quickPeriod: (this.quickPeriod === 'past' || this.quickPeriod === 'upcoming') ? this.quickPeriod : undefined,
+      quickPeriod:
+        this.quickPeriod === 'past' || this.quickPeriod === 'upcoming'
+          ? this.quickPeriod
+          : undefined,
     };
     this.emit();
     this.openPanel = null;
@@ -207,7 +235,12 @@ export class NavbarFiltersComponent implements OnChanges, OnDestroy {
     this.dateDebut = '';
     this.dateFin = '';
     this.quickPeriod = '';
-    this.filters = { ...this.filters, dateDebut: undefined, dateFin: undefined, quickPeriod: undefined };
+    this.filters = {
+      ...this.filters,
+      dateDebut: undefined,
+      dateFin: undefined,
+      quickPeriod: undefined,
+    };
     this.emit();
     this.openPanel = null;
   }
@@ -241,5 +274,7 @@ export class NavbarFiltersComponent implements OnChanges, OnDestroy {
     this.openPanel = null;
   }
 
-  private emit() { this.filtersChanged.emit(this.filters); }
+  private emit() {
+    this.filtersChanged.emit(this.filters);
+  }
 }

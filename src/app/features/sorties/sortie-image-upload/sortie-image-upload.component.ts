@@ -7,7 +7,7 @@ import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
   standalone: true,
   imports: [CommonModule, ImageCropperComponent],
   templateUrl: './sortie-image-upload.component.html',
-  styleUrl: './sortie-image-upload.component.scss'
+  styleUrl: './sortie-image-upload.component.scss',
 })
 export class SortieImageUploadComponent {
   @Output() imageReady = new EventEmitter<Blob>();

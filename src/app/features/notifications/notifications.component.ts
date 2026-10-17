@@ -9,7 +9,7 @@ import { NotificationService, Notification } from '../../core/services/notificat
   standalone: true,
   imports: [CommonModule],
   templateUrl: './notifications.component.html',
-  styleUrl: './notifications.component.scss'
+  styleUrl: './notifications.component.scss',
 })
 export class NotificationsComponent implements OnInit {
   notifications: Notification[] = [];
@@ -19,12 +19,17 @@ export class NotificationsComponent implements OnInit {
   constructor(
     private auth: AuthService,
     private notifService: NotificationService,
-    private router: Router
+    private router: Router,
   ) {}
 
   async ngOnInit() {
-    const { data: { user } } = await this.auth.getUser();
-    if (!user) { this.router.navigate(['/login']); return; }
+    const {
+      data: { user },
+    } = await this.auth.getUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
     this.userId = user.id;
 
     const { data } = await this.notifService.getMyNotifications(user.id);
@@ -37,8 +42,11 @@ export class NotificationsComponent implements OnInit {
 
   formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('fr-FR', {
-      day: 'numeric', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   }
 }

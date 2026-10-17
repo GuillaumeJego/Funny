@@ -12,7 +12,7 @@ import { Profile } from '../../core/models/profile.model';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin.component.html',
-  styleUrl: './admin.component.scss'
+  styleUrl: './admin.component.scss',
 })
 export class AdminComponent implements OnInit {
   loading = true;
@@ -27,21 +27,29 @@ export class AdminComponent implements OnInit {
     private auth: AuthService,
     private profileService: ProfileService,
     private settingsService: SettingsService,
-    public router: Router
+    public router: Router,
   ) {}
 
   async ngOnInit() {
-    const { data: { user } } = await this.auth.getUser();
-    if (!user) { this.router.navigate(['/login']); return; }
+    const {
+      data: { user },
+    } = await this.auth.getUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
 
     const { data: profile } = await this.profileService.getMyProfile(user.id);
-    if (profile?.role !== 'admin' && profile?.role !== 'developer') { this.router.navigate(['/dashboard']); return; }
+    if (profile?.role !== 'admin' && profile?.role !== 'developer') {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
     this.currentUserRole = profile.role ?? '';
 
     const [setting, creationSetting, membres] = await Promise.all([
       this.settingsService.get('profile_page_premium_only'),
       this.settingsService.get('sortie_creation_access'),
-      this.profileService.getAllProfiles()
+      this.profileService.getAllProfiles(),
     ]);
 
     this.profilePagePremiumOnly = setting === true;
@@ -121,7 +129,9 @@ export class AdminComponent implements OnInit {
     const { membre, mois } = this.premiumModal;
     const end = new Date();
     end.setMonth(end.getMonth() + mois);
-    await this.profileService.updateProfile(membre.id, { subscription_end_date: end.toISOString() });
+    await this.profileService.updateProfile(membre.id, {
+      subscription_end_date: end.toISOString(),
+    });
     membre.subscription_end_date = end.toISOString();
     this.premiumModal = null;
   }
@@ -134,7 +144,7 @@ export class AdminComponent implements OnInit {
   get filteredMembres(): Profile[] {
     if (!this.searchQuery.trim()) return this.membres;
     const q = this.searchQuery.toLowerCase();
-    return this.membres.filter(m => m.username.toLowerCase().includes(q));
+    return this.membres.filter((m) => m.username.toLowerCase().includes(q));
   }
 
   getRoleLabel(m: Profile): string {

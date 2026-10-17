@@ -13,7 +13,7 @@ import { MetanaCreditComponent } from '../../../core/components/metana-credit/me
   standalone: true,
   imports: [CommonModule, FormsModule, DatePipe, AvatarUploadComponent, MetanaCreditComponent],
   templateUrl: './edit-profile.component.html',
-  styleUrl: './edit-profile.component.scss'
+  styleUrl: './edit-profile.component.scss',
 })
 export class EditProfileComponent implements OnInit {
   profile: Partial<Profile> = {};
@@ -34,12 +34,14 @@ export class EditProfileComponent implements OnInit {
     private authService: AuthService,
     private profileService: ProfileService,
     private router: Router,
-    private location: Location
+    private location: Location,
   ) {}
 
   async ngOnInit() {
     this.loading = true;
-    const { data: { user } } = await this.authService.getUser();
+    const {
+      data: { user },
+    } = await this.authService.getUser();
 
     if (!user) {
       this.router.navigate(['/login']);

@@ -61,9 +61,13 @@
     transition: opacity 0.2s;
     white-space: nowrap;
 
-    &:hover { opacity: 0.8; }
+    &:hover {
+      opacity: 0.8;
+    }
 
-    .badge-icon { font-size: 0.85rem; }
+    .badge-icon {
+      font-size: 0.85rem;
+    }
 
     &.premium {
       background: rgba($warning, 0.15);
@@ -136,4 +140,3 @@
     left: 240px;
   }
 }
-

@@ -5,18 +5,22 @@ import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class SortieService {
-
-  constructor(private supabase: SupabaseService, private notifService: NotificationService) {}
+  constructor(
+    private supabase: SupabaseService,
+    private notifService: NotificationService,
+  ) {}
 
   // Récupérer toutes les sorties publiées
   async getAllSorties() {
     return await this.supabase.client
       .from('sorties')
-      .select(`
+      .select(
+        `
         *,
         themes (name, icon),
         profiles (username, avatar_url)
-      `)
+      `,
+      )
       .eq('status', 'published')
       .order('date');
   }
@@ -47,46 +51,42 @@ export class SortieService {
   async getSortieById(id: string) {
     return await this.supabase.client
       .from('sorties')
-      .select(`
+      .select(
+        `
         *,
         themes (name, icon),
         profiles (username, avatar_url)
-      `)
+      `,
+      )
       .eq('id', id)
       .single();
   }
 
   // Créer une sortie
   async createSortie(sortie: Partial<Sortie>) {
-    return await this.supabase.client
-      .from('sorties')
-      .insert(sortie)
-      .select()
-      .single();
+    return await this.supabase.client.from('sorties').insert(sortie).select().single();
   }
 
   // Modifier une sortie
   async updateSortie(id: string, updates: Partial<Sortie>) {
-    return await this.supabase.client
-      .from('sorties')
-      .update(updates)
-      .eq('id', id);
+    return await this.supabase.client.from('sorties').update(updates).eq('id', id);
   }
 
   // Supprimer une sortie (simple, sans notifications)
   async deleteSortie(id: string) {
-    return await this.supabase.client
-      .from('sorties')
-      .delete()
-      .eq('id', id);
+    return await this.supabase.client.from('sorties').delete().eq('id', id);
   }
 
   // Supprimer une sortie + envoyer des notifications aux inscrits et aux likeurs
-  async deleteSortieWithNotifications(sortieId: string, sortieTitle: string, organizerUsername: string) {
+  async deleteSortieWithNotifications(
+    sortieId: string,
+    sortieTitle: string,
+    organizerUsername: string,
+  ) {
     // 1. Récupérer inscrits et likeurs avant suppression
     const [inscrits, likes] = await Promise.all([
       this.getMembresInscrits(sortieId),
-      this.getMembresLikes(sortieId)
+      this.getMembresLikes(sortieId),
     ]);
 
     const inscritsProfiles = inscrits;
@@ -102,7 +102,7 @@ export class SortieService {
       notifications.push({
         user_id: p.id,
         title: 'Sortie annulée',
-        message: `Vous étiez inscrit à la sortie "${sortieTitle}". L'organisateur ${organizerUsername} a annulé la sortie. Si vous avez payé pour y participer, vous serez remboursé.`
+        message: `Vous étiez inscrit à la sortie "${sortieTitle}". L'organisateur ${organizerUsername} a annulé la sortie. Si vous avez payé pour y participer, vous serez remboursé.`,
       });
     }
 
@@ -112,7 +112,7 @@ export class SortieService {
       notifications.push({
         user_id: p.id,
         title: 'Sortie annulée',
-        message: `Vous aviez liké la sortie "${sortieTitle}". L'organisateur ${organizerUsername} a annulé la sortie. Si vous avez payé pour y participer, vous serez remboursé.`
+        message: `Vous aviez liké la sortie "${sortieTitle}". L'organisateur ${organizerUsername} a annulé la sortie. Si vous avez payé pour y participer, vous serez remboursé.`,
       });
     }
 
@@ -173,7 +173,9 @@ export class SortieService {
   }
 
   // Membres inscrits à une sortie (pending = membres, confirmed = organisateur)
-  async getMembresInscrits(sortieId: string): Promise<{ id: string; username: string; avatar_url: string | null; isOrganizer: boolean }[]> {
+  async getMembresInscrits(
+    sortieId: string,
+  ): Promise<{ id: string; username: string; avatar_url: string | null; isOrganizer: boolean }[]> {
     const { data: rows } = await this.supabase.client
       .from('inscriptions')
       .select('user_id, status')
@@ -189,12 +191,14 @@ export class SortieService {
 
     return (profiles ?? []).map((p: any) => ({
       ...p,
-      isOrganizer: rows.find((r: any) => r.user_id === p.id)?.status === 'confirmed'
+      isOrganizer: rows.find((r: any) => r.user_id === p.id)?.status === 'confirmed',
     }));
   }
 
   // Membres en liste d'attente pour une sortie
-  async getMembresWaiting(sortieId: string): Promise<{ id: string; username: string; avatar_url: string | null }[]> {
+  async getMembresWaiting(
+    sortieId: string,
+  ): Promise<{ id: string; username: string; avatar_url: string | null }[]> {
     const { data: rows } = await this.supabase.client
       .from('inscriptions')
       .select('user_id')
@@ -217,13 +221,17 @@ export class SortieService {
 
   // Quitter une sortie — promotion et notification gérées par le trigger DB
   async quitterSortie(sortieId: string, userId: string): Promise<{ error: any }> {
-    const { error } = await this.supabase.client
-      .rpc('quitter_sortie', { p_user_id: userId, p_sortie_id: sortieId });
+    const { error } = await this.supabase.client.rpc('quitter_sortie', {
+      p_user_id: userId,
+      p_sortie_id: sortieId,
+    });
     return { error };
   }
 
   // Membres qui ont liké une sortie
-  async getMembresLikes(sortieId: string): Promise<{ id: string; username: string; avatar_url: string | null }[]> {
+  async getMembresLikes(
+    sortieId: string,
+  ): Promise<{ id: string; username: string; avatar_url: string | null }[]> {
     const { data: rows } = await this.supabase.client
       .from('favoris')
       .select('user_id')

@@ -17,7 +17,7 @@ interface MiniProfile {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './sortie-drawer.component.html',
-  styleUrl: './sortie-drawer.component.scss'
+  styleUrl: './sortie-drawer.component.scss',
 })
 export class SortieDrawerComponent implements OnChanges {
   @Input() sortie: SortieWithRelations | null = null;
@@ -40,7 +40,10 @@ export class SortieDrawerComponent implements OnChanges {
   membresLoaded = false;
   membresLoading = false;
 
-  constructor(private router: Router, private sortieService: SortieService) {}
+  constructor(
+    private router: Router,
+    private sortieService: SortieService,
+  ) {}
 
   get isOrganizer(): boolean {
     return !!this.currentUserId && this.currentUserId === this.sortie?.created_by;
@@ -56,14 +59,18 @@ export class SortieDrawerComponent implements OnChanges {
     return this.membresInscrits.length + this.membresWaiting.length;
   }
 
-  goToPremium() { this.router.navigate(['/premium']); }
+  goToPremium() {
+    this.router.navigate(['/premium']);
+  }
 
   goToProfile(userId: string) {
     this.close();
     this.router.navigate(['/membres', userId]);
   }
 
-  close() { this.closed.emit(); }
+  close() {
+    this.closed.emit();
+  }
 
   onBackdropClick(event: MouseEvent) {
     if ((event.target as HTMLElement).classList.contains('drawer-backdrop')) this.close();
@@ -82,7 +89,7 @@ export class SortieDrawerComponent implements OnChanges {
     const [inscrits, likes, waiting] = await Promise.all([
       this.sortieService.getMembresInscrits(this.sortie.id),
       this.sortieService.getMembresLikes(this.sortie.id),
-      this.sortieService.getMembresWaiting(this.sortie.id)
+      this.sortieService.getMembresWaiting(this.sortie.id),
     ]);
     this.membresInscrits = inscrits;
     this.membresLikes = likes;
@@ -93,7 +100,12 @@ export class SortieDrawerComponent implements OnChanges {
 
   formatDate(dateStr: string): string {
     const d = new Date(dateStr);
-    const jour = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const jour = d.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
     const heure = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     return `${jour.charAt(0).toUpperCase() + jour.slice(1)} à ${heure}`;
   }

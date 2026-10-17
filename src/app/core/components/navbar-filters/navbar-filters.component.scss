@@ -2,7 +2,9 @@
 
 .navbar-filters {
   position: fixed;
-  top: 56px; left: 0; right: 0;
+  top: 56px;
+  left: 0;
+  right: 0;
   height: 48px;
   background-color: $bg-white;
   border-bottom: 1px solid $border-color;
@@ -10,7 +12,7 @@
   align-items: center;
   justify-content: space-around;
   z-index: 999;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
   .filter-item {
     display: flex;
@@ -24,7 +26,9 @@
     flex: 1;
     min-width: 0;
 
-    .filter-icon { font-size: 1rem; }
+    .filter-icon {
+      font-size: 1rem;
+    }
 
     .filter-label {
       font-size: 0.62rem;
@@ -35,25 +39,49 @@
       max-width: 100%;
     }
 
-    &:hover { background-color: $bg-light; .filter-label { color: $primary; } }
-    &.active { background-color: $primary-light; .filter-label { color: $primary; font-weight: 600; } }
-    &.filter-reset.has-active { .filter-label { color: $error; font-weight: 600; } }
+    &:hover {
+      background-color: $bg-light;
+      .filter-label {
+        color: $primary;
+      }
+    }
+    &.active {
+      background-color: $primary-light;
+      .filter-label {
+        color: $primary;
+        font-weight: 600;
+      }
+    }
+    &.filter-reset.has-active {
+      .filter-label {
+        color: $error;
+        font-weight: 600;
+      }
+    }
   }
 
   // ── Panel ──────────────────────────────────────────────
   .filter-panel {
     position: fixed;
-    top: 104px; left: 0; right: 0;
+    top: 104px;
+    left: 0;
+    right: 0;
     background: $bg-white;
     border-bottom: 2px solid $primary;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     z-index: 998;
     animation: slideDown 0.15s ease;
   }
 
   @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .panel-inner {
@@ -95,10 +123,24 @@
     transition: all 0.15s;
     user-select: none;
 
-    .check { color: $primary; font-weight: 700; margin-left: 0.2rem; }
+    .check {
+      color: $primary;
+      font-weight: 700;
+      margin-left: 0.2rem;
+    }
 
-    &:hover { border-color: $primary; background: $primary-light; }
-    &.selected { background: $primary; color: #fff; border-color: $primary; .check { color: #fff; } }
+    &:hover {
+      border-color: $primary;
+      background: $primary-light;
+    }
+    &.selected {
+      background: $primary;
+      color: #fff;
+      border-color: $primary;
+      .check {
+        color: #fff;
+      }
+    }
   }
 
   // ── Lieu : chips existants ───────────────────────────────
@@ -117,7 +159,13 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    &::before, &::after { content: ''; flex: 1; height: 1px; background: $border-color; }
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: $border-color;
+    }
   }
 
   // ── Lieu autocomplete ────────────────────────────────────
@@ -136,10 +184,15 @@
     border-radius: $border-radius;
     font-size: 0.9rem;
     color: $text-dark;
-    &:focus { outline: none; border-color: $primary; }
+    &:focus {
+      outline: none;
+      border-color: $primary;
+    }
   }
 
-  .location-spinner { font-size: 0.85rem; }
+  .location-spinner {
+    font-size: 0.85rem;
+  }
 
   .location-active {
     display: flex;
@@ -182,15 +235,32 @@
     transition: background 0.15s;
     border-bottom: 1px solid $border-color;
 
-    &:last-child { border-bottom: none; }
-    &:hover { background: $primary-light; }
+    &:last-child {
+      border-bottom: none;
+    }
+    &:hover {
+      background: $primary-light;
+    }
 
-    .sug-icon { font-size: 0.85rem; }
-    .sug-city { font-size: 0.9rem; color: $text-dark; font-weight: 500; }
-    .sug-country { font-size: 0.75rem; color: $text-light; margin-left: auto; }
+    .sug-icon {
+      font-size: 0.85rem;
+    }
+    .sug-city {
+      font-size: 0.9rem;
+      color: $text-dark;
+      font-weight: 500;
+    }
+    .sug-country {
+      font-size: 0.75rem;
+      color: $text-light;
+      margin-left: auto;
+    }
   }
 
-  .empty-hint { font-size: 0.85rem; color: $text-light; }
+  .empty-hint {
+    font-size: 0.85rem;
+    color: $text-light;
+  }
 
   // ── Dates ───────────────────────────────────────────────
   .date-range {
@@ -205,22 +275,37 @@
     align-items: center;
     gap: 0.5rem;
 
-    .date-label { font-size: 0.8rem; color: $text-medium; font-weight: 600; white-space: nowrap; }
+    .date-label {
+      font-size: 0.8rem;
+      color: $text-medium;
+      font-weight: 600;
+      white-space: nowrap;
+    }
 
-    input[type="date"] {
+    input[type='date'] {
       padding: 0.45rem 0.6rem;
       border: 1px solid $border-color;
       border-radius: $border-radius;
       font-size: 0.85rem;
       color: $text-dark;
-      &:focus { outline: none; border-color: $primary; }
+      &:focus {
+        outline: none;
+        border-color: $primary;
+      }
     }
   }
 
-  .date-sep { color: $text-light; font-size: 1.1rem; }
+  .date-sep {
+    color: $text-light;
+    font-size: 1.1rem;
+  }
 
   // ── Chips prix ──────────────────────────────────────────
-  .chip-list { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .chip-list {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
 
   .chip {
     padding: 0.35rem 0.85rem;
@@ -231,34 +316,59 @@
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.15s;
-    &:hover { border-color: $primary; color: $primary; }
-    &.active { background: $primary; color: #fff; border-color: $primary; }
+    &:hover {
+      border-color: $primary;
+      color: $primary;
+    }
+    &.active {
+      background: $primary;
+      color: #fff;
+      border-color: $primary;
+    }
   }
 
   // ── Boutons ─────────────────────────────────────────────
   .btn-apply {
     padding: 0.45rem 1rem;
-    background: $primary; color: #fff;
-    border: none; border-radius: $border-radius;
-    font-size: 0.85rem; font-weight: 700; cursor: pointer;
-    &:hover { background: $primary-hover; }
+    background: $primary;
+    color: #fff;
+    border: none;
+    border-radius: $border-radius;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    &:hover {
+      background: $primary-hover;
+    }
   }
 
   .btn-clear {
     padding: 0.45rem 0.75rem;
-    background: none; color: $text-light;
-    border: 1px solid $border-color; border-radius: $border-radius;
-    font-size: 0.85rem; cursor: pointer;
-    &:hover { color: $error; border-color: $error; }
+    background: none;
+    color: $text-light;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    font-size: 0.85rem;
+    cursor: pointer;
+    &:hover {
+      color: $error;
+      border-color: $error;
+    }
   }
 
   // 🖥️ Desktop
   @media (min-width: 769px) {
     left: 240px;
     .filter-item {
-      flex-direction: row; gap: 0.5rem;
-      .filter-label { font-size: 0.85rem; max-width: 120px; }
+      flex-direction: row;
+      gap: 0.5rem;
+      .filter-label {
+        font-size: 0.85rem;
+        max-width: 120px;
+      }
     }
-    .filter-panel { left: 240px; }
+    .filter-panel {
+      left: 240px;
+    }
   }
 }

@@ -11,9 +11,8 @@ describe('CreateSortieComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],
-      imports: [CreateSortieComponent]
-    })
-    .compileComponents();
+      imports: [CreateSortieComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(CreateSortieComponent);
     component = fixture.componentInstance;

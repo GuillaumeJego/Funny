@@ -20,7 +20,7 @@
     position: absolute;
     top: 1rem;
     left: 1rem;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     border: none;
     border-radius: 50%;
     width: 36px;
@@ -30,13 +30,15 @@
     justify-content: center;
     cursor: pointer;
     color: #fff;
-    &:hover { background: rgba(255,255,255,0.3); }
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
   }
 
   .hero-badge {
     display: inline-block;
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.4);
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: 20px;
     padding: 0.25rem 0.9rem;
     font-size: 0.85rem;
@@ -91,7 +93,10 @@
   font-size: 0.95rem;
   color: $text-dark;
 
-  .avantage-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .avantage-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
 }
 
 // ─── Plans ────────────────────────────────────────────────
@@ -109,7 +114,9 @@
   border-radius: $border-radius-lg;
   padding: 1.25rem 1rem;
   cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   text-align: center;
 
   &.selected {
@@ -193,7 +200,9 @@
   cursor: pointer;
   transition: background 0.2s;
 
-  &:hover { background: $primary-hover; }
+  &:hover {
+    background: $primary-hover;
+  }
 }
 
 .section-contact {
@@ -214,7 +223,9 @@
   font-size: 0.9rem;
   color: $text-dark;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 
   &:hover {
     background: $bg-light;

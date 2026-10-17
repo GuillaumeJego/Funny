@@ -8,9 +8,8 @@ describe('AvatarUploadComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AvatarUploadComponent]
-    })
-    .compileComponents();
+      imports: [AvatarUploadComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(AvatarUploadComponent);
     component = fixture.componentInstance;

@@ -3,7 +3,6 @@ import { SupabaseService } from './supabase.service';
 
 @Injectable({ providedIn: 'root' })
 export class FavoriService {
-
   constructor(private supabase: SupabaseService) {}
 
   async getFavoris(userId: string): Promise<string[]> {

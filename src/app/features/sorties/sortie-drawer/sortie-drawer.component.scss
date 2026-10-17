@@ -14,7 +14,14 @@
   animation: fadeIn 0.2s ease;
 }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
 // ─── Drawer ───────────────────────────────────────────────
 .drawer {
@@ -27,12 +34,18 @@
   transform: translateY(100%);
   animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
 
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 // ─── Poignée mobile ───────────────────────────────────────
@@ -54,7 +67,7 @@
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
   border: none;
   border-radius: 50%;
   width: 32px;
@@ -67,7 +80,9 @@
   z-index: 10;
   transition: background 0.15s;
 
-  &:hover { background: rgba(0,0,0,0.55); }
+  &:hover {
+    background: rgba(0, 0, 0, 0.55);
+  }
 }
 
 // ─── Image ────────────────────────────────────────────────
@@ -78,26 +93,43 @@
   background: $primary-light;
   overflow: hidden;
 
-  img { width: 100%; height: 100%; object-fit: cover; }
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
   .image-placeholder {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 4rem;
   }
 
   .badge-premium-img {
-    position: absolute; top: 0.75rem; right: 0.75rem;
-    background: $warning; color: #fff;
-    font-size: 0.75rem; font-weight: 700;
-    padding: 0.25rem 0.65rem; border-radius: 20px;
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: $warning;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
   }
 
   .badge-theme-img {
-    position: absolute; bottom: 0.75rem; left: 0.75rem;
-    background: rgba(0,0,0,0.55); color: #fff;
-    font-size: 0.8rem; padding: 0.25rem 0.65rem;
-    border-radius: 20px; backdrop-filter: blur(4px);
+    position: absolute;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 0.8rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
   }
 }
 
@@ -117,7 +149,9 @@
     cursor: pointer;
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
-    transition: color 0.2s, border-color 0.2s;
+    transition:
+      color 0.2s,
+      border-color 0.2s;
     display: flex;
     align-items: center;
     gap: 0.4rem;
@@ -166,11 +200,22 @@
 }
 
 .btn-heart {
-  background: none; border: none; cursor: pointer;
-  padding: 0.3rem; color: $text-light; flex-shrink: 0;
-  display: flex; align-items: center;
-  transition: color 0.2s, transform 0.15s;
-  &:hover, &.active { color: #ef4444; transform: scale(1.15); }
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem;
+  color: $text-light;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  transition:
+    color 0.2s,
+    transform 0.15s;
+  &:hover,
+  &.active {
+    color: #ef4444;
+    transform: scale(1.15);
+  }
 }
 
 .sortie-desc {
@@ -196,7 +241,10 @@
   font-size: 0.9rem;
   color: $text-dark;
 
-  .info-icon { font-size: 1rem; flex-shrink: 0; }
+  .info-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
 }
 
 // ─── Organisateur ─────────────────────────────────────────
@@ -208,42 +256,70 @@
   background: $bg-light;
   border-radius: $border-radius;
 
-  .avatar, .avatar-placeholder {
-    width: 42px; height: 42px;
-    border-radius: 50%; object-fit: cover; flex-shrink: 0;
+  .avatar,
+  .avatar-placeholder {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
   }
 
   .avatar-placeholder {
-    background: $primary-light; color: $primary;
-    font-weight: 700; font-size: 1rem;
-    display: flex; align-items: center; justify-content: center;
+    background: $primary-light;
+    color: $primary;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  .organizer-label { font-size: 0.75rem; color: $text-light; }
-  .organizer-name  { font-size: 0.95rem; font-weight: 600; color: $text-dark; }
+  .organizer-label {
+    font-size: 0.75rem;
+    color: $text-light;
+  }
+  .organizer-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: $text-dark;
+  }
 }
 
 // ─── Bouton rejoindre ─────────────────────────────────────
 .btn-rejoindre {
   width: 100%;
   padding: 0.9rem;
-  background: $primary; color: #fff;
-  border: none; border-radius: $border-radius;
-  font-size: 1rem; font-weight: 700;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $border-radius;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
   transition: background 0.2s;
-  &:hover { background: $primary-hover; }
+  &:hover {
+    background: $primary-hover;
+  }
 }
 
 .btn-quitter {
   width: 100%;
   padding: 0.9rem;
-  background: none; color: $error;
-  border: 2px solid $error; border-radius: $border-radius;
-  font-size: 1rem; font-weight: 700;
+  background: none;
+  color: $error;
+  border: 2px solid $error;
+  border-radius: $border-radius;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  &:hover { background: $error; color: #fff; }
+  transition:
+    background 0.2s,
+    color 0.2s;
+  &:hover {
+    background: $error;
+    color: #fff;
+  }
 }
 
 // ─── Liste d'attente ─────────────────────────────────────
@@ -274,8 +350,13 @@
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
-  &:hover { border-color: $error; color: $error; }
+  transition:
+    border-color 0.2s,
+    color 0.2s;
+  &:hover {
+    border-color: $error;
+    color: $error;
+  }
 }
 
 .m-badge-org {
@@ -306,8 +387,13 @@
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  &:hover { background: $error; color: #fff; }
+  transition:
+    background 0.2s,
+    color 0.2s;
+  &:hover {
+    background: $error;
+    color: #fff;
+  }
 }
 
 // ─── Onglet Membres ───────────────────────────────────────
@@ -353,7 +439,9 @@
   transition: background 0.15s;
   padding: 0.2rem 0.4rem;
   margin: 0 -0.4rem;
-  &:hover { background: $bg-light; }
+  &:hover {
+    background: $bg-light;
+  }
 }
 
 .membre-item {
@@ -361,7 +449,8 @@
   align-items: center;
   gap: 0.65rem;
 
-  .m-avatar, .m-avatar-placeholder {
+  .m-avatar,
+  .m-avatar-placeholder {
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -395,44 +484,71 @@
     overflow: hidden;
 
     .blurred {
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       filter: blur(12px) brightness(0.5);
       transform: scale(1.05);
     }
 
     .lock-overlay {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 0.6rem; padding: 1.5rem; text-align: center;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 1.5rem;
+      text-align: center;
 
-      .lock-icon { font-size: 2.5rem; }
+      .lock-icon {
+        font-size: 2.5rem;
+      }
 
-      h3 { color: #fff; font-size: 1.2rem; font-weight: 700; }
+      h3 {
+        color: #fff;
+        font-size: 1.2rem;
+        font-weight: 700;
+      }
 
-      p { color: rgba(255,255,255,0.85); font-size: 0.85rem; line-height: 1.5; }
+      p {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.85rem;
+        line-height: 1.5;
+      }
 
       .btn-subscribe {
         margin-top: 0.5rem;
         padding: 0.65rem 1.5rem;
-        background: $warning; color: #fff;
-        border: none; border-radius: $border-radius;
-        font-size: 0.9rem; font-weight: 700; cursor: pointer;
-        &:hover { opacity: 0.9; }
+        background: $warning;
+        color: #fff;
+        border: none;
+        border-radius: $border-radius;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        &:hover {
+          opacity: 0.9;
+        }
       }
     }
   }
 
   .locked-info {
     padding: 1.25rem;
-    display: flex; flex-direction: column; gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 
     .badge-premium {
       display: inline-block;
-      background: $warning; color: #fff;
-      font-size: 0.8rem; font-weight: 700;
-      padding: 0.25rem 0.75rem; border-radius: 20px;
+      background: $warning;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
       width: fit-content;
     }
   }
@@ -452,10 +568,18 @@
     animation: scaleIn 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
   }
 
-  .drawer-handle { display: none; }
+  .drawer-handle {
+    display: none;
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

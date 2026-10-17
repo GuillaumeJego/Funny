@@ -1,5 +1,4 @@
 <nav class="navbar-filters">
-
   <!-- Quoi ? -->
   <div class="filter-item" [class.active]="filters.themeIds?.length" (click)="togglePanel('quoi')">
     <span class="filter-icon">🍽️</span>
@@ -13,7 +12,11 @@
   </div>
 
   <!-- Quand ? -->
-  <div class="filter-item" [class.active]="filters.dateDebut || filters.dateFin || filters.quickPeriod" (click)="togglePanel('quand')">
+  <div
+    class="filter-item"
+    [class.active]="filters.dateDebut || filters.dateFin || filters.quickPeriod"
+    (click)="togglePanel('quand')"
+  >
     <span class="filter-icon">📅</span>
     <span class="filter-label">{{ quandLabel }}</span>
   </div>
@@ -21,7 +24,9 @@
   <!-- Prix -->
   <div class="filter-item" [class.active]="filters.prix" (click)="togglePanel('prix')">
     <span class="filter-icon">💰</span>
-    <span class="filter-label">{{ filters.prix === 'gratuit' ? 'Gratuit' : filters.prix === 'payant' ? 'Payant' : 'Prix' }}</span>
+    <span class="filter-label">{{
+      filters.prix === 'gratuit' ? 'Gratuit' : filters.prix === 'payant' ? 'Payant' : 'Prix'
+    }}</span>
   </div>
 
   <!-- Premium -->
@@ -31,9 +36,15 @@
   </div>
 
   <!-- Reset -->
-  <div class="filter-item filter-reset" [class.has-active]="activeCount > 0" (click)="resetFilters()">
+  <div
+    class="filter-item filter-reset"
+    [class.has-active]="activeCount > 0"
+    (click)="resetFilters()"
+  >
     <span class="filter-icon">{{ activeCount > 0 ? '✕' : '⚙️' }}</span>
-    <span class="filter-label">{{ activeCount > 0 ? activeCount + ' filtre' + (activeCount > 1 ? 's' : '') : 'Filtres' }}</span>
+    <span class="filter-label">{{
+      activeCount > 0 ? activeCount + ' filtre' + (activeCount > 1 ? 's' : '') : 'Filtres'
+    }}</span>
   </div>
 
   <!-- ── Panel Quoi : thèmes ── -->
@@ -53,7 +64,9 @@
         </div>
       </div>
       <div class="panel-actions">
-        <button class="btn-clear" *ngIf="filters.themeIds?.length" (click)="clearThemes()">✕ Effacer</button>
+        <button class="btn-clear" *ngIf="filters.themeIds?.length" (click)="clearThemes()">
+          ✕ Effacer
+        </button>
         <button class="btn-apply" (click)="applyThemes()">Appliquer</button>
       </div>
     </div>
@@ -62,7 +75,6 @@
   <!-- ── Panel Où : lieux existants + recherche Nominatim ── -->
   <div class="filter-panel" *ngIf="openPanel === 'ou'" (click)="$event.stopPropagation()">
     <div class="panel-inner">
-
       <!-- Lieux déjà en base -->
       <div *ngIf="availableLocations.length">
         <label>Lieux existants</label>
@@ -101,14 +113,26 @@
 
       <!-- Suggestions Nominatim -->
       <div class="location-suggestions" *ngIf="locationSuggestions.length">
-        <div *ngFor="let place of locationSuggestions" class="suggestion-item" (click)="setOu(place)">
+        <div
+          *ngFor="let place of locationSuggestions"
+          class="suggestion-item"
+          (click)="setOu(place)"
+        >
           <span class="sug-icon">📍</span>
           <span class="sug-city">{{ place.city }}</span>
           <span class="sug-country">{{ place.country }}</span>
         </div>
       </div>
 
-      <div *ngIf="locationQuery.length > 1 && !locationSearching && !locationSuggestions.length && !filters.ou" class="empty-hint">
+      <div
+        *ngIf="
+          locationQuery.length > 1 &&
+          !locationSearching &&
+          !locationSuggestions.length &&
+          !filters.ou
+        "
+        class="empty-hint"
+      >
         Aucun résultat
       </div>
 
@@ -123,26 +147,72 @@
     <div class="panel-inner">
       <label>Raccourcis</label>
       <div class="chip-list" style="margin-bottom: 0.75rem">
-        <button class="chip" [class.active]="quickPeriod === 'past'" (click)="setQuickPeriod('past')">📅 Passées</button>
-        <button class="chip" [class.active]="quickPeriod === 'upcoming'" (click)="setQuickPeriod('upcoming')">🔜 À venir</button>
-        <button class="chip" [class.active]="quickPeriod === 'today'" (click)="setQuickPeriod('today')">Ce jour</button>
-        <button class="chip" [class.active]="quickPeriod === 'week'" (click)="setQuickPeriod('week')">Cette semaine</button>
-        <button class="chip" [class.active]="quickPeriod === 'month'" (click)="setQuickPeriod('month')">Ce mois</button>
+        <button
+          class="chip"
+          [class.active]="quickPeriod === 'past'"
+          (click)="setQuickPeriod('past')"
+        >
+          📅 Passées
+        </button>
+        <button
+          class="chip"
+          [class.active]="quickPeriod === 'upcoming'"
+          (click)="setQuickPeriod('upcoming')"
+        >
+          🔜 À venir
+        </button>
+        <button
+          class="chip"
+          [class.active]="quickPeriod === 'today'"
+          (click)="setQuickPeriod('today')"
+        >
+          Ce jour
+        </button>
+        <button
+          class="chip"
+          [class.active]="quickPeriod === 'week'"
+          (click)="setQuickPeriod('week')"
+        >
+          Cette semaine
+        </button>
+        <button
+          class="chip"
+          [class.active]="quickPeriod === 'month'"
+          (click)="setQuickPeriod('month')"
+        >
+          Ce mois
+        </button>
       </div>
       <label>Ou choisir une plage</label>
       <div class="date-range">
         <div class="date-field">
           <span class="date-label">Du</span>
-          <input type="date" [(ngModel)]="dateDebut" [max]="dateFin || ''" (change)="quickPeriod = ''" />
+          <input
+            type="date"
+            [(ngModel)]="dateDebut"
+            [max]="dateFin || ''"
+            (change)="quickPeriod = ''"
+          />
         </div>
         <span class="date-sep">→</span>
         <div class="date-field">
           <span class="date-label">Au</span>
-          <input type="date" [(ngModel)]="dateFin" [min]="dateDebut || ''" (change)="quickPeriod = ''" />
+          <input
+            type="date"
+            [(ngModel)]="dateFin"
+            [min]="dateDebut || ''"
+            (change)="quickPeriod = ''"
+          />
         </div>
       </div>
       <div class="panel-actions">
-        <button class="btn-clear" *ngIf="filters.dateDebut || filters.dateFin" (click)="clearDates()">Effacer</button>
+        <button
+          class="btn-clear"
+          *ngIf="filters.dateDebut || filters.dateFin"
+          (click)="clearDates()"
+        >
+          Effacer
+        </button>
         <button class="btn-apply" (click)="applyDates()">Appliquer</button>
       </div>
     </div>
@@ -153,8 +223,16 @@
     <div class="panel-inner">
       <label>Tarif</label>
       <div class="chip-list">
-        <button class="chip" [class.active]="filters.prix === 'gratuit'" (click)="setPrix('gratuit')">🟢 Gratuit</button>
-        <button class="chip" [class.active]="filters.prix === 'payant'" (click)="setPrix('payant')">💶 Payant</button>
+        <button
+          class="chip"
+          [class.active]="filters.prix === 'gratuit'"
+          (click)="setPrix('gratuit')"
+        >
+          🟢 Gratuit
+        </button>
+        <button class="chip" [class.active]="filters.prix === 'payant'" (click)="setPrix('payant')">
+          💶 Payant
+        </button>
       </div>
       <div class="panel-actions" *ngIf="filters.prix">
         <button class="btn-clear" (click)="clearPrix()">✕ Effacer</button>
@@ -176,5 +254,4 @@
       </div>
     </div>
   </div>
-
 </nav>

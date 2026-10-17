@@ -19,31 +19,47 @@
   background: $primary;
   color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .btn-back {
-  background: none; border: none; color: #fff;
-  cursor: pointer; display: flex; align-items: center;
-  padding: 0.25rem; flex-shrink: 0;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0.25rem;
+  flex-shrink: 0;
 }
 
 .header-identity {
-  display: flex; align-items: center; gap: 0.65rem; flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex: 1;
 }
 
-.h-avatar-img, .h-avatar-placeholder {
-  width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+.h-avatar-img,
+.h-avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .h-avatar-placeholder {
-  background: rgba(255,255,255,0.25);
-  font-size: 1.1rem; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.25);
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .header-name {
-  font-size: 1rem; font-weight: 700;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 // ─── Messages area ────────────────────────────────────────
@@ -57,30 +73,41 @@
 }
 
 .state-center {
-  flex: 1; display: flex; justify-content: center; align-items: center;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .spinner {
-  width: 36px; height: 36px;
-  border: 3px solid rgba(255,255,255,0.4);
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.4);
   border-top-color: $primary;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
 .spinner-sm {
-  width: 18px; height: 18px;
-  border: 2px solid rgba(255,255,255,0.4);
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 // ─── Séparateur de jour ───────────────────────────────────
 .day-divider {
-  display: flex; justify-content: center; margin: 0.75rem 0;
+  display: flex;
+  justify-content: center;
+  margin: 0.75rem 0;
   span {
-    background: rgba(0,0,0,0.12);
+    background: rgba(0, 0, 0, 0.12);
     color: #555;
     font-size: 0.75rem;
     padding: 0.2rem 0.85rem;
@@ -104,8 +131,12 @@
   flex-shrink: 0;
 }
 
-.sender-avatar, .sender-avatar-placeholder {
-  width: 28px; height: 28px; border-radius: 50%; object-fit: cover;
+.sender-avatar,
+.sender-avatar-placeholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .sender-avatar-placeholder {
@@ -113,7 +144,9 @@
   color: #fff;
   font-size: 0.75rem;
   font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 // ─── Bulle ────────────────────────────────────────────────
@@ -123,11 +156,13 @@
   display: flex;
   flex-direction: column;
 
-  &:hover .btn-reply { opacity: 1; }
+  &:hover .btn-reply {
+    opacity: 1;
+  }
 }
 
 .reply-preview {
-  background: rgba(0,0,0,0.06);
+  background: rgba(0, 0, 0, 0.06);
   border-left: 3px solid $secondary;
   border-radius: 6px 6px 0 0;
   padding: 0.3rem 0.6rem;
@@ -135,17 +170,24 @@
   max-width: 100%;
   overflow: hidden;
 
-  &.own-reply { border-left-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.15); }
+  &.own-reply {
+    border-left-color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.15);
+  }
 
   .reply-author {
     display: block;
     font-weight: 700;
     color: $primary;
     margin-bottom: 0.1rem;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .own-reply .reply-author { color: rgba(255,255,255,0.85); }
+  .own-reply .reply-author {
+    color: rgba(255, 255, 255, 0.85);
+  }
 
   .reply-content {
     color: $text-medium;
@@ -161,7 +203,7 @@
   background: #fff;
   border-radius: 12px 12px 12px 2px;
   padding: 0.5rem 0.7rem 1.5rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   cursor: pointer;
   word-break: break-word;
 
@@ -203,7 +245,9 @@
   gap: 0.25rem;
   margin-top: 0.2rem;
 
-  &.own { justify-content: flex-end; }
+  &.own {
+    justify-content: flex-end;
+  }
 }
 
 .reaction-chip {
@@ -218,30 +262,50 @@
   cursor: pointer;
   transition: background 0.15s;
 
-  &.mine { background: rgba($primary, 0.12); border-color: $primary; }
-  &:hover { background: $bg-light; }
+  &.mine {
+    background: rgba($primary, 0.12);
+    border-color: $primary;
+  }
+  &:hover {
+    background: $bg-light;
+  }
 
-  span { font-size: 0.75rem; color: $text-medium; }
+  span {
+    font-size: 0.75rem;
+    color: $text-medium;
+  }
 }
 
 // ─── Bouton répondre ──────────────────────────────────────
 .btn-reply {
   position: absolute;
-  top: 50%; transform: translateY(-50%);
+  top: 50%;
+  transform: translateY(-50%);
   opacity: 0;
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
   border: none;
   border-radius: 50%;
-  width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: opacity 0.2s, background 0.15s;
+  transition:
+    opacity 0.2s,
+    background 0.15s;
   color: $text-medium;
 
-  &:hover { background: rgba(0,0,0,0.18); }
+  &:hover {
+    background: rgba(0, 0, 0, 0.18);
+  }
 
-  &.own { right: calc(100% + 6px); }
-  &:not(.own) { left: calc(100% + 6px); }
+  &.own {
+    right: calc(100% + 6px);
+  }
+  &:not(.own) {
+    left: calc(100% + 6px);
+  }
 }
 
 // ─── Picker de réactions ──────────────────────────────────
@@ -250,7 +314,7 @@
   z-index: 1000;
   background: #fff;
   border-radius: 999px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   padding: 0.35rem 0.5rem;
@@ -259,19 +323,34 @@
 }
 
 @keyframes popIn {
-  from { transform: scale(0.85); opacity: 0; }
-  to   { transform: scale(1);    opacity: 1; }
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .emoji-btn {
-  background: none; border: none;
+  background: none;
+  border: none;
   font-size: 1.4rem;
-  width: 38px; height: 38px;
-  display: flex; align-items: center; justify-content: center;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
   cursor: pointer;
-  transition: background 0.12s, transform 0.12s;
-  &:hover { background: $bg-light; transform: scale(1.2); }
+  transition:
+    background 0.12s,
+    transform 0.12s;
+  &:hover {
+    background: $bg-light;
+    transform: scale(1.2);
+  }
 }
 
 .reply-btn {
@@ -302,8 +381,10 @@
 }
 
 .reply-bar-content {
-  flex: 1; min-width: 0;
-  display: flex; flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .reply-bar-author {
@@ -321,7 +402,8 @@
 }
 
 .btn-cancel-reply {
-  background: none; border: none;
+  background: none;
+  border: none;
   color: $text-light;
   font-size: 1rem;
   cursor: pointer;
@@ -336,15 +418,22 @@
 }
 
 .btn-attach {
-  background: none; border: none;
+  background: none;
+  border: none;
   color: $text-light;
   cursor: pointer;
   padding: 0.4rem;
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
   border-radius: 50%;
-  transition: background 0.15s, color 0.15s;
-  &:hover { background: rgba(0,0,0,0.06); color: $primary; }
+  transition:
+    background 0.15s,
+    color 0.15s;
+  &:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: $primary;
+  }
 }
 
 .msg-input {
@@ -363,18 +452,28 @@
 }
 
 .btn-send {
-  width: 42px; height: 42px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: $primary;
   border: none;
   color: #fff;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s, opacity 0.15s;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
 
-  &:disabled { opacity: 0.5; cursor: default; }
-  &:not(:disabled):hover { background: darken(#6366f1, 8%); }
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  &:not(:disabled):hover {
+    background: darken(#6366f1, 8%);
+  }
 }
 
 // ─── Upload indicator ────────────────────────────────────
@@ -383,7 +482,7 @@
   bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0,0,0,0.75);
+  background: rgba(0, 0, 0, 0.75);
   color: #fff;
   border-radius: 999px;
   padding: 0.4rem 1rem;

@@ -11,9 +11,8 @@ describe('NavbarFiltersComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],
-      imports: [NavbarFiltersComponent]
-    })
-    .compileComponents();
+      imports: [NavbarFiltersComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(NavbarFiltersComponent);
     component = fixture.componentInstance;

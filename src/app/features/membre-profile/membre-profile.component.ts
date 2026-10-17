@@ -5,7 +5,11 @@ import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { SortieService } from '../../core/services/sortie.service';
 import { SettingsService } from '../../core/services/settings.service';
-import { NavbarFiltersComponent, Filters, ThemeOption } from '../../core/components/navbar-filters/navbar-filters.component';
+import {
+  NavbarFiltersComponent,
+  Filters,
+  ThemeOption,
+} from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
 import { Profile } from '../../core/models/profile.model';
 import { SortieWithRelations } from '../../core/models/sortie.model';
@@ -23,7 +27,7 @@ type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees';
   standalone: true,
   imports: [CommonModule, RouterModule, SortieDrawerComponent],
   templateUrl: './membre-profile.component.html',
-  styleUrl: './membre-profile.component.scss'
+  styleUrl: './membre-profile.component.scss',
 })
 export class MembreProfileComponent implements OnInit {
   profile: Profile | null = null;
@@ -58,9 +62,9 @@ export class MembreProfileComponent implements OnInit {
 
   tabs: { key: TabKey; label: string; icon: string }[] = [
     { key: 'organisees', label: 'Organisées', icon: '📋' },
-    { key: 'rejointes',  label: 'Rejointes',  icon: '✅' },
-    { key: 'attente',    label: 'En attente', icon: '⏳' },
-    { key: 'likees',     label: 'Likées',     icon: '❤️' },
+    { key: 'rejointes', label: 'Rejointes', icon: '✅' },
+    { key: 'attente', label: 'En attente', icon: '⏳' },
+    { key: 'likees', label: 'Likées', icon: '❤️' },
   ];
 
   constructor(
@@ -74,15 +78,23 @@ export class MembreProfileComponent implements OnInit {
     private favoriService: FavoriService,
     private notificationService: NotificationService,
     private friendshipService: FriendshipService,
-    private conversationService: ConversationService
+    private conversationService: ConversationService,
   ) {}
 
   async ngOnInit() {
     const targetId = this.route.snapshot.paramMap.get('id');
-    if (!targetId) { this.router.navigate(['/membres']); return; }
+    if (!targetId) {
+      this.router.navigate(['/membres']);
+      return;
+    }
 
-    const { data: { user } } = await this.auth.getUser();
-    if (!user) { this.router.navigate(['/login']); return; }
+    const {
+      data: { user },
+    } = await this.auth.getUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
 
     this.viewerUserId = user.id;
     this.isOwnProfile = user.id === targetId;
@@ -90,11 +102,17 @@ export class MembreProfileComponent implements OnInit {
     const { data: viewerProfile } = await this.profileService.getMyProfile(user.id);
     if (viewerProfile) {
       this.viewerRole = viewerProfile.role ?? 'user';
-      this.viewerIsPremium = ['admin', 'developer', 'user_premium'].includes(viewerProfile.role ?? '')
-        || (!!viewerProfile.subscription_end_date && new Date(viewerProfile.subscription_end_date) > new Date());
+      this.viewerIsPremium =
+        ['admin', 'developer', 'user_premium'].includes(viewerProfile.role ?? '') ||
+        (!!viewerProfile.subscription_end_date &&
+          new Date(viewerProfile.subscription_end_date) > new Date());
       if (!this.isOwnProfile) {
         const canView = await this.settingsService.canViewProfiles(viewerProfile);
-        if (!canView) { this.accessDenied = true; this.loading = false; return; }
+        if (!canView) {
+          this.accessDenied = true;
+          this.loading = false;
+          return;
+        }
       }
     }
 
@@ -116,37 +134,52 @@ export class MembreProfileComponent implements OnInit {
     this.sortiesLikees = likees;
 
     // Résoudre images + inscriptionsCount
-    const all = [...this.sortiesOrganisees, ...this.sortiesRejointes, ...this.sortiesAttente, ...this.sortiesLikees];
-    await Promise.all(all.map(async s => {
-      if (s.image_url) s.resolvedImageUrl = s.image_url;
-      else if (s.theme_id) s.resolvedImageUrl = await this.sortieService.getFirstThemeImage(s.theme_id) ?? undefined;
-      s.inscriptionsCount = await this.sortieService.getInscriptionsCount(s.id);
-    }));
+    const all = [
+      ...this.sortiesOrganisees,
+      ...this.sortiesRejointes,
+      ...this.sortiesAttente,
+      ...this.sortiesLikees,
+    ];
+    await Promise.all(
+      all.map(async (s) => {
+        if (s.image_url) s.resolvedImageUrl = s.image_url;
+        else if (s.theme_id)
+          s.resolvedImageUrl =
+            (await this.sortieService.getFirstThemeImage(s.theme_id)) ?? undefined;
+        s.inscriptionsCount = await this.sortieService.getInscriptionsCount(s.id);
+      }),
+    );
 
     // Thèmes et villes disponibles
     const themesMap = new Map<string, ThemeOption>();
     const locationsSet = new Set<string>();
     for (const s of all) {
-      if (s.theme_id && s.themes) themesMap.set(s.theme_id, { id: s.theme_id, name: s.themes.name, icon: s.themes.icon });
+      if (s.theme_id && s.themes)
+        themesMap.set(s.theme_id, { id: s.theme_id, name: s.themes.name, icon: s.themes.icon });
       if (s.location) locationsSet.add(s.location);
     }
     this.availableThemes = [...themesMap.values()];
     this.availableLocations = [...locationsSet].sort();
 
     if (!this.isOwnProfile) {
-      this.friendship = await this.friendshipService.getFriendshipStatus(this.viewerUserId, targetId);
+      this.friendship = await this.friendshipService.getFriendshipStatus(
+        this.viewerUserId,
+        targetId,
+      );
     }
     this.friends = await this.friendshipService.getFriends(targetId);
 
     this.loading = false;
   }
 
-  onFiltersChanged(f: Filters) { this.currentFilters = f; }
+  onFiltersChanged(f: Filters) {
+    this.currentFilters = f;
+  }
 
   private applyFilters(list: SortieWithRelations[]): SortieWithRelations[] {
     const now = new Date();
     const f = this.currentFilters;
-    return list.filter(s => {
+    return list.filter((s) => {
       if (f.themeIds?.length && !f.themeIds.includes(s.theme_id ?? '')) return false;
       if (f.ou && s.location !== f.ou) return false;
       if (f.quickPeriod === 'past' && new Date(s.date) >= now) return false;
@@ -154,7 +187,11 @@ export class MembreProfileComponent implements OnInit {
       if (!f.quickPeriod && (f.dateDebut || f.dateFin)) {
         const d = new Date(s.date);
         if (f.dateDebut && d < new Date(f.dateDebut)) return false;
-        if (f.dateFin) { const fin = new Date(f.dateFin); fin.setHours(23,59,59); if (d > fin) return false; }
+        if (f.dateFin) {
+          const fin = new Date(f.dateFin);
+          fin.setHours(23, 59, 59);
+          if (d > fin) return false;
+        }
       }
       if (f.prix === 'gratuit' && s.price > 0) return false;
       if (f.prix === 'payant' && s.price === 0) return false;
@@ -164,18 +201,26 @@ export class MembreProfileComponent implements OnInit {
   }
 
   get currentList(): SortieWithRelations[] {
-    const base = this.activeTab === 'organisees' ? this.sortiesOrganisees
-      : this.activeTab === 'rejointes' ? this.sortiesRejointes
-      : this.activeTab === 'attente'   ? this.sortiesAttente
-      : this.sortiesLikees;
+    const base =
+      this.activeTab === 'organisees'
+        ? this.sortiesOrganisees
+        : this.activeTab === 'rejointes'
+          ? this.sortiesRejointes
+          : this.activeTab === 'attente'
+            ? this.sortiesAttente
+            : this.sortiesLikees;
     return this.applyFilters(base);
   }
 
   countFor(tab: TabKey): number {
-    const base = tab === 'organisees' ? this.sortiesOrganisees
-      : tab === 'rejointes' ? this.sortiesRejointes
-      : tab === 'attente'   ? this.sortiesAttente
-      : this.sortiesLikees;
+    const base =
+      tab === 'organisees'
+        ? this.sortiesOrganisees
+        : tab === 'rejointes'
+          ? this.sortiesRejointes
+          : tab === 'attente'
+            ? this.sortiesAttente
+            : this.sortiesLikees;
     return this.applyFilters(base).length;
   }
 
@@ -184,7 +229,9 @@ export class MembreProfileComponent implements OnInit {
     return new Date(this.profile.subscription_end_date) > new Date();
   }
 
-  getInitial(username: string): string { return username.charAt(0).toUpperCase(); }
+  getInitial(username: string): string {
+    return username.charAt(0).toUpperCase();
+  }
 
   getAge(): number | null {
     if (!this.profile?.birthdate) return null;
@@ -208,26 +255,36 @@ export class MembreProfileComponent implements OnInit {
   formatDate(dateStr: string): string {
     const d = new Date(dateStr);
     const j = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-    return j.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    return j
+      .split(' ')
+      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
   }
 
   formatDateCourte(dateStr: string): string {
     const d = new Date(dateStr);
     const j = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-    return j.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    return j
+      .split(' ')
+      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
   }
 
   formatHeure(dateStr: string): string {
     return new Date(dateStr).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   }
 
-  goBack() { window.history.back(); }
+  goBack() {
+    window.history.back();
+  }
 
   get friendshipStatus(): 'none' | 'pending_sent' | 'pending_received' | 'accepted' {
     if (!this.friendship) return 'none';
     if (this.friendship.status === 'accepted') return 'accepted';
     if (this.friendship.status === 'pending') {
-      return this.friendship.requester_id === this.viewerUserId ? 'pending_sent' : 'pending_received';
+      return this.friendship.requester_id === this.viewerUserId
+        ? 'pending_sent'
+        : 'pending_received';
     }
     return 'none';
   }
@@ -270,7 +327,10 @@ export class MembreProfileComponent implements OnInit {
 
   async openChat() {
     const targetId = this.route.snapshot.paramMap.get('id')!;
-    const convId = await this.conversationService.getOrCreateConversation(this.viewerUserId, targetId);
+    const convId = await this.conversationService.getOrCreateConversation(
+      this.viewerUserId,
+      targetId,
+    );
     this.router.navigate(['/messages', convId]);
   }
 
@@ -281,7 +341,10 @@ export class MembreProfileComponent implements OnInit {
   async openDrawer(sortie: SortieWithRelations) {
     this.selectedSortie = sortie;
     this.drawerOpen = true;
-    this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(this.viewerUserId, sortie.id);
+    this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(
+      this.viewerUserId,
+      sortie.id,
+    );
   }
 
   closeDrawer() {
@@ -289,7 +352,9 @@ export class MembreProfileComponent implements OnInit {
     this.selectedSortie = null;
   }
 
-  isFavori(id: string): boolean { return this.viewerFavoris.has(id); }
+  isFavori(id: string): boolean {
+    return this.viewerFavoris.has(id);
+  }
 
   async onFavoriFromDrawer(sortieId: string) {
     if (this.isFavori(sortieId)) {
@@ -299,7 +364,12 @@ export class MembreProfileComponent implements OnInit {
       this.viewerFavoris.add(sortieId);
       await this.favoriService.addFavori(this.viewerUserId, sortieId);
       if (this.selectedSortie?.created_by) {
-        this.notificationService.notifyOrganizer(this.selectedSortie.created_by, this.viewerUserId, this.selectedSortie.title, 'liked');
+        this.notificationService.notifyOrganizer(
+          this.selectedSortie.created_by,
+          this.viewerUserId,
+          this.selectedSortie.title,
+          'liked',
+        );
       }
     }
     this.viewerFavoris = new Set(this.viewerFavoris);
@@ -308,12 +378,21 @@ export class MembreProfileComponent implements OnInit {
   async onRejoindre(sortieId: string) {
     const { error, status } = await this.inscriptionService.rejoindre(this.viewerUserId, sortieId);
     if (!error && status) {
-      this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(this.viewerUserId, sortieId);
+      this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(
+        this.viewerUserId,
+        sortieId,
+      );
       if (this.selectedSortie) {
-        this.selectedSortie.inscriptionsCount = await this.sortieService.getInscriptionsCount(sortieId);
+        this.selectedSortie.inscriptionsCount =
+          await this.sortieService.getInscriptionsCount(sortieId);
         if (this.selectedSortie.created_by) {
           const type = status === 'waiting' ? 'waiting' : 'joined';
-          this.notificationService.notifyOrganizer(this.selectedSortie.created_by, this.viewerUserId, this.selectedSortie.title, type);
+          this.notificationService.notifyOrganizer(
+            this.selectedSortie.created_by,
+            this.viewerUserId,
+            this.selectedSortie.title,
+            type,
+          );
         }
       }
     }
@@ -324,9 +403,15 @@ export class MembreProfileComponent implements OnInit {
     if (!error) {
       this.inscriptionStatus = 'none';
       if (this.selectedSortie) {
-        this.selectedSortie.inscriptionsCount = await this.sortieService.getInscriptionsCount(sortieId);
+        this.selectedSortie.inscriptionsCount =
+          await this.sortieService.getInscriptionsCount(sortieId);
         if (this.selectedSortie.created_by) {
-          this.notificationService.notifyOrganizer(this.selectedSortie.created_by, this.viewerUserId, this.selectedSortie.title, 'left');
+          this.notificationService.notifyOrganizer(
+            this.selectedSortie.created_by,
+            this.viewerUserId,
+            this.selectedSortie.title,
+            'left',
+          );
         }
       }
     }

@@ -11,10 +11,9 @@ import { NotificationService } from '../../services/notification.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './navbar-main.component.html',
-  styleUrl: './navbar-main.component.scss'
+  styleUrl: './navbar-main.component.scss',
 })
 export class NavbarMainComponent implements OnInit {
-
   navItems = [
     { icon: '🏠', label: 'Sorties', route: '/dashboard' },
     { icon: '⭐', label: 'Mes sorties', route: '/mes-sorties' },
@@ -32,15 +31,17 @@ export class NavbarMainComponent implements OnInit {
     private drawerService: DrawerService,
     private auth: AuthService,
     private profileService: ProfileService,
-    private notifService: NotificationService
+    private notifService: NotificationService,
   ) {}
 
   async ngOnInit() {
-    const { data: { user } } = await this.auth.getUser();
+    const {
+      data: { user },
+    } = await this.auth.getUser();
     if (user) {
       const [count, profile] = await Promise.all([
         this.notifService.countUnread(user.id),
-        this.profileService.getMyProfile(user.id)
+        this.profileService.getMyProfile(user.id),
       ]);
       this.unreadCount = count;
       this.isAdmin = profile.data?.role === 'admin' || profile.data?.role === 'developer';

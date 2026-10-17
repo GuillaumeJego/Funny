@@ -1,6 +1,8 @@
 <div class="membres-page">
   <div class="page-header">
-    <h1>Membres <span *ngIf="!loading" class="total">({{ filteredMembres.length }})</span></h1>
+    <h1>
+      Membres <span *ngIf="!loading" class="total">({{ filteredMembres.length }})</span>
+    </h1>
   </div>
 
   <!-- Barre de recherche + bouton filtres -->
@@ -15,15 +17,20 @@
       />
       <button *ngIf="searchQuery" class="clear-btn" (click)="searchQuery = ''">✕</button>
     </div>
-    <button class="filter-btn" [class.active]="activeFilterCount > 0" (click)="filtersOpen = !filtersOpen">
-      ⚙️ Filtres<span *ngIf="activeFilterCount > 0" class="filter-badge">{{ activeFilterCount }}</span>
+    <button
+      class="filter-btn"
+      [class.active]="activeFilterCount > 0"
+      (click)="filtersOpen = !filtersOpen"
+    >
+      ⚙️ Filtres<span *ngIf="activeFilterCount > 0" class="filter-badge">{{
+        activeFilterCount
+      }}</span>
     </button>
   </div>
 
   <!-- Panneau filtres -->
   <div *ngIf="filtersOpen" class="filters-panel">
     <div class="filters-grid">
-
       <div class="filter-group">
         <label>Genre</label>
         <select [(ngModel)]="filterGender">
@@ -76,7 +83,6 @@
           <option value="secret">C'est secret</option>
         </select>
       </div>
-
     </div>
 
     <button *ngIf="activeFilterCount > 0" class="reset-btn" (click)="resetFilters()">
@@ -86,9 +92,7 @@
 
   <div *ngIf="loading" class="loading">Chargement…</div>
 
-  <div *ngIf="!loading && filteredMembres.length === 0" class="empty">
-    Aucun membre trouvé.
-  </div>
+  <div *ngIf="!loading && filteredMembres.length === 0" class="empty">Aucun membre trouvé.</div>
 
   <div *ngIf="!loading" class="membres-grid">
     <div *ngFor="let m of filteredMembres" class="membre-card" (click)="goToProfile(m.id)">

@@ -1,7 +1,6 @@
 @use 'styles' as *;
 
 .sortie-image-upload {
-
   .upload-btn-container {
     margin-bottom: 1rem;
 
@@ -14,7 +13,9 @@
       font-size: 0.9rem;
       color: $text-dark;
 
-      &:hover { background-color: $secondary-hover; }
+      &:hover {
+        background-color: $secondary-hover;
+      }
     }
   }
 
@@ -53,19 +54,26 @@
         cursor: pointer;
         border: none;
 
-        &:disabled { opacity: 0.6; cursor: not-allowed; }
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
       }
 
       .btn-primary {
         background-color: $primary;
         color: white;
-        &:hover:not(:disabled) { background-color: $primary-hover; }
+        &:hover:not(:disabled) {
+          background-color: $primary-hover;
+        }
       }
 
       .btn-secondary {
         background-color: $secondary;
         color: $text-dark;
-        &:hover { background-color: $secondary-hover; }
+        &:hover {
+          background-color: $secondary-hover;
+        }
       }
     }
   }
@@ -93,7 +101,9 @@
       font-size: 0.85rem;
       color: $text-dark;
 
-      &:hover { background-color: $secondary-hover; }
+      &:hover {
+        background-color: $secondary-hover;
+      }
     }
   }
 }
