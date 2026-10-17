@@ -3,35 +3,48 @@
     <h1>Notifications</h1>
   </div>
 
-  <div *ngIf="loading" class="loading">Chargement…</div>
+  @if (loading) {
+    <div class="loading">Chargement…</div>
+  }
 
-  <div *ngIf="!loading && notifications.length === 0" class="empty">
-    <div class="empty-icon">🔔</div>
-    <p>Pas de notifications pour le moment.</p>
-    <p class="sub">
-      Vous serez alerté quand quelqu'un rejoint votre sortie ou qu'une sortie est annulée.
-    </p>
-  </div>
-
-  <div *ngIf="!loading && notifications.length > 0" class="notif-list">
-    <div *ngFor="let n of notifications" class="notif-item" [class.unread]="!n.read">
-      <div class="notif-avatar">
-        <img
-          *ngIf="n.actor?.avatar_url"
-          [src]="n.actor!.avatar_url!"
-          class="actor-avatar"
-          [alt]="n.actor?.username"
-        />
-        <div *ngIf="!n.actor?.avatar_url" class="actor-placeholder">
-          {{ n.actor?.username ? n.actor!.username.charAt(0).toUpperCase() : '?' }}
-        </div>
-        <div class="notif-dot" *ngIf="!n.read"></div>
-      </div>
-      <div class="notif-body">
-        <div class="notif-title">{{ n.title }}</div>
-        <div class="notif-message">{{ n.message }}</div>
-        <div class="notif-date">{{ formatDate(n.created_at) }}</div>
-      </div>
+  @if (!loading && notifications.length === 0) {
+    <div class="empty">
+      <div class="empty-icon">🔔</div>
+      <p>Pas de notifications pour le moment.</p>
+      <p class="sub">
+        Vous serez alerté quand quelqu'un rejoint votre sortie ou qu'une sortie est annulée.
+      </p>
     </div>
-  </div>
+  }
+
+  @if (!loading && notifications.length > 0) {
+    <div class="notif-list">
+      @for (n of notifications; track n) {
+        <div class="notif-item" [class.unread]="!n.read">
+          <div class="notif-avatar">
+            @if (n.actor?.avatar_url) {
+              <img
+                [src]="n.actor!.avatar_url!"
+                class="actor-avatar"
+                [alt]="$safeNavigationMigration(n.actor?.username)"
+              />
+            }
+            @if (!n.actor?.avatar_url) {
+              <div class="actor-placeholder">
+                {{ n.actor?.username ? n.actor!.username.charAt(0).toUpperCase() : '?' }}
+              </div>
+            }
+            @if (!n.read) {
+              <div class="notif-dot"></div>
+            }
+          </div>
+          <div class="notif-body">
+            <div class="notif-title">{{ n.title }}</div>
+            <div class="notif-message">{{ n.message }}</div>
+            <div class="notif-date">{{ formatDate(n.created_at) }}</div>
+          </div>
+        </div>
+      }
+    </div>
+  }
 </div>

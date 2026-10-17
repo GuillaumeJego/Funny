@@ -5,8 +5,9 @@ import {
   ViewChild,
   ElementRef,
   AfterViewChecked,
+  ChangeDetectionStrategy,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -18,8 +19,9 @@ const EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './chat.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './chat.component.scss',
 })
 export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {

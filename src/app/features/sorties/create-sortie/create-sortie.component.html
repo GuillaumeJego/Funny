@@ -1,222 +1,226 @@
-<div *ngIf="accessDenied" class="access-denied-wrap">
-  <div class="access-denied-card">
-    <div class="access-denied-icon">🔒</div>
-    <h2>Accès restreint</h2>
-    <p>La création de sorties est réservée aux abonnés Premium.</p>
-    <button class="btn-premium" (click)="router.navigate(['/premium'])">⭐ Passer Premium</button>
-    <button class="btn-back-home" (click)="router.navigate(['/dashboard'])">← Retour</button>
+@if (accessDenied) {
+  <div class="access-denied-wrap">
+    <div class="access-denied-card">
+      <div class="access-denied-icon">🔒</div>
+      <h2>Accès restreint</h2>
+      <p>La création de sorties est réservée aux abonnés Premium.</p>
+      <button class="btn-premium" (click)="router.navigate(['/premium'])">⭐ Passer Premium</button>
+      <button class="btn-back-home" (click)="router.navigate(['/dashboard'])">← Retour</button>
+    </div>
   </div>
-</div>
+}
 
-<div *ngIf="!accessDenied" class="create-sortie-container">
-  <div class="create-sortie-card">
-    <!-- Header -->
-    <div class="header">
-      <button class="btn-back" (click)="goToDashboard()">← Retour</button>
-      <h1>Créer une sortie</h1>
-      <div class="steps">Étape {{ currentStep }}/{{ totalSteps }}</div>
-    </div>
-
-    <!-- Barre de progression -->
-    <div class="progress-bar">
-      <div class="progress" [style.width.%]="(currentStep / totalSteps) * 100"></div>
-    </div>
-
-    <!-- ÉTAPE 1 : Informations générales -->
-    <div *ngIf="currentStep === 1" class="step">
-      <h2>📝 Informations générales</h2>
-
-      <div class="form-group">
-        <label>Titre de la sortie *</label>
-        <input type="text" [(ngModel)]="sortie.title" placeholder="Ex: Soirée pizza entre amis" />
+@if (!accessDenied) {
+  <div class="create-sortie-container">
+    <div class="create-sortie-card">
+      <!-- Header -->
+      <div class="header">
+        <button class="btn-back" (click)="goToDashboard()">← Retour</button>
+        <h1>Créer une sortie</h1>
+        <div class="steps">Étape {{ currentStep }}/{{ totalSteps }}</div>
       </div>
-
-      <div class="form-group">
-        <label>Description</label>
-        <textarea
-          [(ngModel)]="sortie.description"
-          placeholder="Décrivez votre sortie..."
-          rows="4"
-        ></textarea>
+      <!-- Barre de progression -->
+      <div class="progress-bar">
+        <div class="progress" [style.width.%]="(currentStep / totalSteps) * 100"></div>
       </div>
-
-      <div class="form-group">
-        <label>Thème *</label>
-        <select [(ngModel)]="sortie.theme_id" (change)="onThemeSelected()">
-          <option value="">Choisir un thème</option>
-          <option *ngFor="let theme of themes" [value]="theme.id">
-            {{ theme.icon }} {{ theme.name }}
-          </option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Réservé aux abonnés ?</label>
-        <div class="toggle-group">
-          <label class="toggle">
-            <input type="checkbox" [(ngModel)]="sortie.is_premium" />
-            <span class="slider"></span>
-          </label>
-          <span>{{ sortie.is_premium ? '⭐ Abonnés uniquement' : '🌍 Tout le monde' }}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ÉTAPE 2 : Date, lieu et participants -->
-    <div *ngIf="currentStep === 2" class="step">
-      <h2>📍 Lieu et date</h2>
-
-      <div class="form-group">
-        <label>Date et heure *</label>
-        <input type="datetime-local" [(ngModel)]="sortie.date" />
-      </div>
-
-      <div class="form-group">
-        <label>Lieu *</label>
-        <div class="location-autocomplete">
-          <div class="location-search-row">
+      <!-- ÉTAPE 1 : Informations générales -->
+      @if (currentStep === 1) {
+        <div class="step">
+          <h2>📝 Informations générales</h2>
+          <div class="form-group">
+            <label>Titre de la sortie *</label>
             <input
               type="text"
-              [(ngModel)]="locationQuery"
-              (input)="onLocationInput()"
-              placeholder="Rechercher une ville…"
-              autocomplete="off"
-              class="location-field"
+              [(ngModel)]="sortie.title"
+              placeholder="Ex: Soirée pizza entre amis"
             />
-            <button
-              *ngIf="sortie.location"
-              class="btn-clear-loc"
-              type="button"
-              (click)="clearLocation()"
-            >
-              ✕
-            </button>
           </div>
-          <div class="location-selected" *ngIf="sortie.location">📍 {{ sortie.location }}</div>
-          <div class="location-suggestions" *ngIf="locationSuggestions.length">
-            <div
-              *ngFor="let place of locationSuggestions"
-              class="suggestion-item"
-              (click)="selectLocation(place)"
-            >
-              <span>📍</span>
-              <div class="sug-details">
-                <span class="sug-name">{{ place.shortName }}</span>
-                <span class="sug-address" *ngIf="place.address">{{ place.address }}</span>
-              </div>
-              <span class="sug-country">{{ place.country }}</span>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea
+              [(ngModel)]="sortie.description"
+              placeholder="Décrivez votre sortie..."
+              rows="4"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label>Thème *</label>
+            <select [(ngModel)]="sortie.theme_id" (change)="onThemeSelected()">
+              <option value="">Choisir un thème</option>
+              @for (theme of themes; track theme) {
+                <option [value]="theme.id">{{ theme.icon }} {{ theme.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Réservé aux abonnés ?</label>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" [(ngModel)]="sortie.is_premium" />
+                <span class="slider"></span>
+              </label>
+              <span>{{ sortie.is_premium ? '⭐ Abonnés uniquement' : '🌍 Tout le monde' }}</span>
             </div>
           </div>
-          <div class="location-searching" *ngIf="locationSearching">⏳ Recherche…</div>
         </div>
-      </div>
-
-      <div class="form-group">
-        <label>Prix (€) *</label>
-        <input type="number" [(ngModel)]="sortie.price" min="0" placeholder="0 = gratuit" />
-      </div>
-
-      <div class="form-group">
-        <label>Nombre de places maximum</label>
-        <input
-          type="number"
-          [(ngModel)]="sortie.max_participants"
-          min="1"
-          placeholder="Laisser vide = illimité"
-        />
-      </div>
-    </div>
-
-    <!-- ÉTAPE 3 : Image -->
-    <div *ngIf="currentStep === 3" class="step">
-      <h2>🖼️ Image de la sortie</h2>
-
-      <!-- Images par défaut -->
-      <div *ngIf="themeImages.length > 0">
-        <h3>Images par défaut</h3>
-        <div class="images-grid">
-          <div
-            *ngFor="let img of themeImages"
-            class="image-option"
-            [class.selected]="selectedImageUrl === img.image_url"
-            (click)="selectDefaultImage(img.image_url)"
-          >
-            <img [src]="img.image_url" alt="Image par défaut" />
+      }
+      <!-- ÉTAPE 2 : Date, lieu et participants -->
+      @if (currentStep === 2) {
+        <div class="step">
+          <h2>📍 Lieu et date</h2>
+          <div class="form-group">
+            <label>Date et heure *</label>
+            <input type="datetime-local" [(ngModel)]="sortie.date" />
+          </div>
+          <div class="form-group">
+            <label>Lieu *</label>
+            <div class="location-autocomplete">
+              <div class="location-search-row">
+                <input
+                  type="text"
+                  [(ngModel)]="locationQuery"
+                  (input)="onLocationInput()"
+                  placeholder="Rechercher une ville…"
+                  autocomplete="off"
+                  class="location-field"
+                />
+                @if (sortie.location) {
+                  <button class="btn-clear-loc" type="button" (click)="clearLocation()">✕</button>
+                }
+              </div>
+              @if (sortie.location) {
+                <div class="location-selected">📍 {{ sortie.location }}</div>
+              }
+              @if (locationSuggestions.length) {
+                <div class="location-suggestions">
+                  @for (place of locationSuggestions; track place) {
+                    <div class="suggestion-item" (click)="selectLocation(place)">
+                      <span>📍</span>
+                      <div class="sug-details">
+                        <span class="sug-name">{{ place.shortName }}</span>
+                        @if (place.address) {
+                          <span class="sug-address">{{ place.address }}</span>
+                        }
+                      </div>
+                      <span class="sug-country">{{ place.country }}</span>
+                    </div>
+                  }
+                </div>
+              }
+              @if (locationSearching) {
+                <div class="location-searching">⏳ Recherche…</div>
+              }
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Prix (€) *</label>
+            <input type="number" [(ngModel)]="sortie.price" min="0" placeholder="0 = gratuit" />
+          </div>
+          <div class="form-group">
+            <label>Nombre de places maximum</label>
+            <input
+              type="number"
+              [(ngModel)]="sortie.max_participants"
+              min="1"
+              placeholder="Laisser vide = illimité"
+            />
           </div>
         </div>
-      </div>
-
-      <div *ngIf="themeImages.length === 0" class="no-images">
-        <p>Aucune image par défaut pour ce thème.</p>
-      </div>
-
-      <!-- Image personnalisée -->
-      <div class="custom-image">
-        <h3>Ou uploader votre image</h3>
-        <app-sortie-image-upload (imageReady)="onImageReady($event)" />
-      </div>
-
-      <div *ngIf="!selectedImageUrl && !customImagePreview" class="warning">
-        ⚠️ Veuillez choisir une image
-      </div>
-    </div>
-
-    <!-- ÉTAPE 4 : Récapitulatif -->
-    <div *ngIf="currentStep === 4" class="step">
-      <h2>✅ Récapitulatif</h2>
-
-      <div class="recap">
-        <div class="recap-item">
-          <span class="label">Titre</span>
-          <span>{{ sortie.title }}</span>
+      }
+      <!-- ÉTAPE 3 : Image -->
+      @if (currentStep === 3) {
+        <div class="step">
+          <h2>🖼️ Image de la sortie</h2>
+          <!-- Images par défaut -->
+          @if (themeImages.length > 0) {
+            <div>
+              <h3>Images par défaut</h3>
+              <div class="images-grid">
+                @for (img of themeImages; track img) {
+                  <div
+                    class="image-option"
+                    [class.selected]="selectedImageUrl === img.image_url"
+                    (click)="selectDefaultImage(img.image_url)"
+                  >
+                    <img [src]="img.image_url" alt="Image par défaut" />
+                  </div>
+                }
+              </div>
+            </div>
+          }
+          @if (themeImages.length === 0) {
+            <div class="no-images">
+              <p>Aucune image par défaut pour ce thème.</p>
+            </div>
+          }
+          <!-- Image personnalisée -->
+          <div class="custom-image">
+            <h3>Ou uploader votre image</h3>
+            <app-sortie-image-upload (imageReady)="onImageReady($event)" />
+          </div>
+          @if (!selectedImageUrl && !customImagePreview) {
+            <div class="warning">⚠️ Veuillez choisir une image</div>
+          }
         </div>
-        <div class="recap-item">
-          <span class="label">Date</span>
-          <span>{{ sortie.date | date: 'dd/MM/yyyy HH:mm' }}</span>
+      }
+      <!-- ÉTAPE 4 : Récapitulatif -->
+      @if (currentStep === 4) {
+        <div class="step">
+          <h2>✅ Récapitulatif</h2>
+          <div class="recap">
+            <div class="recap-item">
+              <span class="label">Titre</span>
+              <span>{{ sortie.title }}</span>
+            </div>
+            <div class="recap-item">
+              <span class="label">Date</span>
+              <span>{{ sortie.date | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="recap-item">
+              <span class="label">Lieu</span>
+              <span>{{ sortie.location }}</span>
+            </div>
+            <div class="recap-item">
+              <span class="label">Prix</span>
+              <span>{{ sortie.price === 0 ? 'Gratuit' : sortie.price + '€' }}</span>
+            </div>
+            <div class="recap-item">
+              <span class="label">Places</span>
+              <span>{{ sortie.max_participants || 'Illimité' }}</span>
+            </div>
+            <div class="recap-item">
+              <span class="label">Accès</span>
+              <span>{{ sortie.is_premium ? '⭐ Abonnés' : '🌍 Tout le monde' }}</span>
+            </div>
+          </div>
+          @if (selectedImageUrl || customImagePreview) {
+            <div class="recap-image">
+              <img [src]="selectedImageUrl || customImagePreview" alt="Image de la sortie" />
+            </div>
+          }
         </div>
-        <div class="recap-item">
-          <span class="label">Lieu</span>
-          <span>{{ sortie.location }}</span>
-        </div>
-        <div class="recap-item">
-          <span class="label">Prix</span>
-          <span>{{ sortie.price === 0 ? 'Gratuit' : sortie.price + '€' }}</span>
-        </div>
-        <div class="recap-item">
-          <span class="label">Places</span>
-          <span>{{ sortie.max_participants || 'Illimité' }}</span>
-        </div>
-        <div class="recap-item">
-          <span class="label">Accès</span>
-          <span>{{ sortie.is_premium ? '⭐ Abonnés' : '🌍 Tout le monde' }}</span>
-        </div>
+      }
+      <!-- Messages -->
+      @if (successMessage) {
+        <div class="success">{{ successMessage }}</div>
+      }
+      @if (errorMessage) {
+        <div class="error">{{ errorMessage }}</div>
+      }
+      <!-- Navigation -->
+      <div class="navigation">
+        @if (currentStep > 1) {
+          <button class="btn-secondary" (click)="prevStep()">← Précédent</button>
+        }
+        @if (currentStep < totalSteps) {
+          <button class="btn-primary" (click)="nextStep()">Suivant →</button>
+        }
+        @if (currentStep === totalSteps) {
+          <button class="btn-primary" (click)="onSubmit()" [disabled]="saving">
+            {{ saving ? 'Création...' : '🎉 Créer la sortie' }}
+          </button>
+        }
       </div>
-
-      <div *ngIf="selectedImageUrl || customImagePreview" class="recap-image">
-        <img [src]="selectedImageUrl || customImagePreview" alt="Image de la sortie" />
-      </div>
-    </div>
-
-    <!-- Messages -->
-    <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
-    <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
-
-    <!-- Navigation -->
-    <div class="navigation">
-      <button class="btn-secondary" (click)="prevStep()" *ngIf="currentStep > 1">
-        ← Précédent
-      </button>
-      <button class="btn-primary" (click)="nextStep()" *ngIf="currentStep < totalSteps">
-        Suivant →
-      </button>
-      <button
-        class="btn-primary"
-        (click)="onSubmit()"
-        *ngIf="currentStep === totalSteps"
-        [disabled]="saving"
-      >
-        {{ saving ? 'Création...' : '🎉 Créer la sortie' }}
-      </button>
     </div>
   </div>
-</div>
+}

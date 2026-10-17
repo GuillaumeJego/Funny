@@ -6,8 +6,9 @@ import {
   OnChanges,
   OnDestroy,
   Output,
+  ChangeDetectionStrategy,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
@@ -32,8 +33,9 @@ export interface ThemeOption {
 @Component({
   selector: 'app-navbar-filters',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './navbar-filters.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './navbar-filters.component.scss',
 })
 export class NavbarFiltersComponent implements OnChanges, OnDestroy {

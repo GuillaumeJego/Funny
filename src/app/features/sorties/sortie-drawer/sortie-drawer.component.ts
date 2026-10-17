@@ -1,5 +1,13 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  ChangeDetectionStrategy,
+} from '@angular/core';
+
 import { Router } from '@angular/router';
 import { SortieWithRelations } from '../../../core/models/sortie.model';
 import { SortieService } from '../../../core/services/sortie.service';
@@ -15,8 +23,9 @@ interface MiniProfile {
 @Component({
   selector: 'app-sortie-drawer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './sortie-drawer.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './sortie-drawer.component.scss',
 })
 export class SortieDrawerComponent implements OnChanges {

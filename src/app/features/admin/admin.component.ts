@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
@@ -10,8 +10,9 @@ import { Profile } from '../../core/models/profile.model';
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './admin.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin.component.scss',
 })
 export class AdminComponent implements OnInit {

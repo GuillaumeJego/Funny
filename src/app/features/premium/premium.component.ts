@@ -1,12 +1,13 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-premium',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './premium.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './premium.component.scss',
 })
 export class PremiumComponent {

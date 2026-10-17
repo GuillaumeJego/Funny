@@ -1,5 +1,5 @@
-import { Component, OnInit, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, HostListener, ChangeDetectionStrategy } from '@angular/core';
+
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
@@ -7,8 +7,9 @@ import { ProfileService } from '../../services/profile.service';
 @Component({
   selector: 'app-navbar-top',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './navbar-top.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './navbar-top.component.scss',
 })
 export class NavbarTopComponent implements OnInit {

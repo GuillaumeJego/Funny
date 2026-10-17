@@ -8,9 +8,11 @@
     </div>
 
     <!-- Menu déroulant ancré sous le burger -->
-    <div class="dropdown-menu" *ngIf="menuOpen">
-      <div class="menu-item" (click)="logout()">🚪 Déconnexion</div>
-    </div>
+    @if (menuOpen) {
+      <div class="dropdown-menu">
+        <div class="menu-item" (click)="logout()">🚪 Déconnexion</div>
+      </div>
+    }
   </div>
 
   <!-- Logo / Nom de l'app -->
@@ -27,18 +29,21 @@
       [title]="isPremium ? 'Abonné Premium' : 'Passer Premium'"
     >
       <span class="badge-icon">{{ isPremium ? '⭐' : '🔓' }}</span>
-      <span class="badge-label" *ngIf="isPremium && subscriptionLabel">{{
-        subscriptionLabel
-      }}</span>
-      <span class="badge-label" *ngIf="!isPremium">Non abonné</span>
+      @if (isPremium && subscriptionLabel) {
+        <span class="badge-label">{{ subscriptionLabel }}</span>
+      }
+      @if (!isPremium) {
+        <span class="badge-label">Non abonné</span>
+      }
     </div>
 
     <!-- Avatar -->
     <div class="profile-btn" (click)="goToProfile()">
-      <img *ngIf="avatarUrl; else defaultAvatar" [src]="avatarUrl" alt="Avatar" class="avatar" />
-      <ng-template #defaultAvatar>
+      @if (avatarUrl) {
+        <img [src]="avatarUrl" alt="Avatar" class="avatar" />
+      } @else {
         <div class="avatar-placeholder">👤</div>
-      </ng-template>
+      }
     </div>
   </div>
 </nav>

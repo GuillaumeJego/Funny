@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -20,6 +20,7 @@ import { SortieImageUploadComponent } from '../sortie-image-upload/sortie-image-
   standalone: true,
   imports: [CommonModule, FormsModule, SortieImageUploadComponent],
   templateUrl: './create-sortie.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './create-sortie.component.scss',
 })
 export class CreateSortieComponent implements OnInit, OnDestroy {

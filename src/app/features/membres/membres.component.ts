@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProfileService } from '../../core/services/profile.service';
@@ -21,8 +21,9 @@ interface MembreProfile {
 @Component({
   selector: 'app-membres',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './membres.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './membres.component.scss',
 })
 export class MembresComponent implements OnInit {

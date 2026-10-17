@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, Location, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,6 +13,7 @@ import { MetanaCreditComponent } from '../../../core/components/metana-credit/me
   standalone: true,
   imports: [CommonModule, FormsModule, DatePipe, AvatarUploadComponent, MetanaCreditComponent],
   templateUrl: './edit-profile.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './edit-profile.component.scss',
 })
 export class EditProfileComponent implements OnInit {

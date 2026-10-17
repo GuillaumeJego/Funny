@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
@@ -25,8 +25,9 @@ type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees';
 @Component({
   selector: 'app-membre-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, SortieDrawerComponent],
+  imports: [RouterModule, SortieDrawerComponent],
   templateUrl: './membre-profile.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './membre-profile.component.scss',
 })
 export class MembreProfileComponent implements OnInit {
