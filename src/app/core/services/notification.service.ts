@@ -55,6 +55,22 @@ export class NotificationService {
       .insert(notifications);
   }
 
+  async notifyFriendRequest(receiverId: string, actorId: string) {
+    if (receiverId === actorId) return;
+    const { data: actorProfile } = await this.supabase.client
+      .from('profiles')
+      .select('username')
+      .eq('id', actorId)
+      .single();
+    const actor = actorProfile?.username ?? 'Un membre';
+    await this.supabase.client.from('notifications').insert({
+      user_id: receiverId,
+      title: '👥 Demande d\'ami',
+      message: `${actor} vous a envoyé une demande d'ami`,
+      actor_id: actorId,
+    });
+  }
+
   async notifyOrganizer(
     organizerId: string,
     actorId: string,

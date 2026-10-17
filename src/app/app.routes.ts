@@ -13,6 +13,7 @@ import { MembreProfileComponent } from './features/membre-profile/membre-profile
 import { AdminComponent } from './features/admin/admin.component';
 import { MessagesComponent } from './features/messages/messages.component';
 import { ChatComponent } from './features/chat/chat.component';
+import { AmisComponent } from './features/amis/amis.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -29,4 +30,5 @@ export const routes: Routes = [
   { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
   { path: 'messages', component: MessagesComponent, canActivate: [authGuard] },
   { path: 'messages/:id', component: ChatComponent, canActivate: [authGuard] },
+  { path: 'amis', component: AmisComponent, canActivate: [authGuard] },
 ];

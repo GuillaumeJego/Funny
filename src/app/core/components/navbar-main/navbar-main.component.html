@@ -11,6 +11,10 @@
         *ngIf="item.route === '/notifications' && unreadCount > 0"
         class="notif-badge"
       >{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+      <span
+        *ngIf="item.route === '/amis' && pendingFriendsCount > 0"
+        class="notif-badge"
+      >{{ pendingFriendsCount }}</span>
     </div>
     <span class="nav-label">{{ item.label }}</span>
   </div>

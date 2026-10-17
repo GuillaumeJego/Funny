@@ -3,32 +3,56 @@
     <h1>Messages</h1>
   </div>
 
-  <div *ngIf="loading" class="state-center">
-    <div class="spinner"></div>
-  </div>
-
-  <div *ngIf="!loading && conversations.length === 0" class="empty">
-    <div class="empty-icon">💬</div>
-    <p>Aucune conversation</p>
-    <span>Ajoutez des amis depuis leur profil pour leur envoyer des messages.</span>
-  </div>
-
-  <div *ngIf="!loading && conversations.length > 0" class="conv-list">
-    <div *ngFor="let conv of conversations" class="conv-item" (click)="openChat(conv)">
-      <div class="conv-avatar">
-        <img *ngIf="getFriend(conv)?.avatar_url" [src]="getFriend(conv)!.avatar_url!" class="avatar-img" alt="" />
-        <div *ngIf="!getFriend(conv)?.avatar_url" class="avatar-placeholder">
-          {{ getFriend(conv)?.username?.charAt(0)?.toUpperCase() || '?' }}
-        </div>
-      </div>
-      <div class="conv-body">
-        <div class="conv-top">
-          <span class="conv-name">{{ getFriend(conv)?.username || 'Utilisateur' }}</span>
-          <span class="conv-time">{{ formatTime(conv.last_message?.created_at || conv.created_at) }}</span>
-        </div>
-        <div class="conv-preview">{{ previewMessage(conv) }}</div>
-      </div>
-      <svg class="conv-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+  <!-- Barre de recherche -->
+  <div class="search-row">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" [(ngModel)]="search" placeholder="Rechercher un ami…" class="search-input" />
+      <button *ngIf="search" class="clear-btn" (click)="search = ''">✕</button>
     </div>
   </div>
+
+  <div *ngIf="loading" class="loading">Chargement…</div>
+
+  <!-- Résultats de recherche d'amis -->
+  <ng-container *ngIf="!loading && search.trim()">
+    <div *ngIf="filteredFriends.length === 0" class="empty">Aucun ami trouvé.</div>
+    <div *ngIf="filteredFriends.length > 0" class="membres-grid">
+      <div class="membre-card" *ngFor="let f of filteredFriends" (click)="openChatWithFriend(f)">
+        <div class="avatar-wrap">
+          <img *ngIf="getFriendProfile(f)?.avatar_url" [src]="getFriendProfile(f)!.avatar_url!" class="avatar" alt="" />
+          <div *ngIf="!getFriendProfile(f)?.avatar_url" class="avatar-placeholder">{{ getInitial(getFriendProfile(f)?.username) }}</div>
+        </div>
+        <div class="membre-info">
+          <div class="membre-name">{{ getFriendProfile(f)?.username }}</div>
+          <div class="membre-bio">Démarrer une conversation</div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Liste des conversations existantes -->
+  <ng-container *ngIf="!loading && !search.trim()">
+    <div *ngIf="conversations.length === 0" class="empty-state">
+      <div class="empty-icon">💬</div>
+      <p>Aucune conversation</p>
+      <span>Recherchez un ami ci-dessus pour démarrer une discussion.</span>
+    </div>
+
+    <div *ngIf="conversations.length > 0" class="membres-grid">
+      <div class="membre-card" *ngFor="let conv of conversations" (click)="openChat(conv)">
+        <div class="avatar-wrap">
+          <img *ngIf="getFriend(conv)?.avatar_url" [src]="getFriend(conv)!.avatar_url!" class="avatar" alt="" />
+          <div *ngIf="!getFriend(conv)?.avatar_url" class="avatar-placeholder">
+            {{ getFriend(conv)?.username?.charAt(0)?.toUpperCase() || '?' }}
+          </div>
+        </div>
+        <div class="membre-info">
+          <div class="membre-name">{{ getFriend(conv)?.username || 'Utilisateur' }}</div>
+          <div class="membre-bio conv-preview">{{ previewMessage(conv) }}</div>
+        </div>
+        <span class="conv-time">{{ formatTime(conv.last_message?.created_at || conv.created_at) }}</span>
+      </div>
+    </div>
+  </ng-container>
 </div>

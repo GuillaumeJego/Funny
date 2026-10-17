@@ -5,6 +5,7 @@ import { DrawerService } from '../../services/drawer.service';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { NotificationService } from '../../services/notification.service';
+import { FriendshipService } from '../../services/friendship.service';
 
 @Component({
   selector: 'app-navbar-main',
@@ -20,11 +21,13 @@ export class NavbarMainComponent implements OnInit {
     { icon: '⭐', label: 'Mes sorties', route: '/mes-sorties' },
     { icon: '➕', label: 'Créer', route: '/sorties/creer' },
     { icon: '👥', label: 'Membres', route: '/membres' },
+    { icon: '🤝', label: 'Amis', route: '/amis' },
     { icon: '💬', label: 'Messages', route: '/messages' },
     { icon: '🔔', label: 'Notifs', route: '/notifications' },
   ];
 
   unreadCount = 0;
+  pendingFriendsCount = 0;
   isAdmin = false;
 
   constructor(
@@ -32,17 +35,20 @@ export class NavbarMainComponent implements OnInit {
     private drawerService: DrawerService,
     private auth: AuthService,
     private profileService: ProfileService,
-    private notifService: NotificationService
+    private notifService: NotificationService,
+    private friendshipService: FriendshipService
   ) {}
 
   async ngOnInit() {
     const { data: { user } } = await this.auth.getUser();
     if (user) {
-      const [count, profile] = await Promise.all([
+      const [count, profile, pendingFriends] = await Promise.all([
         this.notifService.countUnread(user.id),
-        this.profileService.getMyProfile(user.id)
+        this.profileService.getMyProfile(user.id),
+        this.friendshipService.getPendingReceivedCount(user.id),
       ]);
       this.unreadCount = count;
+      this.pendingFriendsCount = pendingFriends;
       this.isAdmin = profile.data?.role === 'admin' || profile.data?.role === 'developer';
     }
   }

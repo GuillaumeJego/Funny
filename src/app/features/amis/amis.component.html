@@ -1,0 +1,109 @@
+<div class="amis-page">
+  <header class="amis-header">
+    <button class="btn-back" (click)="router.navigate(['/dashboard'])">←</button>
+    <h1>Mes amis</h1>
+  </header>
+
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'amis'" (click)="activeTab = 'amis'">
+      Amis <span class="badge">{{ friends.length }}</span>
+    </button>
+    <button class="tab" [class.active]="activeTab === 'recues'" (click)="activeTab = 'recues'">
+      Reçues <span class="badge" [class.badge-red]="received.length > 0">{{ received.length }}</span>
+    </button>
+    <button class="tab" [class.active]="activeTab === 'envoyees'" (click)="activeTab = 'envoyees'">
+      Envoyées <span class="badge">{{ sent.length }}</span>
+    </button>
+  </div>
+
+  <div class="content" *ngIf="!loading">
+
+    <!-- ── Onglet Amis ── -->
+    <ng-container *ngIf="activeTab === 'amis'">
+
+      <div class="search-row" *ngIf="friends.length > 0">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" [(ngModel)]="search" placeholder="Rechercher un ami…" class="search-input" />
+          <button *ngIf="search" class="clear-btn" (click)="search = ''">✕</button>
+        </div>
+      </div>
+
+      <div *ngIf="friends.length === 0" class="empty">
+        <div class="empty-icon">👥</div>
+        <p>Vous n'avez pas encore d'amis.<br>Explorez les profils des membres !</p>
+        <button class="btn-outline" (click)="router.navigate(['/membres'])">Voir les membres</button>
+      </div>
+
+      <div *ngIf="filteredFriends.length === 0 && search.trim()" class="empty-search">
+        Aucun ami trouvé pour "{{ search }}"
+      </div>
+
+      <div *ngIf="filteredFriends.length > 0" class="membres-grid">
+        <div class="membre-card" *ngFor="let f of filteredFriends" (click)="goToProfile(f, 'friend')">
+          <div class="avatar-wrap">
+            <img *ngIf="getProfile(f, 'friend')?.avatar_url" [src]="getProfile(f, 'friend')!.avatar_url!" class="avatar" alt="" />
+            <div *ngIf="!getProfile(f, 'friend')?.avatar_url" class="avatar-placeholder">{{ getInitial(getProfile(f, 'friend')?.username) }}</div>
+          </div>
+          <div class="membre-info">
+            <div class="membre-name">{{ getProfile(f, 'friend')?.username }}</div>
+            <div class="membre-bio">
+              <button class="inline-msg-btn" (click)="$event.stopPropagation(); openChat(f)">💬 Message</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ── Demandes reçues ── -->
+    <ng-container *ngIf="activeTab === 'recues'">
+      <div *ngIf="received.length === 0" class="empty">
+        <div class="empty-icon">📭</div>
+        <p>Aucune demande d'ami reçue.</p>
+      </div>
+      <div *ngIf="received.length > 0" class="membres-grid">
+        <div class="membre-card" *ngFor="let f of received" (click)="goToProfile(f, 'requester')">
+          <div class="avatar-wrap">
+            <img *ngIf="f.requester?.avatar_url" [src]="f.requester!.avatar_url!" class="avatar" alt="" />
+            <div *ngIf="!f.requester?.avatar_url" class="avatar-placeholder">{{ getInitial(f.requester?.username) }}</div>
+          </div>
+          <div class="membre-info">
+            <div class="membre-name">{{ f.requester?.username }}</div>
+            <div class="request-actions">
+              <button class="btn-accept" (click)="$event.stopPropagation(); acceptRequest(f)" [disabled]="actionLoading === f.id">✓ Accepter</button>
+              <button class="btn-decline" (click)="$event.stopPropagation(); declineRequest(f)" [disabled]="actionLoading === f.id">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── Demandes envoyées ── -->
+    <ng-container *ngIf="activeTab === 'envoyees'">
+      <div *ngIf="sent.length === 0" class="empty">
+        <div class="empty-icon">📤</div>
+        <p>Aucune demande d'ami envoyée.</p>
+      </div>
+      <div *ngIf="sent.length > 0" class="membres-grid">
+        <div class="membre-card" *ngFor="let f of sent" (click)="goToProfile(f, 'receiver')">
+          <div class="avatar-wrap">
+            <img *ngIf="f.receiver?.avatar_url" [src]="f.receiver!.avatar_url!" class="avatar" alt="" />
+            <div *ngIf="!f.receiver?.avatar_url" class="avatar-placeholder">{{ getInitial(f.receiver?.username) }}</div>
+          </div>
+          <div class="membre-info">
+            <div class="membre-name">{{ f.receiver?.username }}</div>
+            <div class="request-actions">
+              <button class="btn-cancel" (click)="$event.stopPropagation(); cancelRequest(f)" [disabled]="actionLoading === f.id">Annuler</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+
+  <div class="loader" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+</div>

@@ -23,22 +23,22 @@ export class ConversationService {
       if (shared?.length) return shared[0].conversation_id;
     }
 
-    const { data: conv } = await this.supabase.client
-      .from('conversations')
-      .insert({})
-      .select()
-      .single();
+    const convId = crypto.randomUUID();
 
-    if (!conv) throw new Error('Failed to create conversation');
+    const { error } = await this.supabase.client
+      .from('conversations')
+      .insert({ id: convId });
+
+    if (error) throw new Error('Failed to create conversation: ' + error.message);
 
     await this.supabase.client
       .from('conversation_participants')
       .insert([
-        { conversation_id: conv.id, user_id: userId1 },
-        { conversation_id: conv.id, user_id: userId2 },
+        { conversation_id: convId, user_id: userId1 },
+        { conversation_id: convId, user_id: userId2 },
       ]);
 
-    return conv.id;
+    return convId;
   }
 
   async getConversations(userId: string): Promise<Conversation[]> {
@@ -56,7 +56,7 @@ export class ConversationService {
       .select(`id, created_at, participants:conversation_participants(user_id, user:profiles!user_id(id, username, avatar_url))`)
       .in('id', convIds);
 
-    const conversations = (data ?? []) as unknown as Conversation[];
+    let conversations = (data ?? []) as unknown as Conversation[];
 
     await Promise.all(
       conversations.map(async (c) => {
@@ -75,6 +75,15 @@ export class ConversationService {
       const tb = b.last_message?.created_at ?? b.created_at;
       return new Date(tb).getTime() - new Date(ta).getTime();
     });
+
+    // Déduplique : une seule conversation par binôme d'utilisateurs (garde la plus récente)
+    const seen = new Map<string, Conversation>();
+    for (const conv of conversations) {
+      const other = conv.participants?.find((p: any) => p.user_id !== userId);
+      const key = other?.user_id ?? conv.id;
+      if (!seen.has(key)) seen.set(key, conv);
+    }
+    conversations = [...seen.values()];
 
     return conversations;
   }

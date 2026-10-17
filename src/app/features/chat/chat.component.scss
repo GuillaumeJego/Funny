@@ -1,13 +1,16 @@
+@use 'sass:color';
 @use 'styles' as *;
 
 .chat-page {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
   background: #ece5dd;
   position: fixed;
-  inset: 0;
-  z-index: 500;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 64px; // laisse la place à la navbar du bas
+  z-index: 1100;
 }
 
 // ─── Header ───────────────────────────────────────────────
@@ -33,7 +36,7 @@
 }
 
 .h-avatar-img, .h-avatar-placeholder {
-  width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+  width: 40px; height: 40px; border-radius: 6px; object-fit: cover;
 }
 
 .h-avatar-placeholder {
@@ -374,7 +377,7 @@
   transition: background 0.15s, opacity 0.15s;
 
   &:disabled { opacity: 0.5; cursor: default; }
-  &:not(:disabled):hover { background: darken(#6366f1, 8%); }
+  &:not(:disabled):hover { background: color.scale(#6366f1, $lightness: -12%); }
 }
 
 // ─── Upload indicator ────────────────────────────────────

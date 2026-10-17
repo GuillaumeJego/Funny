@@ -96,8 +96,8 @@
         Modifier
       </a>
     </div>
-    <p class="bio-text" [class.bio-collapsed]="!bioExpanded && (profile.bio?.length ?? 0) > 150">{{ profile.bio }}</p>
-    <button *ngIf="(profile.bio?.length ?? 0) > 150" class="btn-show-more" (click)="bioExpanded = !bioExpanded">
+    <p class="bio-text" [class.bio-collapsed]="!bioExpanded && (profile.bio?.length || 0) > 150">{{ profile.bio }}</p>
+    <button *ngIf="(profile.bio?.length || 0) > 150" class="btn-show-more" (click)="bioExpanded = !bioExpanded">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
            [style.transform]="bioExpanded ? 'rotate(180deg)' : 'rotate(0)'"><polyline points="6 9 12 15 18 9"/></svg>
       {{ bioExpanded ? 'Réduire' : 'Afficher la suite' }}
@@ -142,9 +142,12 @@
   </div>
 
   <!-- ── Amis ── -->
-  <div *ngIf="friends.length > 0" class="section-card">
+  <div *ngIf="friends.length > 0 || isOwnProfile" class="section-card">
     <div class="section-header">
       <span class="section-title">Amis <span class="friends-count">{{ friends.length }}</span></span>
+      <button *ngIf="isOwnProfile" class="btn-edit-inline" (click)="router.navigate(['/amis'])">
+        Gérer
+      </button>
     </div>
     <div class="friends-grid">
       <div *ngFor="let f of friends" class="friend-chip" (click)="router.navigate(['/membres', getFriendProfile(f)?.id])">

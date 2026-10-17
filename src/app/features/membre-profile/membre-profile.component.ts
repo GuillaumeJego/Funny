@@ -184,7 +184,7 @@ export class MembreProfileComponent implements OnInit {
     return new Date(this.profile.subscription_end_date) > new Date();
   }
 
-  getInitial(username: string): string { return username.charAt(0).toUpperCase(); }
+  getInitial(username?: string | null): string { return (username ?? '').charAt(0).toUpperCase() || '?'; }
 
   getAge(): number | null {
     if (!this.profile?.birthdate) return null;
@@ -236,6 +236,7 @@ export class MembreProfileComponent implements OnInit {
     this.friendshipLoading = true;
     const targetId = this.route.snapshot.paramMap.get('id')!;
     await this.friendshipService.sendRequest(this.viewerUserId, targetId);
+    await this.notificationService.notifyFriendRequest(targetId, this.viewerUserId);
     this.friendship = await this.friendshipService.getFriendshipStatus(this.viewerUserId, targetId);
     this.friendshipLoading = false;
   }
@@ -271,7 +272,9 @@ export class MembreProfileComponent implements OnInit {
   async openChat() {
     const targetId = this.route.snapshot.paramMap.get('id')!;
     const convId = await this.conversationService.getOrCreateConversation(this.viewerUserId, targetId);
-    this.router.navigate(['/messages', convId]);
+    this.router.navigate(['/messages', convId], {
+      state: { friendName: this.profile?.username, friendAvatar: this.profile?.avatar_url, friendId: targetId }
+    });
   }
 
   getFriendProfile(f: Friendship) {
