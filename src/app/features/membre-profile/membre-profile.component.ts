@@ -407,7 +407,7 @@ export class MembreProfileComponent implements OnInit {
   }
 
   async onQuitter(sortieId: string) {
-    const { error } = await this.inscriptionService.quitter(sortieId, this.viewerUserId);
+    const { error } = await this.inscriptionService.quitter(this.viewerUserId, sortieId);
     if (!error) {
       this.inscriptionStatus = 'none';
       if (this.selectedSortie) {

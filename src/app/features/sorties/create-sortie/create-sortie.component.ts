@@ -10,7 +10,6 @@ import { ProfileService } from '../../../core/services/profile.service';
 import { SettingsService } from '../../../core/services/settings.service';
 import { SortieService } from '../../../core/services/sortie.service';
 import { ThemeService } from '../../../core/services/theme.service';
-import { SupabaseService } from '../../../core/services/supabase.service';
 import { Theme, ThemeImage } from '../../../core/models/theme.model';
 import { Sortie } from '../../../core/models/sortie.model';
 import { SortieImageUploadComponent } from '../sortie-image-upload/sortie-image-upload.component';
@@ -66,7 +65,6 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private sortieService: SortieService,
     private themeService: ThemeService,
-    private supabase: SupabaseService,
     public router: Router,
     private geo: GeoService,
     private profileService: ProfileService,
@@ -161,20 +159,17 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     try {
       // Upload image personnalisée si besoin
       if (this.customImageFile && this.sortie.image_source === 'custom') {
-        const filePath = `${this.userId}/${Date.now()}.jpg`;
-        const { error: uploadError } = await this.supabase.client.storage
-          .from('sorties-images')
-          .upload(filePath, this.customImageFile, { upsert: true });
+        const { data: imageUrl, error: uploadError } = await this.sortieService.uploadImage(
+          this.userId,
+          this.customImageFile,
+        );
 
         if (uploadError) {
           this.errorMessage = `Erreur upload image : ${uploadError.message}`;
           this.saving = false;
           return;
         }
-        const { data: urlData } = this.supabase.client.storage
-          .from('sorties-images')
-          .getPublicUrl(filePath);
-        this.sortie.image_url = urlData.publicUrl;
+        this.sortie.image_url = imageUrl ?? undefined;
       }
 
       this.sortie.created_by = this.userId;
@@ -183,11 +178,6 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       if (error || !newSortie) {
         this.errorMessage = 'Erreur lors de la création de la sortie.';
       } else {
-        // Auto-inscrire l'organisateur
-        await this.supabase.client
-          .from('inscriptions')
-          .insert({ sortie_id: newSortie.id, user_id: this.userId, status: 'confirmed' });
-
         this.successMessage = 'Sortie créée avec succès !';
         setTimeout(() => this.router.navigate(['/dashboard']), 1500);
       }

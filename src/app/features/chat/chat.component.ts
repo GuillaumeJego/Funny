@@ -46,7 +46,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   reactionPickerPos = { top: 0, left: 0 };
   emojis = EMOJIS;
 
-  private channel: any = null;
+  private stopListening: (() => void) | null = null;
   private shouldScroll = false;
 
   constructor(
@@ -91,13 +91,16 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.loading = false;
     this.shouldScroll = true;
 
-    this.channel = this.conversationService.subscribeToMessages(this.conversationId, async () => {
-      const msgs = await this.conversationService.getMessages(this.conversationId);
-      this.zone.run(() => {
-        this.messages = msgs;
-        this.shouldScroll = true;
-      });
-    });
+    this.stopListening = this.conversationService.subscribeToMessages(
+      this.conversationId,
+      async () => {
+        const msgs = await this.conversationService.getMessages(this.conversationId);
+        this.zone.run(() => {
+          this.messages = msgs;
+          this.shouldScroll = true;
+        });
+      },
+    );
   }
 
   ngAfterViewChecked() {
@@ -108,7 +111,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   ngOnDestroy() {
-    if (this.channel) this.conversationService.unsubscribe(this.channel);
+    this.stopListening?.();
   }
 
   async loadMessages() {

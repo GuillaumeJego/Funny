@@ -72,7 +72,7 @@ export class AdminComponent implements OnInit {
   }
 
   async setCanViewProfiles(membre: Profile, value: boolean | null) {
-    await this.profileService.updateProfile(membre.id, { can_view_profiles: value });
+    await this.profileService.adminUpdateProfile(membre.id, { can_view_profiles: value });
     membre.can_view_profiles = value;
   }
 
@@ -98,7 +98,7 @@ export class AdminComponent implements OnInit {
   async setRole(membre: Profile, role: string) {
     if (!this.canEditRole(membre)) return;
     const previousRole = membre.role;
-    const { error } = await this.profileService.updateProfile(membre.id, { role });
+    const { error } = await this.profileService.adminUpdateProfile(membre.id, { role });
     if (error) {
       membre.role = previousRole; // revert si erreur DB
     }
@@ -130,7 +130,7 @@ export class AdminComponent implements OnInit {
     const { membre, mois } = this.premiumModal;
     const end = new Date();
     end.setMonth(end.getMonth() + mois);
-    await this.profileService.updateProfile(membre.id, {
+    await this.profileService.adminUpdateProfile(membre.id, {
       subscription_end_date: end.toISOString(),
     });
     membre.subscription_end_date = end.toISOString();
@@ -138,7 +138,7 @@ export class AdminComponent implements OnInit {
   }
 
   async revokePremium(m: Profile) {
-    await this.profileService.updateProfile(m.id, { subscription_end_date: null as any });
+    await this.profileService.adminUpdateProfile(m.id, { subscription_end_date: null as any });
     m.subscription_end_date = undefined;
   }
 

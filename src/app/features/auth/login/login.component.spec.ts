@@ -2,6 +2,7 @@ import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LoginComponent } from './login.component';
+import { provideBackendTesting } from '../../../core/backend/testing/provide-backend-testing';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -9,7 +10,7 @@ describe('LoginComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideRouter([])],
+      providers: [provideBackendTesting(), provideRouter([])],
       imports: [LoginComponent],
     }).compileComponents();
 

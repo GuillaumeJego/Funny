@@ -1,34 +1,32 @@
 import { Injectable } from '@angular/core';
-import { SupabaseService } from './supabase.service';
+import { AuthRepository } from '../repositories/auth.repository';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  constructor(private supabase: SupabaseService) {}
+  constructor(private auth: AuthRepository) {}
 
   // Inscription
   async register(email: string, password: string) {
-    return await this.supabase.client.auth.signUp({ email, password });
+    return await this.auth.register(email, password);
   }
 
   // Connexion
   async login(email: string, password: string) {
-    return await this.supabase.client.auth.signInWithPassword({ email, password });
+    return await this.auth.login(email, password);
   }
 
   // Déconnexion
   async logout() {
-    return await this.supabase.client.auth.signOut();
+    return await this.auth.logout();
   }
 
   // Récupérer l'utilisateur connecté
   async getUser() {
-    return await this.supabase.client.auth.getUser();
+    return await this.auth.getUser();
   }
 
-  // Écouter les changements de session
-  onAuthChange(callback: (session: any) => void) {
-    return this.supabase.client.auth.onAuthStateChange((_event, session) => {
-      callback(session);
-    });
+  // Une session est-elle ouverte ?
+  async hasSession() {
+    return await this.auth.hasSession();
   }
 }

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AvatarUploadComponent } from './avatar-upload.component';
+import { provideBackendTesting } from '../../../core/backend/testing/provide-backend-testing';
 
 describe('AvatarUploadComponent', () => {
   let component: AvatarUploadComponent;
@@ -8,6 +9,7 @@ describe('AvatarUploadComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideBackendTesting()],
       imports: [AvatarUploadComponent],
     }).compileComponents();
 
