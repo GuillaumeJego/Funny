@@ -297,7 +297,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   async setViewMode(mode: 'grid' | 'list') {
     this.viewMode = mode;
     if (this.userId) {
-      await this.profileService.updateProfile(this.userId, { view_mode: mode });
+      await this.profileService.updateMyProfile(this.userId, { view_mode: mode });
     }
   }
 

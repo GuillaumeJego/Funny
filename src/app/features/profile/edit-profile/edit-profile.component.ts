@@ -71,7 +71,7 @@ export class EditProfileComponent implements OnInit {
     this.successMessage = '';
     this.errorMessage = '';
 
-    const { error } = await this.profileService.updateProfile(this.userId, this.profile);
+    const { error } = await this.profileService.updateMyProfile(this.userId, this.profile);
 
     if (error) {
       this.errorMessage = 'Erreur lors de la sauvegarde.';

@@ -3,6 +3,8 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CreateSortieComponent } from './create-sortie.component';
+import { provideRouter } from '@angular/router';
+import { provideBackendTesting } from '../../../core/backend/testing/provide-backend-testing';
 
 describe('CreateSortieComponent', () => {
   let component: CreateSortieComponent;
@@ -10,7 +12,12 @@ describe('CreateSortieComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
+      providers: [
+        provideBackendTesting(),
+        provideRouter([{ path: 'login', children: [] }]),
+        provideHttpClient(withXhr()),
+        provideHttpClientTesting(),
+      ],
       imports: [CreateSortieComponent],
     }).compileComponents();
 

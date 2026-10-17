@@ -3,6 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DashboardComponent } from './dashboard.component';
+import { provideBackendTesting } from '../../core/backend/testing/provide-backend-testing';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
@@ -10,7 +11,11 @@ describe('DashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
+      providers: [
+        provideBackendTesting(),
+        provideHttpClient(withXhr()),
+        provideHttpClientTesting(),
+      ],
       imports: [DashboardComponent],
     }).compileComponents();
 

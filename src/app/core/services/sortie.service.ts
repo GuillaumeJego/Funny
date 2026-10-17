@@ -1,80 +1,51 @@
 import { Injectable } from '@angular/core';
-import { SupabaseService } from './supabase.service';
 import { Sortie, SortieWithRelations } from '../models/sortie.model';
+import { SortieRepository } from '../repositories/sortie.repository';
+import { StorageRepository } from '../repositories/storage.repository';
+import { InscriptionRepository } from '../repositories/inscription.repository';
+import { FavoriRepository } from '../repositories/favori.repository';
+import { ProfileRepository } from '../repositories/profile.repository';
+import { MiniProfile } from '../repositories/repository.types';
 import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class SortieService {
   constructor(
-    private supabase: SupabaseService,
+    private sorties: SortieRepository,
+    private inscriptions: InscriptionRepository,
+    private favoris: FavoriRepository,
+    private profiles: ProfileRepository,
+    private storage: StorageRepository,
     private notifService: NotificationService,
   ) {}
 
   // Récupérer toutes les sorties publiées
   async getAllSorties() {
-    return await this.supabase.client
-      .from('sorties')
-      .select(
-        `
-        *,
-        themes (name, icon),
-        profiles (username, avatar_url)
-      `,
-      )
-      .eq('status', 'published')
-      .order('date');
+    return await this.sorties.getPublished();
   }
 
   // Récupérer le nombre d'inscrits pour une sortie (hors organisateur)
   async getInscriptionsCount(sortieId: string): Promise<number> {
-    const { count } = await this.supabase.client
-      .from('inscriptions')
-      .select('*', { count: 'exact', head: true })
-      .eq('sortie_id', sortieId)
-      .eq('status', 'pending');
-    return count ?? 0;
+    return await this.inscriptions.countPending(sortieId);
   }
 
   // Récupérer la première image d'un thème (fallback image)
   async getFirstThemeImage(themeId: string): Promise<string | null> {
-    const { data } = await this.supabase.client
-      .from('theme_images')
-      .select('image_url')
-      .eq('theme_id', themeId)
-      .order('position')
-      .limit(1)
-      .single();
-    return data?.image_url ?? null;
+    return await this.sorties.getFirstThemeImage(themeId);
   }
 
-  // Récupérer une sortie par ID
-  async getSortieById(id: string) {
-    return await this.supabase.client
-      .from('sorties')
-      .select(
-        `
-        *,
-        themes (name, icon),
-        profiles (username, avatar_url)
-      `,
-      )
-      .eq('id', id)
-      .single();
-  }
-
-  // Créer une sortie
+  // Créer une sortie, puis y inscrire son organisateur
   async createSortie(sortie: Partial<Sortie>) {
-    return await this.supabase.client.from('sorties').insert(sortie).select().single();
+    const result = await this.sorties.create(sortie);
+    if (result.data && sortie.created_by) {
+      await this.inscriptions.inscrireOrganisateur(result.data.id, sortie.created_by);
+    }
+    return result;
   }
 
-  // Modifier une sortie
-  async updateSortie(id: string, updates: Partial<Sortie>) {
-    return await this.supabase.client.from('sorties').update(updates).eq('id', id);
-  }
-
-  // Supprimer une sortie (simple, sans notifications)
-  async deleteSortie(id: string) {
-    return await this.supabase.client.from('sorties').delete().eq('id', id);
+  // Envoyer l'image personnalisée d'une sortie ; renvoie son adresse
+  async uploadImage(userId: string, image: File) {
+    return await this.storage.uploadSortieImage(userId, image);
   }
 
   // Supprimer une sortie + envoyer des notifications aux inscrits et aux likeurs
@@ -89,14 +60,11 @@ export class SortieService {
       this.getMembresLikes(sortieId),
     ]);
 
-    const inscritsProfiles = inscrits;
-    const likesProfiles = likes;
-
     // 2. Construire les notifications (éviter les doublons)
     const notifications: { user_id: string; title: string; message: string }[] = [];
     const seen = new Set<string>();
 
-    for (const p of inscritsProfiles) {
+    for (const p of inscrits) {
       if (!p?.id || seen.has(p.id)) continue;
       seen.add(p.id);
       notifications.push({
@@ -106,7 +74,7 @@ export class SortieService {
       });
     }
 
-    for (const p of likesProfiles) {
+    for (const p of likes) {
       if (!p?.id || seen.has(p.id)) continue;
       seen.add(p.id);
       notifications.push({
@@ -118,177 +86,59 @@ export class SortieService {
 
     // 3. Envoyer les notifications puis supprimer
     await this.notifService.createMany(notifications);
-    return await this.deleteSortie(sortieId);
+    return await this.sorties.delete(sortieId);
   }
 
   // Sorties créées par un utilisateur
   async getSortiesCreatedBy(userId: string) {
-    return await this.supabase.client
-      .from('sorties')
-      .select(`*, themes (name, icon), profiles (username, avatar_url)`)
-      .eq('created_by', userId)
-      .eq('status', 'published')
-      .order('date');
+    return await this.sorties.getPublishedCreatedBy(userId);
   }
 
   // Sorties auxquelles un utilisateur est inscrit (status pending uniquement)
   async getSortiesRejointes(userId: string): Promise<SortieWithRelations[]> {
-    const { data: rows } = await this.supabase.client
-      .from('inscriptions')
-      .select('sortie_id')
-      .eq('user_id', userId)
-      .eq('status', 'pending');
-    if (!rows || rows.length === 0) return [];
-
-    const ids = rows.map((r: any) => r.sortie_id);
-    const { data } = await this.supabase.client
-      .from('sorties')
-      .select('*, themes (name, icon), profiles (username, avatar_url)')
-      .in('id', ids)
-      .eq('status', 'published')
-      .order('date');
-    return (data ?? []) as SortieWithRelations[];
+    const ids = await this.inscriptions.getSortieIds(userId, 'pending');
+    return await this.sorties.getPublishedByIds(ids);
   }
 
   // Sorties en liste d'attente pour un utilisateur (ordonnées par position)
   async getSortiesEnAttente(userId: string): Promise<SortieWithRelations[]> {
-    const { data: rows } = await this.supabase.client
-      .from('inscriptions')
-      .select('sortie_id')
-      .eq('user_id', userId)
-      .eq('status', 'waiting')
-      .order('created_at', { ascending: true });
-    if (!rows || rows.length === 0) return [];
-
-    const ids = rows.map((r: any) => r.sortie_id);
-    const { data } = await this.supabase.client
-      .from('sorties')
-      .select('*, themes (name, icon), profiles (username, avatar_url)')
-      .in('id', ids)
-      .eq('status', 'published');
+    const ids = await this.inscriptions.getSortieIds(userId, 'waiting');
+    const sorties = await this.sorties.getPublishedByIds(ids);
     // Respecter l'ordre d'inscription
     return ids
-      .map((id: string) => (data ?? []).find((s: any) => s.id === id))
+      .map((id) => sorties.find((s) => s.id === id))
       .filter(Boolean) as SortieWithRelations[];
   }
 
   // Membres inscrits à une sortie (pending = membres, confirmed = organisateur)
-  async getMembresInscrits(
-    sortieId: string,
-  ): Promise<{ id: string; username: string; avatar_url: string | null; isOrganizer: boolean }[]> {
-    const { data: rows } = await this.supabase.client
-      .from('inscriptions')
-      .select('user_id, status')
-      .eq('sortie_id', sortieId)
-      .in('status', ['pending', 'confirmed']);
-    if (!rows || rows.length === 0) return [];
-
-    const userIds = rows.map((r: any) => r.user_id);
-    const { data: profiles } = await this.supabase.client
-      .from('profiles')
-      .select('id, username, avatar_url')
-      .in('id', userIds);
-
-    return (profiles ?? []).map((p: any) => ({
+  async getMembresInscrits(sortieId: string): Promise<(MiniProfile & { isOrganizer: boolean })[]> {
+    const rows = await this.inscriptions.getParticipants(sortieId);
+    const profiles = await this.profiles.getMiniProfiles(rows.map((r) => r.user_id));
+    return profiles.map((p) => ({
       ...p,
-      isOrganizer: rows.find((r: any) => r.user_id === p.id)?.status === 'confirmed',
+      isOrganizer: rows.find((r) => r.user_id === p.id)?.status === 'confirmed',
     }));
   }
 
   // Membres en liste d'attente pour une sortie
-  async getMembresWaiting(
-    sortieId: string,
-  ): Promise<{ id: string; username: string; avatar_url: string | null }[]> {
-    const { data: rows } = await this.supabase.client
-      .from('inscriptions')
-      .select('user_id')
-      .eq('sortie_id', sortieId)
-      .eq('status', 'waiting')
-      .order('created_at', { ascending: true });
-    if (!rows || rows.length === 0) return [];
-
-    const userIds = rows.map((r: any) => r.user_id);
-    const { data: profiles } = await this.supabase.client
-      .from('profiles')
-      .select('id, username, avatar_url')
-      .in('id', userIds);
-
+  async getMembresWaiting(sortieId: string): Promise<MiniProfile[]> {
+    const userIds = await this.inscriptions.getWaitingUserIds(sortieId);
+    const profiles = await this.profiles.getMiniProfiles(userIds);
     // Respecter l'ordre d'inscription
     return userIds
-      .map((uid: string) => (profiles ?? []).find((p: any) => p.id === uid))
-      .filter(Boolean) as any[];
-  }
-
-  // Quitter une sortie — promotion et notification gérées par le trigger DB
-  async quitterSortie(sortieId: string, userId: string): Promise<{ error: any }> {
-    const { error } = await this.supabase.client.rpc('quitter_sortie', {
-      p_user_id: userId,
-      p_sortie_id: sortieId,
-    });
-    return { error };
+      .map((uid) => profiles.find((p) => p.id === uid))
+      .filter(Boolean) as MiniProfile[];
   }
 
   // Membres qui ont liké une sortie
-  async getMembresLikes(
-    sortieId: string,
-  ): Promise<{ id: string; username: string; avatar_url: string | null }[]> {
-    const { data: rows } = await this.supabase.client
-      .from('favoris')
-      .select('user_id')
-      .eq('sortie_id', sortieId);
-    if (!rows || rows.length === 0) return [];
-
-    const userIds = rows.map((r: any) => r.user_id);
-    const { data: profiles } = await this.supabase.client
-      .from('profiles')
-      .select('id, username, avatar_url')
-      .in('id', userIds);
-
-    return (profiles ?? []) as any[];
+  async getMembresLikes(sortieId: string): Promise<MiniProfile[]> {
+    const userIds = await this.favoris.getUserIds(sortieId);
+    return await this.profiles.getMiniProfiles(userIds);
   }
 
   // Sorties likées par un utilisateur
   async getSortiesLikees(userId: string): Promise<SortieWithRelations[]> {
-    const { data: rows } = await this.supabase.client
-      .from('favoris')
-      .select('sortie_id')
-      .eq('user_id', userId);
-    if (!rows || rows.length === 0) return [];
-
-    const ids = rows.map((r: any) => r.sortie_id);
-    const { data } = await this.supabase.client
-      .from('sorties')
-      .select('*, themes (name, icon), profiles (username, avatar_url)')
-      .in('id', ids)
-      .eq('status', 'published')
-      .order('date');
-    return (data ?? []) as SortieWithRelations[];
-  }
-
-  // S'inscrire à une sortie
-  async inscrire(sortieId: string, userId: string) {
-    return await this.supabase.client
-      .from('inscriptions')
-      .insert({ sortie_id: sortieId, user_id: userId });
-  }
-
-  // Se désinscrire d'une sortie
-  async desinscrire(sortieId: string, userId: string) {
-    return await this.supabase.client
-      .from('inscriptions')
-      .update({ status: 'cancelled' })
-      .eq('sortie_id', sortieId)
-      .eq('user_id', userId);
-  }
-
-  // Vérifier si un utilisateur est inscrit
-  async isInscrit(sortieId: string, userId: string) {
-    return await this.supabase.client
-      .from('inscriptions')
-      .select('*')
-      .eq('sortie_id', sortieId)
-      .eq('user_id', userId)
-      .eq('status', 'pending')
-      .single();
+    const ids = await this.favoris.getSortieIds(userId);
+    return await this.sorties.getPublishedByIds(ids);
   }
 }

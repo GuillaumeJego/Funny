@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NavbarTopComponent } from './navbar-top.component';
+import { provideBackendTesting } from '../../backend/testing/provide-backend-testing';
 
 describe('NavbarTopComponent', () => {
   let component: NavbarTopComponent;
@@ -8,6 +9,7 @@ describe('NavbarTopComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideBackendTesting()],
       imports: [NavbarTopComponent],
     }).compileComponents();
 

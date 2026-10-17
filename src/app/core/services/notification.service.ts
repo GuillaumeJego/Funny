@@ -1,69 +1,47 @@
 import { Injectable } from '@angular/core';
-import { SupabaseService } from './supabase.service';
+import {
+  AppNotification,
+  NewNotification,
+  NotificationRepository,
+} from '../repositories/notification.repository';
+import { ProfileRepository } from '../repositories/profile.repository';
 
-export interface Notification {
-  id: string;
-  user_id: string;
-  title: string;
-  message: string;
-  read: boolean;
-  created_at: string;
-  actor_id?: string;
-  actor?: { username: string; avatar_url: string | null };
-}
+export type Notification = AppNotification;
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-  constructor(private supabase: SupabaseService) {}
+  constructor(
+    private notifications: NotificationRepository,
+    private profiles: ProfileRepository,
+  ) {}
 
   async getMyNotifications(userId: string) {
-    return await this.supabase.client
-      .from('notifications')
-      .select('*, actor:profiles!actor_id(username, avatar_url)')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+    return await this.notifications.getForUser(userId);
   }
 
   async countUnread(userId: string): Promise<number> {
-    const { count } = await this.supabase.client
-      .from('notifications')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('read', false);
-    return count ?? 0;
+    return await this.notifications.countUnread(userId);
   }
 
   async markAllRead(userId: string) {
-    return await this.supabase.client
-      .from('notifications')
-      .update({ read: true })
-      .eq('user_id', userId)
-      .eq('read', false);
+    return await this.notifications.markAllRead(userId);
   }
 
-  async markRead(id: string) {
-    return await this.supabase.client.from('notifications').update({ read: true }).eq('id', id);
-  }
-
-  async createMany(notifications: { user_id: string; title: string; message: string }[]) {
-    if (notifications.length === 0) return;
-    return await this.supabase.client.from('notifications').insert(notifications);
+  async createMany(notifications: NewNotification[]) {
+    return await this.notifications.createMany(notifications);
   }
 
   async notifyFriendRequest(receiverId: string, actorId: string) {
     if (receiverId === actorId) return;
-    const { data: actorProfile } = await this.supabase.client
-      .from('profiles')
-      .select('username')
-      .eq('id', actorId)
-      .single();
-    const actor = actorProfile?.username ?? 'Un membre';
-    await this.supabase.client.from('notifications').insert({
-      user_id: receiverId,
-      title: "👥 Demande d'ami",
-      message: `${actor} vous a envoyé une demande d'ami`,
-      actor_id: actorId,
-    });
+    const actor = await this.getUsername(actorId);
+    await this.notifications.createMany([
+      {
+        user_id: receiverId,
+        title: "👥 Demande d'ami",
+        message: `${actor} vous a envoyé une demande d'ami`,
+        actor_id: actorId,
+      },
+    ]);
   }
 
   async notifyOrganizer(
@@ -73,12 +51,7 @@ export class NotificationService {
     type: 'joined' | 'waiting' | 'left' | 'liked',
   ) {
     if (organizerId === actorId) return; // pas de notif à soi-même
-    const { data: actorProfile } = await this.supabase.client
-      .from('profiles')
-      .select('username')
-      .eq('id', actorId)
-      .single();
-    const actor = actorProfile?.username ?? 'Un membre';
+    const actor = await this.getUsername(actorId);
     const msgs: Record<typeof type, { title: string; message: string }> = {
       joined: {
         title: '✅ Nouvelle inscription',
@@ -98,8 +71,13 @@ export class NotificationService {
       },
     };
     const { title, message } = msgs[type];
-    await this.supabase.client
-      .from('notifications')
-      .insert({ user_id: organizerId, title, message, actor_id: actorId });
+    await this.notifications.createMany([
+      { user_id: organizerId, title, message, actor_id: actorId },
+    ]);
+  }
+
+  private async getUsername(userId: string): Promise<string> {
+    const [profile] = await this.profiles.getMiniProfiles([userId]);
+    return profile?.username ?? 'Un membre';
   }
 }

@@ -1,26 +1,17 @@
 import { Injectable } from '@angular/core';
-import { SupabaseService } from './supabase.service';
+import { SettingsRepository } from '../repositories/settings.repository';
 import { Profile } from '../models/profile.model';
 
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
-  constructor(private supabase: SupabaseService) {}
+  constructor(private settings: SettingsRepository) {}
 
   async get(key: string): Promise<any> {
-    const { data } = await this.supabase.client
-      .from('app_settings')
-      .select('value')
-      .eq('key', key)
-      .single();
-    return data?.value;
+    return await this.settings.get(key);
   }
 
-  async set(key: string, value: any): Promise<{ error: any }> {
-    const { error } = await this.supabase.client
-      .from('app_settings')
-      .update({ value, updated_at: new Date().toISOString() })
-      .eq('key', key);
-    return { error };
+  async set(key: string, value: any) {
+    return await this.settings.set(key, value);
   }
 
   async canCreateSortie(profile: Profile): Promise<boolean> {

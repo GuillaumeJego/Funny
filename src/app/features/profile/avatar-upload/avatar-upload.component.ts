@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
-import { SupabaseService } from '../../../core/services/supabase.service';
+import { ProfileService } from '../../../core/services/profile.service';
 
 @Component({
   selector: 'app-avatar-upload',
@@ -41,7 +41,7 @@ export class AvatarUploadComponent {
   ];
   selectedFilter = 'none';
 
-  constructor(private supabase: SupabaseService) {}
+  constructor(private profileService: ProfileService) {}
 
   onFileSelected(event: Event) {
     this.imageChangedEvent = event;
@@ -71,23 +71,12 @@ export class AvatarUploadComponent {
 
     try {
       const blob = await this.applyFilterAndGetBlob(this.croppedBase64);
-      const filePath = `${this.userId}/avatar.jpg`;
+      const { data: urlWithCache, error: uploadError } = await this.profileService.uploadAvatar(
+        this.userId,
+        blob,
+      );
 
-      await this.supabase.client.storage.from('avatars').remove([filePath]);
-
-      const { error: uploadError } = await this.supabase.client.storage
-        .from('avatars')
-        .upload(filePath, blob, { contentType: 'image/jpeg', upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = this.supabase.client.storage.from('avatars').getPublicUrl(filePath);
-      const urlWithCache = `${data.publicUrl}?t=${Date.now()}`;
-
-      await this.supabase.client
-        .from('profiles')
-        .update({ avatar_url: urlWithCache })
-        .eq('id', this.userId);
+      if (uploadError || !urlWithCache) throw uploadError;
 
       this.avatarUpdated.emit(urlWithCache);
       this.showCropper = false;

@@ -1,41 +1,22 @@
 import { Injectable } from '@angular/core';
-import { SupabaseService } from './supabase.service';
+import { InscriptionRepository } from '../repositories/inscription.repository';
 
-export type InscriptionStatus = 'none' | 'pending' | 'waiting' | 'confirmed';
+export type { InscriptionStatus } from '../repositories/inscription.repository';
 
 @Injectable({ providedIn: 'root' })
 export class InscriptionService {
-  constructor(private supabase: SupabaseService) {}
+  constructor(private inscriptions: InscriptionRepository) {}
 
-  async getInscriptionStatus(userId: string, sortieId: string): Promise<InscriptionStatus> {
-    const { data } = await this.supabase.client
-      .from('inscriptions')
-      .select('status')
-      .eq('user_id', userId)
-      .eq('sortie_id', sortieId)
-      .neq('status', 'cancelled')
-      .maybeSingle();
-    if (!data) return 'none';
-    return data.status as InscriptionStatus;
+  async getInscriptionStatus(userId: string, sortieId: string) {
+    return await this.inscriptions.getStatus(userId, sortieId);
   }
 
   // Retourne le status obtenu ('pending' ou 'waiting') — atomique côté DB
-  async rejoindre(
-    userId: string,
-    sortieId: string,
-  ): Promise<{ error: any; status: 'pending' | 'waiting' | null }> {
-    const { data, error } = await this.supabase.client.rpc('rejoindre_sortie', {
-      p_user_id: userId,
-      p_sortie_id: sortieId,
-    });
-    return { error, status: error ? null : (data as 'pending' | 'waiting') };
+  async rejoindre(userId: string, sortieId: string) {
+    return await this.inscriptions.rejoindre(userId, sortieId);
   }
 
-  async quitter(userId: string, sortieId: string): Promise<{ error: any }> {
-    const { error } = await this.supabase.client.rpc('quitter_sortie', {
-      p_user_id: userId,
-      p_sortie_id: sortieId,
-    });
-    return { error };
+  async quitter(userId: string, sortieId: string) {
+    return await this.inscriptions.quitter(userId, sortieId);
   }
 }

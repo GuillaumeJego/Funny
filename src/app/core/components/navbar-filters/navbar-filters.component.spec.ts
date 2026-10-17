@@ -3,6 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NavbarFiltersComponent } from './navbar-filters.component';
+import { provideBackendTesting } from '../../backend/testing/provide-backend-testing';
 
 describe('NavbarFiltersComponent', () => {
   let component: NavbarFiltersComponent;
@@ -10,7 +11,11 @@ describe('NavbarFiltersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
+      providers: [
+        provideBackendTesting(),
+        provideHttpClient(withXhr()),
+        provideHttpClientTesting(),
+      ],
       imports: [NavbarFiltersComponent],
     }).compileComponents();
 
