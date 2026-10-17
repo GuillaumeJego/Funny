@@ -5,11 +5,13 @@ import {
   ViewChild,
   ElementRef,
   AfterViewChecked,
+  NgZone,
   ChangeDetectionStrategy,
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, NavigationExtras } from '@angular/router';
+import { ProfileService } from '../../core/services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ConversationService } from '../../core/services/conversation.service';
 import { Message } from '../../core/models/message.model';
@@ -52,6 +54,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     private router: Router,
     private auth: AuthService,
     private conversationService: ConversationService,
+    private profileService: ProfileService,
+    private zone: NgZone,
   ) {}
 
   async ngOnInit() {
@@ -70,11 +74,18 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       return;
     }
 
-    const convs = await this.conversationService.getConversations(user.id);
-    const conv = convs.find((c) => c.id === this.conversationId);
-    const friend = conv?.participants?.find((p) => p.user_id !== user.id)?.user;
-    this.friendName = friend?.username ?? '';
-    this.friendAvatar = friend?.avatar_url ?? null;
+    // Récupère le nom/avatar depuis le state de navigation (passé à l'ouverture du chat)
+    const nav = this.router.getCurrentNavigation();
+    const state = nav?.extras?.state ?? history.state;
+    if (state?.friendName) {
+      this.friendName = state.friendName;
+      this.friendAvatar = state.friendAvatar ?? null;
+    } else if (state?.friendId) {
+      // Fallback : charge le profil depuis Supabase
+      const { data } = await this.profileService.getProfileById(state.friendId);
+      this.friendName = data?.username ?? '';
+      this.friendAvatar = data?.avatar_url ?? null;
+    }
 
     await this.loadMessages();
     this.loading = false;
@@ -82,8 +93,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     this.channel = this.conversationService.subscribeToMessages(this.conversationId, async () => {
       const msgs = await this.conversationService.getMessages(this.conversationId);
-      this.messages = msgs;
-      this.shouldScroll = true;
+      this.zone.run(() => {
+        this.messages = msgs;
+        this.shouldScroll = true;
+      });
     });
   }
 

@@ -3,56 +3,88 @@
     <h1>Messages</h1>
   </div>
 
-  @if (loading) {
-    <div class="state-center">
-      <div class="spinner"></div>
-    </div>
-  }
-
-  @if (!loading && conversations.length === 0) {
-    <div class="empty">
-      <div class="empty-icon">💬</div>
-      <p>Aucune conversation</p>
-      <span>Ajoutez des amis depuis leur profil pour leur envoyer des messages.</span>
-    </div>
-  }
-
-  @if (!loading && conversations.length > 0) {
-    <div class="conv-list">
-      @for (conv of conversations; track conv) {
-        <div class="conv-item" (click)="openChat(conv)">
-          <div class="conv-avatar">
-            @if (getFriend(conv)?.avatar_url) {
-              <img [src]="getFriend(conv)!.avatar_url!" class="avatar-img" alt="" />
-            }
-            @if (!getFriend(conv)?.avatar_url) {
-              <div class="avatar-placeholder">
-                {{ getFriend(conv)?.username?.charAt(0)?.toUpperCase() || '?' }}
-              </div>
-            }
-          </div>
-          <div class="conv-body">
-            <div class="conv-top">
-              <span class="conv-name">{{ getFriend(conv)?.username || 'Utilisateur' }}</span>
-              <span class="conv-time">{{
-                formatTime(conv.last_message?.created_at || conv.created_at)
-              }}</span>
-            </div>
-            <div class="conv-preview">{{ previewMessage(conv) }}</div>
-          </div>
-          <svg
-            class="conv-arrow"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </div>
+  <!-- Barre de recherche -->
+  <div class="search-row">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        [(ngModel)]="search"
+        placeholder="Rechercher un ami…"
+        class="search-input"
+      />
+      @if (search) {
+        <button class="clear-btn" (click)="search = ''">✕</button>
       }
     </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Chargement…</div>
+  }
+
+  <!-- Résultats de recherche d'amis -->
+  @if (!loading && search.trim()) {
+    @if (filteredFriends.length === 0) {
+      <div class="empty">Aucun ami trouvé.</div>
+    }
+    @if (filteredFriends.length > 0) {
+      <div class="membres-grid">
+        @for (f of filteredFriends; track f) {
+          <div class="membre-card" (click)="openChatWithFriend(f)">
+            <div class="avatar-wrap">
+              @if (getFriendProfile(f)?.avatar_url) {
+                <img [src]="getFriendProfile(f)!.avatar_url!" class="avatar" alt="" />
+              }
+              @if (!getFriendProfile(f)?.avatar_url) {
+                <div class="avatar-placeholder">
+                  {{ getInitial($safeNavigationMigration(getFriendProfile(f)?.username)) }}
+                </div>
+              }
+            </div>
+            <div class="membre-info">
+              <div class="membre-name">{{ getFriendProfile(f)?.username }}</div>
+              <div class="membre-bio">Démarrer une conversation</div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- Liste des conversations existantes -->
+  @if (!loading && !search.trim()) {
+    @if (conversations.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">💬</div>
+        <p>Aucune conversation</p>
+        <span>Recherchez un ami ci-dessus pour démarrer une discussion.</span>
+      </div>
+    }
+    @if (conversations.length > 0) {
+      <div class="membres-grid">
+        @for (conv of conversations; track conv) {
+          <div class="membre-card" (click)="openChat(conv)">
+            <div class="avatar-wrap">
+              @if (getFriend(conv)?.avatar_url) {
+                <img [src]="getFriend(conv)!.avatar_url!" class="avatar" alt="" />
+              }
+              @if (!getFriend(conv)?.avatar_url) {
+                <div class="avatar-placeholder">
+                  {{ getFriend(conv)?.username?.charAt(0)?.toUpperCase() || '?' }}
+                </div>
+              }
+            </div>
+            <div class="membre-info">
+              <div class="membre-name">{{ getFriend(conv)?.username || 'Utilisateur' }}</div>
+              <div class="membre-bio conv-preview">{{ previewMessage(conv) }}</div>
+            </div>
+            <span class="conv-time">{{
+              formatTime(conv.last_message?.created_at || conv.created_at)
+            }}</span>
+          </div>
+        }
+      </div>
+    }
   }
 </div>

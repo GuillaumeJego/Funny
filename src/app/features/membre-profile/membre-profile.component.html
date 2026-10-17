@@ -25,9 +25,7 @@
         <img [src]="profile.avatar_url" class="hero-img" alt="" (click)="lightboxOpen = true" />
       }
       @if (!profile.avatar_url) {
-        <div class="hero-placeholder">
-          {{ getInitial(profile.username) }}
-        </div>
+        <div class="hero-placeholder">{{ getInitial(profile.username) }}</div>
       }
       <!-- Overlay top bar -->
       <div class="hero-topbar">
@@ -225,8 +223,8 @@
         </div>
         <!-- La bio utilise white-space: pre-wrap : aucun espace autour du texte -->
         <!-- prettier-ignore -->
-        <p class="bio-text" [class.bio-collapsed]="!bioExpanded && (profile.bio?.length ?? 0) > 150">{{ profile.bio }}</p>
-        @if ((profile.bio?.length ?? 0) > 150) {
+        <p class="bio-text" [class.bio-collapsed]="!bioExpanded && (profile.bio?.length || 0) > 150">{{ profile.bio }}</p>
+        @if ((profile.bio?.length || 0) > 150) {
           <button class="btn-show-more" (click)="bioExpanded = !bioExpanded">
             <svg
               width="16"
@@ -307,12 +305,15 @@
       </div>
     }
     <!-- ── Amis ── -->
-    @if (friends.length > 0) {
+    @if (friends.length > 0 || isOwnProfile) {
       <div class="section-card">
         <div class="section-header">
           <span class="section-title"
             >Amis <span class="friends-count">{{ friends.length }}</span></span
           >
+          @if (isOwnProfile) {
+            <button class="btn-edit-inline" (click)="router.navigate(['/amis'])">Gérer</button>
+          }
         </div>
         <div class="friends-grid">
           @for (f of friends; track f) {
@@ -461,9 +462,7 @@
                   <img [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
                 }
                 @if (!sortie.resolvedImageUrl) {
-                  <div class="list-image-placeholder">
-                    {{ sortie.themes?.icon || '🎯' }}
-                  </div>
+                  <div class="list-image-placeholder">{{ sortie.themes?.icon || '🎯' }}</div>
                 }
                 <span class="badge-prix" [class.gratuit]="sortie.price === 0">{{
                   sortie.price === 0 ? 'Gratuit' : sortie.price + ' €'
