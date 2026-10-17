@@ -180,9 +180,9 @@
         Modifier
       </a>
     </div>
-    <p class="bio-text" [class.bio-collapsed]="!bioExpanded && (profile.bio?.length ?? 0) > 150">
-      {{ profile.bio }}
-    </p>
+    <!-- La bio utilise white-space: pre-wrap : aucun espace autour du texte -->
+    <!-- prettier-ignore -->
+    <p class="bio-text" [class.bio-collapsed]="!bioExpanded && (profile.bio?.length ?? 0) > 150">{{ profile.bio }}</p>
     <button
       *ngIf="(profile.bio?.length ?? 0) > 150"
       class="btn-show-more"
