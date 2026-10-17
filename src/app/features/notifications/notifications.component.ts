@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -9,6 +9,7 @@ import { NotificationService, Notification } from '../../core/services/notificat
   standalone: true,
   imports: [],
   templateUrl: './notifications.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './notifications.component.scss',
 })
 export class NotificationsComponent implements OnInit {

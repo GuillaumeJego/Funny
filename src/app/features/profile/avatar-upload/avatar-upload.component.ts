@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, Output, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+  ElementRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 import { SupabaseService } from '../../../core/services/supabase.service';
@@ -8,6 +16,7 @@ import { SupabaseService } from '../../../core/services/supabase.service';
   standalone: true,
   imports: [ImageCropperComponent],
   templateUrl: './avatar-upload.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './avatar-upload.component.scss',
 })
 export class AvatarUploadComponent {

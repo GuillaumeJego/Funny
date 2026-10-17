@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { DrawerService } from '../../services/drawer.service';
@@ -11,6 +11,7 @@ import { NotificationService } from '../../services/notification.service';
   standalone: true,
   imports: [],
   templateUrl: './navbar-main.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './navbar-main.component.scss',
 })
 export class NavbarMainComponent implements OnInit {

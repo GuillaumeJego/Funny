@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 
 import { Router, RouterModule, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -27,6 +27,7 @@ export interface SortieGroup {
   standalone: true,
   imports: [RouterModule, NavbarFiltersComponent, SortieDrawerComponent],
   templateUrl: './dashboard.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit, OnDestroy {

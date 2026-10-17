@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, ChangeDetectionStrategy } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -9,6 +9,7 @@ import { ProfileService } from '../../services/profile.service';
   standalone: true,
   imports: [],
   templateUrl: './navbar-top.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './navbar-top.component.scss',
 })
 export class NavbarTopComponent implements OnInit {

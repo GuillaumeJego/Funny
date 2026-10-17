@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -10,6 +10,7 @@ import { MetanaCreditComponent } from '../../../core/components/metana-credit/me
   standalone: true,
   imports: [FormsModule, RouterLink, MetanaCreditComponent],
   templateUrl: './login.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './login.component.scss',
 })
 export class LoginComponent {

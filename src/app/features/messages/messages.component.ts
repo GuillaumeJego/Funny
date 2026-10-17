@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -10,6 +10,7 @@ import { Conversation } from '../../core/models/message.model';
   standalone: true,
   imports: [],
   templateUrl: './messages.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './messages.component.scss',
 })
 export class MessagesComponent implements OnInit {

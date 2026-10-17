@@ -6,6 +6,7 @@ import {
   OnChanges,
   OnDestroy,
   Output,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
@@ -34,6 +35,7 @@ export interface ThemeOption {
   standalone: true,
   imports: [FormsModule],
   templateUrl: './navbar-filters.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './navbar-filters.component.scss',
 })
 export class NavbarFiltersComponent implements OnChanges, OnDestroy {

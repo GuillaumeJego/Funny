@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
 
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 
@@ -7,6 +7,7 @@ import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
   standalone: true,
   imports: [ImageCropperComponent],
   templateUrl: './sortie-image-upload.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './sortie-image-upload.component.scss',
 })
 export class SortieImageUploadComponent {

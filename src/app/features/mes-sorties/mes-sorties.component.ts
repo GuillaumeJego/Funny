@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -20,6 +20,7 @@ import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.co
   standalone: true,
   imports: [SortieDrawerComponent, NavbarFiltersComponent],
   templateUrl: './mes-sorties.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './mes-sorties.component.scss',
 })
 export class MesSortiesComponent implements OnInit {

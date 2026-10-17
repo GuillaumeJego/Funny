@@ -318,7 +318,9 @@
           @for (f of friends; track f) {
             <div
               class="friend-chip"
-              (click)="router.navigate(['/membres', getFriendProfile(f)?.id])"
+              (click)="
+                router.navigate(['/membres', $safeNavigationMigration(getFriendProfile(f)?.id)])
+              "
             >
               <div class="friend-avatar">
                 @if (getFriendProfile(f)?.avatar_url) {

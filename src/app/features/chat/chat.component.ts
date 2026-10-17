@@ -5,6 +5,7 @@ import {
   ViewChild,
   ElementRef,
   AfterViewChecked,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
@@ -20,6 +21,7 @@ const EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
   standalone: true,
   imports: [FormsModule],
   templateUrl: './chat.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './chat.component.scss',
 })
 export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {

@@ -23,7 +23,11 @@
         <div class="notif-item" [class.unread]="!n.read">
           <div class="notif-avatar">
             @if (n.actor?.avatar_url) {
-              <img [src]="n.actor!.avatar_url!" class="actor-avatar" [alt]="n.actor?.username" />
+              <img
+                [src]="n.actor!.avatar_url!"
+                class="actor-avatar"
+                [alt]="$safeNavigationMigration(n.actor?.username)"
+              />
             }
             @if (!n.actor?.avatar_url) {
               <div class="actor-placeholder">
