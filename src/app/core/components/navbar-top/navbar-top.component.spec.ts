@@ -8,9 +8,8 @@ describe('NavbarTopComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavbarTopComponent]
-    })
-    .compileComponents();
+      imports: [NavbarTopComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(NavbarTopComponent);
     component = fixture.componentInstance;

@@ -16,7 +16,12 @@
   <div *ngIf="!loading && conversations.length > 0" class="conv-list">
     <div *ngFor="let conv of conversations" class="conv-item" (click)="openChat(conv)">
       <div class="conv-avatar">
-        <img *ngIf="getFriend(conv)?.avatar_url" [src]="getFriend(conv)!.avatar_url!" class="avatar-img" alt="" />
+        <img
+          *ngIf="getFriend(conv)?.avatar_url"
+          [src]="getFriend(conv)!.avatar_url!"
+          class="avatar-img"
+          alt=""
+        />
         <div *ngIf="!getFriend(conv)?.avatar_url" class="avatar-placeholder">
           {{ getFriend(conv)?.username?.charAt(0)?.toUpperCase() || '?' }}
         </div>
@@ -24,11 +29,23 @@
       <div class="conv-body">
         <div class="conv-top">
           <span class="conv-name">{{ getFriend(conv)?.username || 'Utilisateur' }}</span>
-          <span class="conv-time">{{ formatTime(conv.last_message?.created_at || conv.created_at) }}</span>
+          <span class="conv-time">{{
+            formatTime(conv.last_message?.created_at || conv.created_at)
+          }}</span>
         </div>
         <div class="conv-preview">{{ previewMessage(conv) }}</div>
       </div>
-      <svg class="conv-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      <svg
+        class="conv-arrow"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polyline points="9 18 15 12 9 6" />
+      </svg>
     </div>
   </div>
 </div>

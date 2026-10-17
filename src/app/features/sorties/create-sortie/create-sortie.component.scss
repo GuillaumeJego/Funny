@@ -18,9 +18,21 @@
   width: 100%;
   text-align: center;
 
-  .access-denied-icon { font-size: 3rem; margin-bottom: 1rem; }
-  h2 { font-size: 1.3rem; font-weight: 700; color: $text-dark; margin-bottom: 0.5rem; }
-  p { font-size: 0.9rem; color: $text-medium; margin-bottom: 1.5rem; }
+  .access-denied-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin-bottom: 0.5rem;
+  }
+  p {
+    font-size: 0.9rem;
+    color: $text-medium;
+    margin-bottom: 1.5rem;
+  }
 
   .btn-premium {
     display: block;
@@ -33,7 +45,9 @@
     font-weight: 700;
     cursor: pointer;
     margin-bottom: 0.75rem;
-    &:hover { background: rgba($warning, 0.25); }
+    &:hover {
+      background: rgba($warning, 0.25);
+    }
   }
 
   .btn-back-home {
@@ -45,7 +59,9 @@
     border: 1px solid $border-color;
     border-radius: $border-radius;
     cursor: pointer;
-    &:hover { background: $border-color; }
+    &:hover {
+      background: $border-color;
+    }
   }
 }
 
@@ -83,7 +99,9 @@
         cursor: pointer;
         font-size: 0.9rem;
 
-        &:hover { text-decoration: underline; }
+        &:hover {
+          text-decoration: underline;
+        }
       }
 
       .steps {
@@ -133,7 +151,9 @@
         font-size: 0.9rem;
       }
 
-      input, select, textarea {
+      input,
+      select,
+      textarea {
         width: 100%;
         padding: 0.75rem;
         border: 1px solid $border-color;
@@ -148,7 +168,9 @@
         }
       }
 
-      textarea { resize: vertical; }
+      textarea {
+        resize: vertical;
+      }
     }
 
     .toggle-group {
@@ -162,21 +184,30 @@
         width: 48px;
         height: 26px;
 
-        input { opacity: 0; width: 0; height: 0; }
+        input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
 
         .slider {
           position: absolute;
           cursor: pointer;
-          top: 0; left: 0; right: 0; bottom: 0;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
           background-color: $secondary;
           border-radius: 26px;
           transition: 0.3s;
 
           &:before {
             position: absolute;
-            content: "";
-            height: 20px; width: 20px;
-            left: 3px; bottom: 3px;
+            content: '';
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
             background-color: white;
             border-radius: 50%;
             transition: 0.3s;
@@ -185,7 +216,9 @@
 
         input:checked + .slider {
           background-color: $primary;
-          &:before { transform: translateX(22px); }
+          &:before {
+            transform: translateX(22px);
+          }
         }
       }
     }
@@ -203,8 +236,12 @@
         cursor: pointer;
         transition: border-color 0.2s;
 
-        &.selected { border-color: $primary; }
-        &:hover { border-color: $primary-light; }
+        &.selected {
+          border-color: $primary;
+        }
+        &:hover {
+          border-color: $primary-light;
+        }
 
         img {
           width: 100%;
@@ -228,7 +265,9 @@
         color: $text-dark;
         margin-bottom: 0.75rem;
 
-        &:hover { background-color: $secondary-hover; }
+        &:hover {
+          background-color: $secondary-hover;
+        }
       }
 
       .custom-preview img {
@@ -269,7 +308,10 @@
       border-radius: $border-radius;
       font-size: 0.95rem;
       color: $text-dark;
-      &:focus { outline: none; border-color: $primary; }
+      &:focus {
+        outline: none;
+        border-color: $primary;
+      }
     }
 
     .btn-clear-loc {
@@ -280,7 +322,10 @@
       cursor: pointer;
       color: $text-light;
       font-size: 0.9rem;
-      &:hover { color: $error; border-color: $error; }
+      &:hover {
+        color: $error;
+        border-color: $error;
+      }
     }
 
     .location-selected {
@@ -309,8 +354,12 @@
       border-bottom: 1px solid $border-color;
       transition: background 0.15s;
 
-      &:last-child { border-bottom: none; }
-      &:hover { background: $primary-light; }
+      &:last-child {
+        border-bottom: none;
+      }
+      &:hover {
+        background: $primary-light;
+      }
 
       .sug-details {
         flex: 1;
@@ -319,7 +368,11 @@
         flex-direction: column;
         gap: 0.1rem;
       }
-      .sug-name { font-size: 0.9rem; font-weight: 600; color: $text-dark; }
+      .sug-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: $text-dark;
+      }
       .sug-address {
         font-size: 0.75rem;
         color: $text-light;
@@ -327,8 +380,17 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      .sug-city { font-size: 0.9rem; font-weight: 500; color: $text-dark; }
-      .sug-country { font-size: 0.72rem; color: $text-light; white-space: nowrap; flex-shrink: 0; }
+      .sug-city {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: $text-dark;
+      }
+      .sug-country {
+        font-size: 0.72rem;
+        color: $text-light;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
     }
 
     .location-searching {
@@ -355,7 +417,9 @@
         border-bottom: 1px solid $border-color;
         font-size: 0.9rem;
 
-        &:last-child { border-bottom: none; }
+        &:last-child {
+          border-bottom: none;
+        }
 
         .label {
           color: $text-light;
@@ -400,7 +464,10 @@
         cursor: pointer;
         border: none;
 
-        &:disabled { opacity: 0.6; cursor: not-allowed; }
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
       }
 
       .btn-primary {
@@ -408,14 +475,18 @@
         color: white;
         margin-left: auto;
 
-        &:hover:not(:disabled) { background-color: $primary-hover; }
+        &:hover:not(:disabled) {
+          background-color: $primary-hover;
+        }
       }
 
       .btn-secondary {
         background-color: $secondary;
         color: $text-dark;
 
-        &:hover { background-color: $secondary-hover; }
+        &:hover {
+          background-color: $secondary-hover;
+        }
       }
     }
 
@@ -432,7 +503,10 @@
       .navigation {
         flex-direction: column;
 
-        button { width: 100%; margin-left: 0; }
+        button {
+          width: 100%;
+          margin-left: 0;
+        }
       }
     }
   }

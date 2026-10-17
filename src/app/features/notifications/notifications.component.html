@@ -8,17 +8,20 @@
   <div *ngIf="!loading && notifications.length === 0" class="empty">
     <div class="empty-icon">🔔</div>
     <p>Pas de notifications pour le moment.</p>
-    <p class="sub">Vous serez alerté quand quelqu'un rejoint votre sortie ou qu'une sortie est annulée.</p>
+    <p class="sub">
+      Vous serez alerté quand quelqu'un rejoint votre sortie ou qu'une sortie est annulée.
+    </p>
   </div>
 
   <div *ngIf="!loading && notifications.length > 0" class="notif-list">
-    <div
-      *ngFor="let n of notifications"
-      class="notif-item"
-      [class.unread]="!n.read"
-    >
+    <div *ngFor="let n of notifications" class="notif-item" [class.unread]="!n.read">
       <div class="notif-avatar">
-        <img *ngIf="n.actor?.avatar_url" [src]="n.actor!.avatar_url!" class="actor-avatar" [alt]="n.actor?.username" />
+        <img
+          *ngIf="n.actor?.avatar_url"
+          [src]="n.actor!.avatar_url!"
+          class="actor-avatar"
+          [alt]="n.actor?.username"
+        />
         <div *ngIf="!n.actor?.avatar_url" class="actor-placeholder">
           {{ n.actor?.username ? n.actor!.username.charAt(0).toUpperCase() : '?' }}
         </div>

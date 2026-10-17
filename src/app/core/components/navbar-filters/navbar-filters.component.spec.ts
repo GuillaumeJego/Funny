@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NavbarFiltersComponent } from './navbar-filters.component';
@@ -8,9 +10,9 @@ describe('NavbarFiltersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavbarFiltersComponent]
-    })
-    .compileComponents();
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+      imports: [NavbarFiltersComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(NavbarFiltersComponent);
     component = fixture.componentInstance;

@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CreateSortieComponent } from './create-sortie.component';
@@ -8,9 +10,9 @@ describe('CreateSortieComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CreateSortieComponent]
-    })
-    .compileComponents();
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+      imports: [CreateSortieComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(CreateSortieComponent);
     component = fixture.componentInstance;

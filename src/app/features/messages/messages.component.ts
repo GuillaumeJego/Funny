@@ -10,7 +10,7 @@ import { Conversation } from '../../core/models/message.model';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './messages.component.html',
-  styleUrl: './messages.component.scss'
+  styleUrl: './messages.component.scss',
 })
 export class MessagesComponent implements OnInit {
   conversations: Conversation[] = [];
@@ -20,19 +20,24 @@ export class MessagesComponent implements OnInit {
   constructor(
     private auth: AuthService,
     private conversationService: ConversationService,
-    public router: Router
+    public router: Router,
   ) {}
 
   async ngOnInit() {
-    const { data: { user } } = await this.auth.getUser();
-    if (!user) { this.router.navigate(['/login']); return; }
+    const {
+      data: { user },
+    } = await this.auth.getUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
     this.myId = user.id;
     this.conversations = await this.conversationService.getConversations(user.id);
     this.loading = false;
   }
 
   getFriend(conv: Conversation) {
-    return conv.participants?.find(p => p.user_id !== this.myId)?.user ?? null;
+    return conv.participants?.find((p) => p.user_id !== this.myId)?.user ?? null;
   }
 
   formatTime(dateStr?: string): string {
@@ -40,7 +45,8 @@ export class MessagesComponent implements OnInit {
     const d = new Date(dateStr);
     const now = new Date();
     const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
-    if (diffDays === 0) return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    if (diffDays === 0)
+      return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     if (diffDays === 1) return 'Hier';
     if (diffDays < 7) return d.toLocaleDateString('fr-FR', { weekday: 'short' });
     return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });

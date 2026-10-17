@@ -14,16 +14,32 @@
 
 <!-- Profil -->
 <div *ngIf="!loading && !accessDenied && profile" class="profile-page">
-
   <!-- ── Photo héro plein largeur ── -->
   <div class="hero-photo">
-    <img *ngIf="profile.avatar_url" [src]="profile.avatar_url" class="hero-img" alt="" (click)="lightboxOpen = true" />
-    <div *ngIf="!profile.avatar_url" class="hero-placeholder">{{ getInitial(profile.username) }}</div>
+    <img
+      *ngIf="profile.avatar_url"
+      [src]="profile.avatar_url"
+      class="hero-img"
+      alt=""
+      (click)="lightboxOpen = true"
+    />
+    <div *ngIf="!profile.avatar_url" class="hero-placeholder">
+      {{ getInitial(profile.username) }}
+    </div>
 
     <!-- Overlay top bar -->
     <div class="hero-topbar">
       <button class="btn-back-hero" (click)="goBack()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
       </button>
       <div class="hero-title">
         <span class="hero-name">{{ profile.username }}</span>
@@ -46,7 +62,17 @@
     <h1 class="identity-name">{{ profile.username }}</h1>
     <div class="stats-row">
       <div *ngIf="profile.city" class="stat-chip">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
         {{ profile.city }}
       </div>
       <div *ngIf="getAge()" class="stat-chip">{{ getAge() }} ans</div>
@@ -59,28 +85,76 @@
     <ng-container [ngSwitch]="friendshipStatus">
       <div *ngSwitchCase="'none'" class="friend-btn-row">
         <button class="btn-friend add" [disabled]="friendshipLoading" (click)="sendFriendRequest()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="8.5" cy="7" r="4" />
+            <line x1="20" y1="8" x2="20" y2="14" />
+            <line x1="23" y1="11" x2="17" y2="11" />
+          </svg>
           Ajouter comme ami
         </button>
       </div>
       <div *ngSwitchCase="'pending_sent'" class="friend-btn-row">
         <button class="btn-friend pending" disabled>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
           Demande envoyée
         </button>
-        <button class="btn-friend cancel" [disabled]="friendshipLoading" (click)="declineFriend()">Annuler</button>
+        <button class="btn-friend cancel" [disabled]="friendshipLoading" (click)="declineFriend()">
+          Annuler
+        </button>
       </div>
       <div *ngSwitchCase="'pending_received'" class="friend-btn-row">
-        <button class="btn-friend accept" [disabled]="friendshipLoading" (click)="acceptFriend()">✓ Accepter</button>
-        <button class="btn-friend cancel" [disabled]="friendshipLoading" (click)="declineFriend()">Refuser</button>
+        <button class="btn-friend accept" [disabled]="friendshipLoading" (click)="acceptFriend()">
+          ✓ Accepter
+        </button>
+        <button class="btn-friend cancel" [disabled]="friendshipLoading" (click)="declineFriend()">
+          Refuser
+        </button>
       </div>
       <div *ngSwitchCase="'accepted'" class="friend-btn-row">
         <button class="btn-friend message" (click)="openChat()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
           Envoyer un message
         </button>
         <button class="btn-friend remove" [disabled]="friendshipLoading" (click)="removeFriend()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <line x1="23" y1="11" x2="17" y2="11" />
+          </svg>
           Ami ✓
         </button>
       </div>
@@ -92,14 +166,39 @@
     <div class="section-header">
       <span class="section-title">À propos de moi</span>
       <a *ngIf="isOwnProfile" routerLink="/profile/edit" class="btn-edit-inline">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
         Modifier
       </a>
     </div>
+    <!-- La bio utilise white-space: pre-wrap : aucun espace autour du texte -->
+    <!-- prettier-ignore -->
     <p class="bio-text" [class.bio-collapsed]="!bioExpanded && (profile.bio?.length ?? 0) > 150">{{ profile.bio }}</p>
-    <button *ngIf="(profile.bio?.length ?? 0) > 150" class="btn-show-more" (click)="bioExpanded = !bioExpanded">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-           [style.transform]="bioExpanded ? 'rotate(180deg)' : 'rotate(0)'"><polyline points="6 9 12 15 18 9"/></svg>
+    <button
+      *ngIf="(profile.bio?.length ?? 0) > 150"
+      class="btn-show-more"
+      (click)="bioExpanded = !bioExpanded"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        [style.transform]="bioExpanded ? 'rotate(180deg)' : 'rotate(0)'"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
       {{ bioExpanded ? 'Réduire' : 'Afficher la suite' }}
     </button>
   </div>
@@ -109,7 +208,17 @@
     <div class="section-header">
       <span class="section-title">En savoir plus</span>
       <a *ngIf="isOwnProfile" routerLink="/profile/edit" class="btn-edit-inline">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
         Modifier
       </a>
     </div>
@@ -144,12 +253,23 @@
   <!-- ── Amis ── -->
   <div *ngIf="friends.length > 0" class="section-card">
     <div class="section-header">
-      <span class="section-title">Amis <span class="friends-count">{{ friends.length }}</span></span>
+      <span class="section-title"
+        >Amis <span class="friends-count">{{ friends.length }}</span></span
+      >
     </div>
     <div class="friends-grid">
-      <div *ngFor="let f of friends" class="friend-chip" (click)="router.navigate(['/membres', getFriendProfile(f)?.id])">
+      <div
+        *ngFor="let f of friends"
+        class="friend-chip"
+        (click)="router.navigate(['/membres', getFriendProfile(f)?.id])"
+      >
         <div class="friend-avatar">
-          <img *ngIf="getFriendProfile(f)?.avatar_url" [src]="getFriendProfile(f)!.avatar_url!" class="friend-avatar-img" alt="" />
+          <img
+            *ngIf="getFriendProfile(f)?.avatar_url"
+            [src]="getFriendProfile(f)!.avatar_url!"
+            class="friend-avatar-img"
+            alt=""
+          />
           <div *ngIf="!getFriendProfile(f)?.avatar_url" class="friend-avatar-placeholder">
             {{ getFriendProfile(f)?.username?.charAt(0)?.toUpperCase() }}
           </div>
@@ -164,16 +284,29 @@
     <div class="section-header">
       <span class="section-title">Mon activité</span>
       <div class="view-toggle">
-        <button class="toggle-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grille">
+        <button
+          class="toggle-btn"
+          [class.active]="viewMode === 'grid'"
+          (click)="viewMode = 'grid'"
+          title="Grille"
+        >
           <svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor">
-            <rect x="0" y="0" width="7" height="7" rx="1"/><rect x="11" y="0" width="7" height="7" rx="1"/>
-            <rect x="0" y="11" width="7" height="7" rx="1"/><rect x="11" y="11" width="7" height="7" rx="1"/>
+            <rect x="0" y="0" width="7" height="7" rx="1" />
+            <rect x="11" y="0" width="7" height="7" rx="1" />
+            <rect x="0" y="11" width="7" height="7" rx="1" />
+            <rect x="11" y="11" width="7" height="7" rx="1" />
           </svg>
         </button>
-        <button class="toggle-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" title="Liste">
+        <button
+          class="toggle-btn"
+          [class.active]="viewMode === 'list'"
+          (click)="viewMode = 'list'"
+          title="Liste"
+        >
           <svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor">
-            <rect x="0" y="1" width="18" height="3" rx="1"/><rect x="0" y="7" width="18" height="3" rx="1"/>
-            <rect x="0" y="13" width="18" height="3" rx="1"/>
+            <rect x="0" y="1" width="18" height="3" rx="1" />
+            <rect x="0" y="7" width="18" height="3" rx="1" />
+            <rect x="0" y="13" width="18" height="3" rx="1" />
           </svg>
         </button>
       </div>
@@ -181,34 +314,68 @@
 
     <!-- Tabs -->
     <div class="tabs">
-      <button *ngFor="let t of tabs" class="tab" [class.active]="activeTab === t.key" (click)="activeTab = t.key">
+      <button
+        *ngFor="let t of tabs"
+        class="tab"
+        [class.active]="activeTab === t.key"
+        (click)="activeTab = t.key"
+      >
         {{ t.label }} <span class="count">{{ countFor(t.key) }}</span>
       </button>
     </div>
 
     <!-- État vide -->
     <div *ngIf="currentList.length === 0" class="empty">
-      <span>{{ activeTab === 'organisees' ? '📋' : activeTab === 'rejointes' ? '✅' : activeTab === 'attente' ? '⏳' : '❤️' }}</span>
+      <span>{{
+        activeTab === 'organisees'
+          ? '📋'
+          : activeTab === 'rejointes'
+            ? '✅'
+            : activeTab === 'attente'
+              ? '⏳'
+              : '❤️'
+      }}</span>
       <p>Aucune sortie à afficher.</p>
     </div>
 
     <!-- VUE GRILLE -->
     <div *ngIf="currentList.length > 0 && viewMode === 'grid'" class="sorties-grid">
-      <div *ngFor="let sortie of currentList" class="sortie-card" [class.premium]="sortie.is_premium" (click)="openDrawer(sortie)" style="cursor:pointer">
+      <div
+        *ngFor="let sortie of currentList"
+        class="sortie-card"
+        [class.premium]="sortie.is_premium"
+        (click)="openDrawer(sortie)"
+        style="cursor: pointer"
+      >
         <div class="card-image">
-          <img *ngIf="sortie.resolvedImageUrl" [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
-          <div *ngIf="!sortie.resolvedImageUrl" class="card-image-placeholder"><span>{{ sortie.themes?.icon || '🎯' }}</span></div>
+          <img
+            *ngIf="sortie.resolvedImageUrl"
+            [src]="sortie.resolvedImageUrl"
+            [alt]="sortie.title"
+          />
+          <div *ngIf="!sortie.resolvedImageUrl" class="card-image-placeholder">
+            <span>{{ sortie.themes?.icon || '🎯' }}</span>
+          </div>
           <span *ngIf="sortie.is_premium" class="badge-premium">⭐ Premium</span>
           <span class="badge-theme">{{ sortie.themes?.icon }} {{ sortie.themes?.name }}</span>
-          <span class="badge-prix-grid" [class.gratuit]="sortie.price === 0">{{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}</span>
+          <span class="badge-prix-grid" [class.gratuit]="sortie.price === 0">{{
+            sortie.price === 0 ? 'Gratuit' : sortie.price + ' €'
+          }}</span>
         </div>
         <div class="card-body">
           <h3 class="card-title">{{ sortie.title }}</h3>
           <p *ngIf="sortie.description" class="card-desc">{{ sortie.description }}</p>
           <div class="card-meta">
-            <div class="meta-item"><span class="meta-icon">📅</span><span>{{ formatDate(sortie.date) }}</span></div>
-            <div class="meta-item"><span class="meta-icon">📍</span><span>{{ sortie.location }}</span></div>
-            <div *ngIf="sortie.max_participants" class="meta-item"><span class="meta-icon">👥</span><span>{{ sortie.inscriptionsCount ?? '?' }} / {{ sortie.max_participants }}</span></div>
+            <div class="meta-item">
+              <span class="meta-icon">📅</span><span>{{ formatDate(sortie.date) }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">📍</span><span>{{ sortie.location }}</span>
+            </div>
+            <div *ngIf="sortie.max_participants" class="meta-item">
+              <span class="meta-icon">👥</span
+              ><span>{{ sortie.inscriptionsCount ?? '?' }} / {{ sortie.max_participants }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -216,26 +383,72 @@
 
     <!-- VUE LISTE -->
     <div *ngIf="currentList.length > 0 && viewMode === 'list'" class="sorties-list">
-      <div *ngFor="let sortie of currentList" class="list-card" [class.premium]="sortie.is_premium" (click)="openDrawer(sortie)" style="cursor:pointer">
+      <div
+        *ngFor="let sortie of currentList"
+        class="list-card"
+        [class.premium]="sortie.is_premium"
+        (click)="openDrawer(sortie)"
+        style="cursor: pointer"
+      >
         <div class="list-image">
-          <img *ngIf="sortie.resolvedImageUrl" [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
-          <div *ngIf="!sortie.resolvedImageUrl" class="list-image-placeholder">{{ sortie.themes?.icon || '🎯' }}</div>
-          <span class="badge-prix" [class.gratuit]="sortie.price === 0">{{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}</span>
+          <img
+            *ngIf="sortie.resolvedImageUrl"
+            [src]="sortie.resolvedImageUrl"
+            [alt]="sortie.title"
+          />
+          <div *ngIf="!sortie.resolvedImageUrl" class="list-image-placeholder">
+            {{ sortie.themes?.icon || '🎯' }}
+          </div>
+          <span class="badge-prix" [class.gratuit]="sortie.price === 0">{{
+            sortie.price === 0 ? 'Gratuit' : sortie.price + ' €'
+          }}</span>
           <span *ngIf="sortie.is_premium" class="badge-premium-list">⭐</span>
         </div>
         <div class="list-info">
           <h3 class="list-title">{{ sortie.title }}</h3>
           <div class="list-time">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
             {{ formatDateCourte(sortie.date) }} - {{ formatHeure(sortie.date) }}
           </div>
           <div class="list-bottom">
             <div class="list-location">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
               {{ sortie.location }}
             </div>
             <div *ngIf="sortie.max_participants" class="list-participants">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
               {{ sortie.inscriptionsCount ?? '?' }} / {{ sortie.max_participants }}
             </div>
           </div>
@@ -249,11 +462,14 @@
     <a routerLink="/profile/edit" class="bottom-btn">✏️ Mes paramètres</a>
     <a routerLink="/mes-sorties" class="bottom-btn bottom-btn-primary">📋 Mes sorties</a>
   </div>
-
 </div>
 
 <!-- Lightbox avatar -->
-<div *ngIf="lightboxOpen && profile?.avatar_url" class="lightbox-overlay" (click)="lightboxOpen = false">
+<div
+  *ngIf="lightboxOpen && profile?.avatar_url"
+  class="lightbox-overlay"
+  (click)="lightboxOpen = false"
+>
   <button class="lightbox-close" (click)="lightboxOpen = false">✕</button>
   <img [src]="profile!.avatar_url" class="lightbox-img" (click)="$event.stopPropagation()" />
 </div>

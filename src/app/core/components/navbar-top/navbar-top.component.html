@@ -1,5 +1,4 @@
 <nav class="navbar-top">
-
   <!-- Menu burger -->
   <div class="menu-wrap">
     <div class="menu-btn" (click)="toggleMenu()">
@@ -28,24 +27,18 @@
       [title]="isPremium ? 'Abonné Premium' : 'Passer Premium'"
     >
       <span class="badge-icon">{{ isPremium ? '⭐' : '🔓' }}</span>
-      <span class="badge-label" *ngIf="isPremium && subscriptionLabel">{{ subscriptionLabel }}</span>
+      <span class="badge-label" *ngIf="isPremium && subscriptionLabel">{{
+        subscriptionLabel
+      }}</span>
       <span class="badge-label" *ngIf="!isPremium">Non abonné</span>
     </div>
 
     <!-- Avatar -->
     <div class="profile-btn" (click)="goToProfile()">
-      <img
-        *ngIf="avatarUrl; else defaultAvatar"
-        [src]="avatarUrl"
-        alt="Avatar"
-        class="avatar"
-      />
+      <img *ngIf="avatarUrl; else defaultAvatar" [src]="avatarUrl" alt="Avatar" class="avatar" />
       <ng-template #defaultAvatar>
         <div class="avatar-placeholder">👤</div>
       </ng-template>
     </div>
   </div>
-
-
 </nav>
-

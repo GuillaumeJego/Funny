@@ -8,7 +8,7 @@ import { SupabaseService } from '../../../core/services/supabase.service';
   standalone: true,
   imports: [CommonModule, ImageCropperComponent],
   templateUrl: './avatar-upload.component.html',
-  styleUrl: './avatar-upload.component.scss'
+  styleUrl: './avatar-upload.component.scss',
 })
 export class AvatarUploadComponent {
   @Input() userId!: string;
@@ -86,7 +86,6 @@ export class AvatarUploadComponent {
       this.croppedImageUrl = '';
       // Reset le file input pour permettre de re-sélectionner une photo
       if (this.fileInput) this.fileInput.nativeElement.value = '';
-
     } catch (err) {
       console.error('Upload error:', err);
       this.errorMessage = "Erreur lors de l'upload.";

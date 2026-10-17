@@ -47,7 +47,9 @@
         color: $text-medium;
       }
 
-      input, select, textarea {
+      input,
+      select,
+      textarea {
         width: 100%;
         padding: 0.6rem 0.8rem;
         border: 1px solid $border-color;
@@ -63,7 +65,10 @@
         }
       }
 
-      textarea { resize: vertical; min-height: 80px; }
+      textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
     }
 
     .success {
@@ -105,13 +110,17 @@
       .btn-primary {
         background-color: $primary;
         color: white;
-        &:hover:not(:disabled) { background-color: $primary-hover; }
+        &:hover:not(:disabled) {
+          background-color: $primary-hover;
+        }
       }
 
       .btn-secondary {
         background-color: $secondary;
         color: $text-dark;
-        &:hover { background-color: $secondary-hover; }
+        &:hover {
+          background-color: $secondary-hover;
+        }
       }
     }
 
@@ -125,7 +134,10 @@
   // 📱 Tablette
   @media (max-width: 768px) {
     padding: 1rem;
-    .edit-profile-card { padding: 1.5rem; border-radius: $border-radius; }
+    .edit-profile-card {
+      padding: 1.5rem;
+      border-radius: $border-radius;
+    }
   }
 
   // 📱 Mobile
@@ -135,8 +147,15 @@
       padding: 1rem;
       border-radius: 0;
       box-shadow: none;
-      h1 { font-size: 1.5rem; }
-      .actions { flex-direction: column; button { width: 100%; } }
+      h1 {
+        font-size: 1.5rem;
+      }
+      .actions {
+        flex-direction: column;
+        button {
+          width: 100%;
+        }
+      }
     }
   }
 }
@@ -172,9 +191,19 @@
   align-items: center;
   gap: 0.75rem;
 
-  .sub-icon { font-size: 1.6rem; }
-  .sub-label { font-weight: 700; font-size: 0.95rem; color: $text-dark; }
-  .sub-detail { font-size: 0.8rem; color: $text-light; margin-top: 0.1rem; }
+  .sub-icon {
+    font-size: 1.6rem;
+  }
+  .sub-label {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: $text-dark;
+  }
+  .sub-detail {
+    font-size: 0.8rem;
+    color: $text-light;
+    margin-top: 0.1rem;
+  }
 }
 
 .btn-premium {
@@ -188,5 +217,7 @@
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
-  &:hover { opacity: 0.9; }
+  &:hover {
+    opacity: 0.9;
+  }
 }

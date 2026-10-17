@@ -2,7 +2,11 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { NavbarFiltersComponent, Filters, ThemeOption } from '../../core/components/navbar-filters/navbar-filters.component';
+import {
+  NavbarFiltersComponent,
+  Filters,
+  ThemeOption,
+} from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieService } from '../../core/services/sortie.service';
 import { FavoriService } from '../../core/services/favori.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -23,7 +27,7 @@ export interface SortieGroup {
   standalone: true,
   imports: [CommonModule, RouterModule, NavbarFiltersComponent, SortieDrawerComponent],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private routerSub!: Subscription;
@@ -52,7 +56,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private drawerService: DrawerService,
     private inscriptionService: InscriptionService,
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnDestroy() {
@@ -61,24 +65,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.routerSub = this.router.events.subscribe(event => {
+    this.routerSub = this.router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {
         this.closeDrawer();
       }
     });
     this.drawerSub = this.drawerService.closeAll$.subscribe(() => this.closeDrawer());
-    const { data: { user } } = await this.authService.getUser();
+    const {
+      data: { user },
+    } = await this.authService.getUser();
     if (user) {
       this.userId = user.id;
       const [favoris, profile] = await Promise.all([
         this.favoriService.getFavoris(user.id),
-        this.profileService.getMyProfile(user.id)
+        this.profileService.getMyProfile(user.id),
       ]);
       this.favorisIds = new Set(favoris);
       if (profile.data?.view_mode) this.viewMode = profile.data.view_mode;
       if (profile.data?.role) this.userRole = profile.data.role;
-      this.userIsPremium = ['admin', 'developer', 'user_premium'].includes(profile.data?.role || '')
-        || (!!profile.data?.subscription_end_date && new Date(profile.data.subscription_end_date) > new Date());
+      this.userIsPremium =
+        ['admin', 'developer', 'user_premium'].includes(profile.data?.role || '') ||
+        (!!profile.data?.subscription_end_date &&
+          new Date(profile.data.subscription_end_date) > new Date());
     }
 
     const { data, error } = await this.sortieService.getAllSorties();
@@ -90,25 +98,37 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     const sorties = (data as SortieWithRelations[]) ?? [];
 
-    await Promise.all(sorties.map(async s => {
-      if (s.image_url) {
-        s.resolvedImageUrl = s.image_url;
-      } else if (s.theme_id) {
-        s.resolvedImageUrl = await this.sortieService.getFirstThemeImage(s.theme_id) ?? undefined;
-      }
-      s.inscriptionsCount = await this.sortieService.getInscriptionsCount(s.id);
-    }));
+    await Promise.all(
+      sorties.map(async (s) => {
+        if (s.image_url) {
+          s.resolvedImageUrl = s.image_url;
+        } else if (s.theme_id) {
+          s.resolvedImageUrl =
+            (await this.sortieService.getFirstThemeImage(s.theme_id)) ?? undefined;
+        }
+        s.inscriptionsCount = await this.sortieService.getInscriptionsCount(s.id);
+      }),
+    );
 
     this.sorties = sorties;
     // Filtre "À venir" par défaut
-    this.onFiltersChanged({ quickPeriod: 'upcoming', themeIds: [], ou: '', dateDebut: '', dateFin: '', prix: '', premium: false });
+    this.onFiltersChanged({
+      quickPeriod: 'upcoming',
+      themeIds: [],
+      ou: '',
+      dateDebut: '',
+      dateFin: '',
+      prix: '',
+      premium: false,
+    });
     this.groupes = this.grouperParDate(this.sortiesFiltrees);
 
     // Extraire thèmes et villes uniques pour les filtres
     const themesMap = new Map<string, ThemeOption>();
     const locationsSet = new Set<string>();
     for (const s of sorties) {
-      if (s.theme_id && s.themes) themesMap.set(s.theme_id, { id: s.theme_id, name: s.themes.name, icon: s.themes.icon });
+      if (s.theme_id && s.themes)
+        themesMap.set(s.theme_id, { id: s.theme_id, name: s.themes.name, icon: s.themes.icon });
       if (s.location) locationsSet.add(s.location);
     }
     this.availableThemes = [...themesMap.values()];
@@ -119,7 +139,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.selectedSortie = sortie;
     this.drawerOpen = true;
     if (this.userId) {
-      this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(this.userId, sortie.id);
+      this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(
+        this.userId,
+        sortie.id,
+      );
     }
   }
 
@@ -138,12 +161,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!error && status) {
       this.inscriptionStatus = status;
       if (status === 'pending') {
-        const s = this.sorties.find(s => s.id === sortieId);
+        const s = this.sorties.find((s) => s.id === sortieId);
         if (s && s.inscriptionsCount !== undefined) s.inscriptionsCount++;
       }
       if (this.selectedSortie?.created_by) {
         const type = status === 'waiting' ? 'waiting' : 'joined';
-        this.notificationService.notifyOrganizer(this.selectedSortie.created_by, this.userId, this.selectedSortie.title, type);
+        this.notificationService.notifyOrganizer(
+          this.selectedSortie.created_by,
+          this.userId,
+          this.selectedSortie.title,
+          type,
+        );
       }
     }
   }
@@ -155,30 +183,45 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!error) {
       this.inscriptionStatus = 'none';
       if (!wasWaiting) {
-        const s = this.sorties.find(s => s.id === sortieId);
+        const s = this.sorties.find((s) => s.id === sortieId);
         if (s && s.inscriptionsCount !== undefined) s.inscriptionsCount--;
       }
       if (this.selectedSortie?.created_by) {
-        this.notificationService.notifyOrganizer(this.selectedSortie.created_by, this.userId, this.selectedSortie.title, 'left');
+        this.notificationService.notifyOrganizer(
+          this.selectedSortie.created_by,
+          this.userId,
+          this.selectedSortie.title,
+          'left',
+        );
       }
     }
   }
 
   async onSupprimer(sortieId: string) {
     if (!this.userId || !this.selectedSortie) return;
-    const confirmed = window.confirm(`Supprimer la sortie "${this.selectedSortie.title}" ? Les membres inscrits seront notifiés.`);
+    const confirmed = window.confirm(
+      `Supprimer la sortie "${this.selectedSortie.title}" ? Les membres inscrits seront notifiés.`,
+    );
     if (!confirmed) return;
 
-    const organizerUsername = this.selectedSortie.profiles?.username ?? 'L\'organisateur';
+    const organizerUsername = this.selectedSortie.profiles?.username ?? "L'organisateur";
     const { error } = await this.sortieService.deleteSortieWithNotifications(
       sortieId,
       this.selectedSortie.title,
-      organizerUsername
+      organizerUsername,
     );
 
     if (!error) {
-      this.sorties = this.sorties.filter(s => s.id !== sortieId);
-      this.onFiltersChanged({ themeIds: [], ou: '', quickPeriod: '', dateDebut: '', dateFin: '', prix: '', premium: false });
+      this.sorties = this.sorties.filter((s) => s.id !== sortieId);
+      this.onFiltersChanged({
+        themeIds: [],
+        ou: '',
+        quickPeriod: '',
+        dateDebut: '',
+        dateFin: '',
+        prix: '',
+        premium: false,
+      });
       this.closeDrawer();
     }
   }
@@ -193,9 +236,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } else {
       this.favorisIds.add(sortieId);
       await this.favoriService.addFavori(this.userId, sortieId);
-      const sortie = this.sorties.find(s => s.id === sortieId);
+      const sortie = this.sorties.find((s) => s.id === sortieId);
       if (sortie?.created_by) {
-        this.notificationService.notifyOrganizer(sortie.created_by, this.userId, sortie.title, 'liked');
+        this.notificationService.notifyOrganizer(
+          sortie.created_by,
+          this.userId,
+          sortie.title,
+          'liked',
+        );
       }
     }
     // Forcer la détection de changement
@@ -208,7 +256,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onFiltersChanged(filters: Filters) {
     const now = new Date();
-    this.sortiesFiltrees = this.sorties.filter(s => {
+    this.sortiesFiltrees = this.sorties.filter((s) => {
       if (filters.themeIds?.length && !filters.themeIds.includes(s.theme_id ?? '')) return false;
       if (filters.ou && s.location !== filters.ou) return false;
       if (filters.quickPeriod === 'past' && new Date(s.date) >= now) return false;
@@ -217,7 +265,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         const d = new Date(s.date);
         if (filters.dateDebut && d < new Date(filters.dateDebut)) return false;
         if (filters.dateFin) {
-          const fin = new Date(filters.dateFin); fin.setHours(23, 59, 59);
+          const fin = new Date(filters.dateFin);
+          fin.setHours(23, 59, 59);
           if (d > fin) return false;
         }
       }
@@ -234,7 +283,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     for (const s of sorties) {
       const d = new Date(s.date);
       const key = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-      const label = key.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      const label = key
+        .split(' ')
+        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
       if (!map.has(label)) map.set(label, []);
       map.get(label)!.push(s);
     }
@@ -255,13 +307,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
   formatDateCourte(dateStr: string): string {
     const d = new Date(dateStr);
     const j = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-    return j.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    return j
+      .split(' ')
+      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
   }
 
   formatDate(dateStr: string): string {
     const d = new Date(dateStr);
     const j = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-    const label = j.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const label = j
+      .split(' ')
+      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
     return `${label} - ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
   }
 }

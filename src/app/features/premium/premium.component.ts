@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './premium.component.html',
-  styleUrl: './premium.component.scss'
+  styleUrl: './premium.component.scss',
 })
 export class PremiumComponent {
   avantages = [

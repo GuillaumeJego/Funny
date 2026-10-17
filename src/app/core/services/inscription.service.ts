@@ -20,15 +20,22 @@ export class InscriptionService {
   }
 
   // Retourne le status obtenu ('pending' ou 'waiting') — atomique côté DB
-  async rejoindre(userId: string, sortieId: string): Promise<{ error: any; status: 'pending' | 'waiting' | null }> {
-    const { data, error } = await this.supabase.client
-      .rpc('rejoindre_sortie', { p_user_id: userId, p_sortie_id: sortieId });
+  async rejoindre(
+    userId: string,
+    sortieId: string,
+  ): Promise<{ error: any; status: 'pending' | 'waiting' | null }> {
+    const { data, error } = await this.supabase.client.rpc('rejoindre_sortie', {
+      p_user_id: userId,
+      p_sortie_id: sortieId,
+    });
     return { error, status: error ? null : (data as 'pending' | 'waiting') };
   }
 
   async quitter(userId: string, sortieId: string): Promise<{ error: any }> {
-    const { error } = await this.supabase.client
-      .rpc('quitter_sortie', { p_user_id: userId, p_sortie_id: sortieId });
+    const { error } = await this.supabase.client.rpc('quitter_sortie', {
+      p_user_id: userId,
+      p_sortie_id: sortieId,
+    });
     return { error };
   }
 }

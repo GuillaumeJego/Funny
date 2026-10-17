@@ -8,9 +8,8 @@ describe('MetanaCreditComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MetanaCreditComponent]
-    })
-    .compileComponents();
+      imports: [MetanaCreditComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(MetanaCreditComponent);
     component = fixture.componentInstance;

@@ -3,7 +3,6 @@ import { SupabaseService } from './supabase.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-
   constructor(private supabase: SupabaseService) {}
 
   // Inscription

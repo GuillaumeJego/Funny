@@ -18,9 +18,9 @@ import { SortieImageUploadComponent } from '../sortie-image-upload/sortie-image-
 @Component({
   selector: 'app-create-sortie',
   standalone: true,
-  imports: [CommonModule, FormsModule,SortieImageUploadComponent],
+  imports: [CommonModule, FormsModule, SortieImageUploadComponent],
   templateUrl: './create-sortie.component.html',
-  styleUrl: './create-sortie.component.scss'
+  styleUrl: './create-sortie.component.scss',
 })
 export class CreateSortieComponent implements OnInit, OnDestroy {
   themes: Theme[] = [];
@@ -45,7 +45,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     is_premium: false,
     image_url: '',
     image_source: 'default',
-    status: 'published'
+    status: 'published',
   };
 
   selectedImageUrl = '';
@@ -69,39 +69,53 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     public router: Router,
     private geo: GeoService,
     private profileService: ProfileService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
   ) {}
 
   async ngOnInit() {
-    const { data: { user } } = await this.authService.getUser();
-    if (!user) { this.router.navigate(['/login']); return; }
+    const {
+      data: { user },
+    } = await this.authService.getUser();
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
+    }
     this.userId = user.id;
 
     const { data: profile } = await this.profileService.getMyProfile(user.id);
     if (profile) {
       const canCreate = await this.settingsService.canCreateSortie(profile);
-      if (!canCreate) { this.accessDenied = true; return; }
+      if (!canCreate) {
+        this.accessDenied = true;
+        return;
+      }
     }
 
     const { data: themes } = await this.themeService.getAllThemes();
     if (themes) this.themes = themes;
 
-    this.locationSub = this.locationSearch$.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(q => {
-        this.locationSearching = true;
-        return this.geo.searchPlaces(q);
-      })
-    ).subscribe(places => {
-      this.locationSuggestions = places;
-      this.locationSearching = false;
-    });
+    this.locationSub = this.locationSearch$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((q) => {
+          this.locationSearching = true;
+          return this.geo.searchPlaces(q);
+        }),
+      )
+      .subscribe((places) => {
+        this.locationSuggestions = places;
+        this.locationSearching = false;
+      });
   }
 
-  ngOnDestroy() { this.locationSub?.unsubscribe(); }
+  ngOnDestroy() {
+    this.locationSub?.unsubscribe();
+  }
 
-  onLocationInput() { this.locationSearch$.next(this.locationQuery); }
+  onLocationInput() {
+    this.locationSearch$.next(this.locationQuery);
+  }
 
   selectLocation(place: GeoFullPlace) {
     // On stocke le nom court (ex: "Le Marais", "Paris") + adresse si disponible
@@ -189,10 +203,10 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     const ext = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
     this.customImageFile = new File([blob], `sortie.${ext}`, { type: mimeType });
     this.sortie.image_source = 'custom';
-    this.sortie.image_url = '';   // efface l'éventuelle image par défaut sélectionnée
+    this.sortie.image_url = ''; // efface l'éventuelle image par défaut sélectionnée
     this.selectedImageUrl = '';
     const reader = new FileReader();
-    reader.onload = (e) => this.customImagePreview = e.target?.result as string;
+    reader.onload = (e) => (this.customImagePreview = e.target?.result as string);
     reader.readAsDataURL(blob);
   }
 

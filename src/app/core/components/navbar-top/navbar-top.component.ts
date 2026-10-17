@@ -9,7 +9,7 @@ import { ProfileService } from '../../services/profile.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './navbar-top.component.html',
-  styleUrl: './navbar-top.component.scss'
+  styleUrl: './navbar-top.component.scss',
 })
 export class NavbarTopComponent implements OnInit {
   avatarUrl?: string;
@@ -20,11 +20,13 @@ export class NavbarTopComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private profileService: ProfileService,
-    private router: Router
+    private router: Router,
   ) {}
 
   async ngOnInit() {
-    const { data: { user } } = await this.authService.getUser();
+    const {
+      data: { user },
+    } = await this.authService.getUser();
     if (user) {
       const { data } = await this.profileService.getMyProfile(user.id);
       if (data) {
@@ -32,8 +34,9 @@ export class NavbarTopComponent implements OnInit {
         if (data.subscription_end_date) {
           this.subscriptionEndDate = new Date(data.subscription_end_date);
         }
-        this.isPremium = ['user_premium', 'admin', 'developer'].includes(data.role || '')
-          || (!!this.subscriptionEndDate && this.subscriptionEndDate > new Date());
+        this.isPremium =
+          ['user_premium', 'admin', 'developer'].includes(data.role || '') ||
+          (!!this.subscriptionEndDate && this.subscriptionEndDate > new Date());
       }
     }
   }
@@ -46,8 +49,9 @@ export class NavbarTopComponent implements OnInit {
     const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
     if (days <= 1) return '1 jour';
     if (days < 30) return `${days} jours`;
-    const months = (this.subscriptionEndDate.getFullYear() - now.getFullYear()) * 12
-      + (this.subscriptionEndDate.getMonth() - now.getMonth());
+    const months =
+      (this.subscriptionEndDate.getFullYear() - now.getFullYear()) * 12 +
+      (this.subscriptionEndDate.getMonth() - now.getMonth());
     if (months < 12) return `${months} mois`;
     const years = Math.floor(months / 12);
     const remMois = months % 12;

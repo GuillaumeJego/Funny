@@ -8,7 +8,6 @@
   </div>
 
   <ng-container *ngIf="!loading">
-
     <!-- ── Paramètres globaux ── -->
     <section class="section">
       <h2 class="section-title">Paramètres globaux</h2>
@@ -17,7 +16,8 @@
         <div class="setting-info">
           <div class="setting-label">Profils membres — réservé aux Premium</div>
           <div class="setting-desc">
-            Si activé, seuls les abonnés Premium (et les membres avec accès accordé) peuvent voir les profils.
+            Si activé, seuls les abonnés Premium (et les membres avec accès accordé) peuvent voir
+            les profils.
           </div>
         </div>
         <button
@@ -37,21 +37,33 @@
       <p class="section-desc">Qui peut créer une sortie ?</p>
 
       <div class="radio-group">
-        <label class="radio-option" [class.active]="sortieCreationAccess === 'all'" (click)="setSortieCreationAccess('all')">
+        <label
+          class="radio-option"
+          [class.active]="sortieCreationAccess === 'all'"
+          (click)="setSortieCreationAccess('all')"
+        >
           <span class="radio-dot" [class.checked]="sortieCreationAccess === 'all'"></span>
           <div>
             <div class="radio-label">🌍 Tout le monde</div>
             <div class="radio-desc">Tout utilisateur connecté peut créer une sortie</div>
           </div>
         </label>
-        <label class="radio-option" [class.active]="sortieCreationAccess === 'premium'" (click)="setSortieCreationAccess('premium')">
+        <label
+          class="radio-option"
+          [class.active]="sortieCreationAccess === 'premium'"
+          (click)="setSortieCreationAccess('premium')"
+        >
           <span class="radio-dot" [class.checked]="sortieCreationAccess === 'premium'"></span>
           <div>
             <div class="radio-label">⭐ Abonnés uniquement</div>
             <div class="radio-desc">Seuls les abonnés Premium (et admins) peuvent créer</div>
           </div>
         </label>
-        <label class="radio-option" [class.active]="sortieCreationAccess === 'admin'" (click)="setSortieCreationAccess('admin')">
+        <label
+          class="radio-option"
+          [class.active]="sortieCreationAccess === 'admin'"
+          (click)="setSortieCreationAccess('admin')"
+        >
           <span class="radio-dot" [class.checked]="sortieCreationAccess === 'admin'"></span>
           <div>
             <div class="radio-label">🛡️ Admins uniquement</div>
@@ -64,7 +76,9 @@
     <!-- ── Gestion des accès individuels ── -->
     <section class="section">
       <h2 class="section-title">Accès individuel aux profils</h2>
-      <p class="section-desc">Accordez ou refusez l'accès à un membre spécifique, quelle que soit la règle globale.</p>
+      <p class="section-desc">
+        Accordez ou refusez l'accès à un membre spécifique, quelle que soit la règle globale.
+      </p>
 
       <div class="search-wrap">
         <input
@@ -77,10 +91,16 @@
 
       <div class="membres-table">
         <div *ngFor="let m of filteredMembres" class="membre-row">
-          <div class="membre-info" (click)="router.navigate(['/membres', m.id])" style="cursor:pointer">
+          <div
+            class="membre-info"
+            (click)="router.navigate(['/membres', m.id])"
+            style="cursor: pointer"
+          >
             <div class="m-avatar-wrap">
               <img *ngIf="m.avatar_url" [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
-              <div *ngIf="!m.avatar_url" class="m-avatar-placeholder">{{ m.username.charAt(0).toUpperCase() }}</div>
+              <div *ngIf="!m.avatar_url" class="m-avatar-placeholder">
+                {{ m.username.charAt(0).toUpperCase() }}
+              </div>
             </div>
             <div>
               <div class="m-name">{{ m.username }}</div>
@@ -105,24 +125,36 @@
               class="btn-premium-toggle"
               [class.active]="isPremium(m)"
               (click)="openPremiumModal(m)"
-              [title]="isPremium(m) ? 'Révoquer le Premium (' + remainingDays(m) + ' jours restants)' : 'Accorder le Premium'"
-            >⭐</button>
+              [title]="
+                isPremium(m)
+                  ? 'Révoquer le Premium (' + remainingDays(m) + ' jours restants)'
+                  : 'Accorder le Premium'
+              "
+            >
+              ⭐
+            </button>
 
             <!-- Accès profils (inutile pour admin/dev qui ont toujours accès) -->
             <ng-container *ngIf="m.role !== 'admin' && m.role !== 'developer'">
-              <span class="tag" [class]="getAccessClass(m)" title="Accès aux profils">{{ getAccessLabel(m) }}</span>
+              <span class="tag" [class]="getAccessClass(m)" title="Accès aux profils">{{
+                getAccessLabel(m)
+              }}</span>
               <button
                 class="btn-action allow"
                 [class.active]="m.can_view_profiles === true"
                 (click)="setCanViewProfiles(m, m.can_view_profiles === true ? null : true)"
                 title="Accorder l'accès aux profils"
-              >✓</button>
+              >
+                ✓
+              </button>
               <button
                 class="btn-action deny"
                 [class.active]="m.can_view_profiles === false"
                 (click)="setCanViewProfiles(m, m.can_view_profiles === false ? null : false)"
                 title="Refuser l'accès aux profils"
-              >✗</button>
+              >
+                ✗
+              </button>
             </ng-container>
           </div>
         </div>
@@ -130,7 +162,6 @@
         <div *ngIf="filteredMembres.length === 0" class="empty">Aucun membre trouvé.</div>
       </div>
     </section>
-
   </ng-container>
 </div>
 
@@ -138,13 +169,39 @@
 <div *ngIf="premiumModal" class="modal-overlay" (click)="premiumModal = null">
   <div class="modal" (click)="$event.stopPropagation()">
     <h3 class="modal-title">⭐ Accorder le Premium</h3>
-    <p class="modal-desc">Durée de l'abonnement pour <strong>{{ premiumModal.membre.username }}</strong> :</p>
+    <p class="modal-desc">
+      Durée de l'abonnement pour <strong>{{ premiumModal.membre.username }}</strong> :
+    </p>
 
     <div class="modal-presets">
-      <button class="preset-btn" (click)="premiumModal.mois = 1"  [class.active]="premiumModal.mois === 1">1 mois</button>
-      <button class="preset-btn" (click)="premiumModal.mois = 3"  [class.active]="premiumModal.mois === 3">3 mois</button>
-      <button class="preset-btn" (click)="premiumModal.mois = 6"  [class.active]="premiumModal.mois === 6">6 mois</button>
-      <button class="preset-btn" (click)="premiumModal.mois = 12" [class.active]="premiumModal.mois === 12">1 an</button>
+      <button
+        class="preset-btn"
+        (click)="premiumModal.mois = 1"
+        [class.active]="premiumModal.mois === 1"
+      >
+        1 mois
+      </button>
+      <button
+        class="preset-btn"
+        (click)="premiumModal.mois = 3"
+        [class.active]="premiumModal.mois === 3"
+      >
+        3 mois
+      </button>
+      <button
+        class="preset-btn"
+        (click)="premiumModal.mois = 6"
+        [class.active]="premiumModal.mois === 6"
+      >
+        6 mois
+      </button>
+      <button
+        class="preset-btn"
+        (click)="premiumModal.mois = 12"
+        [class.active]="premiumModal.mois === 12"
+      >
+        1 an
+      </button>
     </div>
 
     <div class="modal-custom">

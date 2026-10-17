@@ -4,7 +4,6 @@ import { Profile } from '../models/profile.model';
 
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
-
   constructor(private supabase: SupabaseService) {}
 
   async get(key: string): Promise<any> {
@@ -26,7 +25,7 @@ export class SettingsService {
 
   async canCreateSortie(profile: Profile): Promise<boolean> {
     if (profile.role === 'admin' || profile.role === 'developer') return true;
-    const setting = await this.get('sortie_creation_access') ?? 'all';
+    const setting = (await this.get('sortie_creation_access')) ?? 'all';
     if (setting === 'all') return true;
     if (setting === 'admin') return false;
     // premium

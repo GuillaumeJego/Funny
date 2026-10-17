@@ -23,7 +23,7 @@ interface MembreProfile {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './membres.component.html',
-  styleUrl: './membres.component.scss'
+  styleUrl: './membres.component.scss',
 })
 export class MembresComponent implements OnInit {
   membres: MembreProfile[] = [];
@@ -37,7 +37,10 @@ export class MembresComponent implements OnInit {
   filterVaping = '';
   filterAlcohol = '';
 
-  constructor(private profileService: ProfileService, private router: Router) {}
+  constructor(
+    private profileService: ProfileService,
+    private router: Router,
+  ) {}
 
   async ngOnInit() {
     const { data } = await this.profileService.getAllProfiles();
@@ -47,8 +50,9 @@ export class MembresComponent implements OnInit {
 
   get filteredMembres(): MembreProfile[] {
     const q = this.searchQuery.toLowerCase().trim();
-    return this.membres.filter(m => {
-      if (q && !m.username.toLowerCase().includes(q) && !(m.bio ?? '').toLowerCase().includes(q)) return false;
+    return this.membres.filter((m) => {
+      if (q && !m.username.toLowerCase().includes(q) && !(m.bio ?? '').toLowerCase().includes(q))
+        return false;
       if (this.filterGender && m.gender !== this.filterGender) return false;
       if (this.filterRelationship && m.relationship !== this.filterRelationship) return false;
       if (this.filterSmoking && m.smoking !== this.filterSmoking) return false;
@@ -59,8 +63,13 @@ export class MembresComponent implements OnInit {
   }
 
   get activeFilterCount(): number {
-    return [this.filterGender, this.filterRelationship, this.filterSmoking, this.filterVaping, this.filterAlcohol]
-      .filter(v => !!v).length;
+    return [
+      this.filterGender,
+      this.filterRelationship,
+      this.filterSmoking,
+      this.filterVaping,
+      this.filterAlcohol,
+    ].filter((v) => !!v).length;
   }
 
   resetFilters() {

@@ -14,7 +14,12 @@ export interface Message {
   reply_to_id: string | null;
   created_at: string;
   sender?: { username: string; avatar_url: string | null };
-  reply_to?: { id: string; content: string | null; type: string; sender?: { username: string } } | null;
+  reply_to?: {
+    id: string;
+    content: string | null;
+    type: string;
+    sender?: { username: string };
+  } | null;
   reactions?: MessageReaction[];
 }
 

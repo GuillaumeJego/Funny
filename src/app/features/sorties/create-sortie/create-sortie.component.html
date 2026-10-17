@@ -10,7 +10,6 @@
 
 <div *ngIf="!accessDenied" class="create-sortie-container">
   <div class="create-sortie-card">
-
     <!-- Header -->
     <div class="header">
       <button class="btn-back" (click)="goToDashboard()">← Retour</button>
@@ -34,7 +33,11 @@
 
       <div class="form-group">
         <label>Description</label>
-        <textarea [(ngModel)]="sortie.description" placeholder="Décrivez votre sortie..." rows="4"></textarea>
+        <textarea
+          [(ngModel)]="sortie.description"
+          placeholder="Décrivez votre sortie..."
+          rows="4"
+        ></textarea>
       </div>
 
       <div class="form-group">
@@ -80,11 +83,16 @@
               autocomplete="off"
               class="location-field"
             />
-            <button *ngIf="sortie.location" class="btn-clear-loc" type="button" (click)="clearLocation()">✕</button>
+            <button
+              *ngIf="sortie.location"
+              class="btn-clear-loc"
+              type="button"
+              (click)="clearLocation()"
+            >
+              ✕
+            </button>
           </div>
-          <div class="location-selected" *ngIf="sortie.location">
-            📍 {{ sortie.location }}
-          </div>
+          <div class="location-selected" *ngIf="sortie.location">📍 {{ sortie.location }}</div>
           <div class="location-suggestions" *ngIf="locationSuggestions.length">
             <div
               *ngFor="let place of locationSuggestions"
@@ -110,7 +118,12 @@
 
       <div class="form-group">
         <label>Nombre de places maximum</label>
-        <input type="number" [(ngModel)]="sortie.max_participants" min="1" placeholder="Laisser vide = illimité" />
+        <input
+          type="number"
+          [(ngModel)]="sortie.max_participants"
+          min="1"
+          placeholder="Laisser vide = illimité"
+        />
       </div>
     </div>
 
@@ -159,7 +172,7 @@
         </div>
         <div class="recap-item">
           <span class="label">Date</span>
-          <span>{{ sortie.date | date:'dd/MM/yyyy HH:mm' }}</span>
+          <span>{{ sortie.date | date: 'dd/MM/yyyy HH:mm' }}</span>
         </div>
         <div class="recap-item">
           <span class="label">Lieu</span>
@@ -196,10 +209,14 @@
       <button class="btn-primary" (click)="nextStep()" *ngIf="currentStep < totalSteps">
         Suivant →
       </button>
-      <button class="btn-primary" (click)="onSubmit()" *ngIf="currentStep === totalSteps" [disabled]="saving">
+      <button
+        class="btn-primary"
+        (click)="onSubmit()"
+        *ngIf="currentStep === totalSteps"
+        [disabled]="saving"
+      >
         {{ saving ? 'Création...' : '🎉 Créer la sortie' }}
       </button>
     </div>
-
   </div>
 </div>

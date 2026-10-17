@@ -23,9 +23,16 @@
   color: $text-light;
   text-align: center;
 
-  &.error { color: $error; }
-  .empty-icon { font-size: 3rem; }
-  p { font-size: 1rem; line-height: 1.6; }
+  &.error {
+    color: $error;
+  }
+  .empty-icon {
+    font-size: 3rem;
+  }
+  p {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
 
   .btn-create {
     display: inline-block;
@@ -36,7 +43,9 @@
     border-radius: $border-radius;
     text-decoration: none;
     font-weight: 600;
-    &:hover { background: $primary-hover; }
+    &:hover {
+      background: $primary-hover;
+    }
   }
 }
 
@@ -48,7 +57,11 @@
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 // ─── Toolbar ──────────────────────────────────────────────
 .toolbar {
@@ -81,10 +94,18 @@
       background: transparent;
       color: $text-light;
       cursor: pointer;
-      transition: background 0.15s, color 0.15s;
+      transition:
+        background 0.15s,
+        color 0.15s;
 
-      &:hover { background: $bg-light; color: $text-dark; }
-      &.active { background: $primary; color: #fff; }
+      &:hover {
+        background: $bg-light;
+        color: $text-dark;
+      }
+      &.active {
+        background: $primary;
+        color: #fff;
+      }
     }
   }
 }
@@ -104,16 +125,27 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   cursor: pointer;
   border: 2px solid transparent;
 
-  &:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.13); }
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.13);
+  }
 
   &.premium {
     border-color: #f5c518;
-    box-shadow: 0 0 0 1px #f5c518, 0 4px 18px rgba(245,197,24,0.25);
-    &:hover { box-shadow: 0 0 0 1px #f5c518, 0 8px 28px rgba(245,197,24,0.35); }
+    box-shadow:
+      0 0 0 1px #f5c518,
+      0 4px 18px rgba(245, 197, 24, 0.25);
+    &:hover {
+      box-shadow:
+        0 0 0 1px #f5c518,
+        0 8px 28px rgba(245, 197, 24, 0.35);
+    }
   }
 }
 
@@ -124,92 +156,153 @@
   background: $primary-light;
   overflow: hidden;
 
-  img { width: 100%; height: 100%; object-fit: cover; }
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
   .card-image-placeholder {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 3rem;
   }
 
   .badge-premium {
-    position: absolute; top: 0.5rem; right: 0.5rem;
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
     background: linear-gradient(135deg, #f5c518, #e8a800);
     color: #5a3e00;
-    font-size: 0.68rem; font-weight: 800;
-    padding: 0.2rem 0.6rem; border-radius: 20px;
-    text-transform: uppercase; letter-spacing: 0.06em;
-    box-shadow: 0 2px 6px rgba(245,197,24,0.5);
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    box-shadow: 0 2px 6px rgba(245, 197, 24, 0.5);
   }
 
   .badge-theme {
-    position: absolute; bottom: 0.5rem; left: 0.5rem;
-    background: rgba(0,0,0,0.55); color: #fff;
-    font-size: 0.72rem; padding: 0.2rem 0.5rem;
-    border-radius: 20px; backdrop-filter: blur(4px);
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 0.72rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
   }
 
   .badge-prix-grid {
-    position: absolute; bottom: 0.5rem; right: 0.5rem;
-    background: $primary; color: #fff;
-    font-size: 0.72rem; font-weight: 700;
-    padding: 0.2rem 0.55rem; border-radius: 20px;
-    &.gratuit { background: $success; }
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    background: $primary;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 20px;
+    &.gratuit {
+      background: $success;
+    }
   }
 }
 
 .card-body {
-  padding: 1rem; flex: 1;
-  display: flex; flex-direction: column; gap: 0.5rem;
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .card-header-row {
-  display: flex; align-items: flex-start;
-  justify-content: space-between; gap: 0.5rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .card-title {
-  font-size: 1rem; font-weight: 700;
-  color: $text-dark; line-height: 1.3;
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-dark;
+  line-height: 1.3;
 }
 
 .card-desc {
-  font-size: 0.85rem; color: $text-medium; line-height: 1.4;
-  display: -webkit-box; -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical; overflow: hidden;
+  font-size: 0.85rem;
+  color: $text-medium;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card-meta {
-  display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
 
   .meta-item {
-    display: flex; align-items: center; gap: 0.4rem;
-    font-size: 0.82rem; color: $text-medium;
-    .meta-icon { font-size: 0.9rem; flex-shrink: 0; }
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    color: $text-medium;
+    .meta-icon {
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
   }
 }
 
 .card-footer {
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  margin-top: auto; padding-top: 0.75rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
   border-top: 1px solid $border-color;
 
   .organizer {
-    display: flex; align-items: center; gap: 0.5rem;
-    font-size: 0.82rem; color: $text-medium;
-    span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: $text-medium;
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
-  .avatar, .avatar-placeholder {
-    width: 28px; height: 28px; border-radius: 50%;
-    object-fit: cover; flex-shrink: 0;
+  .avatar,
+  .avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
   }
 
   .avatar-placeholder {
-    background: $primary-light; color: $primary;
-    font-weight: 700; font-size: 0.8rem;
-    display: flex; align-items: center; justify-content: center;
+    background: $primary-light;
+    color: $primary;
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .footer-right {
@@ -219,20 +312,36 @@
   }
 
   .btn-heart {
-    background: none; border: none; cursor: pointer;
-    padding: 0.3rem; color: $text-light;
-    display: flex; align-items: center;
-    transition: color 0.2s, transform 0.15s;
-    &:hover, &.active { color: #ef4444; transform: scale(1.15); }
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.3rem;
+    color: $text-light;
+    display: flex;
+    align-items: center;
+    transition:
+      color 0.2s,
+      transform 0.15s;
+    &:hover,
+    &.active {
+      color: #ef4444;
+      transform: scale(1.15);
+    }
   }
 
   .btn-join {
     flex-shrink: 0;
     padding: 0.4rem 0.9rem;
-    background: $primary; color: #fff;
-    border: none; border-radius: $border-radius;
-    font-size: 0.82rem; font-weight: 600; cursor: pointer;
-    &:hover { background: $primary-hover; }
+    background: $primary;
+    color: #fff;
+    border: none;
+    border-radius: $border-radius;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    &:hover {
+      background: $primary-hover;
+    }
   }
 }
 
@@ -261,18 +370,26 @@
   gap: 0.85rem;
   background: $bg-white;
   border-radius: $border-radius-lg;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
   padding: 0.65rem;
   margin-bottom: 0.6rem;
   transition: box-shadow 0.2s;
   border: 2px solid transparent;
 
-  &:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
 
   &.premium {
     border-color: #f5c518;
-    box-shadow: 0 0 0 1px #f5c518, 0 2px 10px rgba(245,197,24,0.2);
-    &:hover { box-shadow: 0 0 0 1px #f5c518, 0 4px 16px rgba(245,197,24,0.3); }
+    box-shadow:
+      0 0 0 1px #f5c518,
+      0 2px 10px rgba(245, 197, 24, 0.2);
+    &:hover {
+      box-shadow:
+        0 0 0 1px #f5c518,
+        0 4px 16px rgba(245, 197, 24, 0.3);
+    }
   }
 }
 
@@ -287,22 +404,34 @@
   background: $primary-light;
   flex-shrink: 0;
 
-  img { width: 100%; height: 100%; object-fit: cover; }
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
   .list-image-placeholder {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 2rem;
   }
 
   .badge-prix {
     position: absolute;
-    top: 0.3rem; left: 0.3rem;
+    top: 0.3rem;
+    left: 0.3rem;
     border-radius: 20px;
     padding: 0.15rem 0.45rem;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.65rem; font-weight: 700;
-    background: $primary; color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    background: $primary;
+    color: #fff;
 
     &.gratuit {
       background: $success;
@@ -311,14 +440,18 @@
 
   .badge-premium-list {
     position: absolute;
-    top: 0.3rem; right: 0.3rem;
+    top: 0.3rem;
+    right: 0.3rem;
     background: rgba(245, 197, 24, 0.45);
     backdrop-filter: blur(4px);
     border-radius: 50%;
-    width: 22px; height: 22px;
-    display: flex; align-items: center; justify-content: center;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.75rem;
-    box-shadow: 0 2px 6px rgba(245,197,24,0.3);
+    box-shadow: 0 2px 6px rgba(245, 197, 24, 0.3);
   }
 }
 
@@ -348,7 +481,10 @@
   font-size: 0.8rem;
   color: $text-medium;
 
-  svg { flex-shrink: 0; color: $text-light; }
+  svg {
+    flex-shrink: 0;
+    color: $text-light;
+  }
 }
 
 .list-bottom {
@@ -358,14 +494,18 @@
   flex-wrap: wrap;
 }
 
-.list-location, .list-participants {
+.list-location,
+.list-participants {
   display: flex;
   align-items: center;
   gap: 0.3rem;
   font-size: 0.78rem;
   color: $text-medium;
 
-  svg { flex-shrink: 0; color: $text-light; }
+  svg {
+    flex-shrink: 0;
+    color: $text-light;
+  }
 }
 
 .list-location {
@@ -384,7 +524,8 @@
   flex-shrink: 0;
 }
 
-.list-avatar, .list-avatar-placeholder {
+.list-avatar,
+.list-avatar-placeholder {
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -409,40 +550,66 @@
   color: $text-light;
   display: flex;
   align-items: center;
-  transition: color 0.2s, transform 0.15s;
+  transition:
+    color 0.2s,
+    transform 0.15s;
 
-  &:hover { color: #ef4444; transform: scale(1.15); }
+  &:hover {
+    color: #ef4444;
+    transform: scale(1.15);
+  }
 }
 
 // ─── FAB ──────────────────────────────────────────────────
 .fab {
   position: fixed;
-  bottom: 5rem; right: 1.25rem;
-  width: 52px; height: 52px;
-  background: $primary; color: #fff;
+  bottom: 5rem;
+  right: 1.25rem;
+  width: 52px;
+  height: 52px;
+  background: $primary;
+  color: #fff;
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.6rem; font-weight: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 300;
   text-decoration: none;
-  box-shadow: 0 4px 16px rgba(99,102,241,0.45);
-  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.45);
+  transition:
+    background 0.2s,
+    transform 0.2s;
   z-index: 100;
 
-  &:hover { background: $primary-hover; transform: scale(1.07); }
+  &:hover {
+    background: $primary-hover;
+    transform: scale(1.07);
+  }
 }
 
 // ─── RESPONSIVE ───────────────────────────────────────────
 @media (min-width: 768px) {
-  .fab { bottom: 1.5rem; }
+  .fab {
+    bottom: 1.5rem;
+  }
 
   .list-image {
     width: 130px;
     min-width: 130px;
   }
 
-  .list-title { font-size: 1rem; }
-  .list-time, .list-location, .list-participants { font-size: 0.83rem; }
-  .list-location { max-width: 240px; }
+  .list-title {
+    font-size: 1rem;
+  }
+  .list-time,
+  .list-location,
+  .list-participants {
+    font-size: 0.83rem;
+  }
+  .list-location {
+    max-width: 240px;
+  }
 }
 
 @media (min-width: 1024px) {

@@ -31,12 +31,10 @@ export class ConversationService {
 
     if (!conv) throw new Error('Failed to create conversation');
 
-    await this.supabase.client
-      .from('conversation_participants')
-      .insert([
-        { conversation_id: conv.id, user_id: userId1 },
-        { conversation_id: conv.id, user_id: userId2 },
-      ]);
+    await this.supabase.client.from('conversation_participants').insert([
+      { conversation_id: conv.id, user_id: userId1 },
+      { conversation_id: conv.id, user_id: userId2 },
+    ]);
 
     return conv.id;
   }
@@ -53,7 +51,9 @@ export class ConversationService {
 
     const { data } = await this.supabase.client
       .from('conversations')
-      .select(`id, created_at, participants:conversation_participants(user_id, user:profiles!user_id(id, username, avatar_url))`)
+      .select(
+        `id, created_at, participants:conversation_participants(user_id, user:profiles!user_id(id, username, avatar_url))`,
+      )
       .in('id', convIds);
 
     const conversations = (data ?? []) as unknown as Conversation[];
@@ -67,7 +67,7 @@ export class ConversationService {
           .order('created_at', { ascending: false })
           .limit(1);
         c.last_message = (msgs?.[0] ?? null) as any;
-      })
+      }),
     );
 
     conversations.sort((a, b) => {
@@ -82,7 +82,9 @@ export class ConversationService {
   async getMessages(conversationId: string): Promise<Message[]> {
     const { data } = await this.supabase.client
       .from('messages')
-      .select(`*, sender:profiles!sender_id(username, avatar_url), reply_to:messages!reply_to_id(id, content, type, sender:profiles!sender_id(username)), reactions:message_reactions(message_id, user_id, emoji)`)
+      .select(
+        `*, sender:profiles!sender_id(username, avatar_url), reply_to:messages!reply_to_id(id, content, type, sender:profiles!sender_id(username)), reactions:message_reactions(message_id, user_id, emoji)`,
+      )
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
     return (data ?? []) as Message[];
@@ -94,7 +96,7 @@ export class ConversationService {
     content: string,
     type: 'text' | 'image' | 'video' = 'text',
     replyToId?: string,
-    mediaUrl?: string
+    mediaUrl?: string,
   ): Promise<Message | null> {
     const { data } = await this.supabase.client
       .from('messages')
@@ -106,7 +108,9 @@ export class ConversationService {
         reply_to_id: replyToId || null,
         media_url: mediaUrl || null,
       })
-      .select(`*, sender:profiles!sender_id(username, avatar_url), reply_to:messages!reply_to_id(id, content, type, sender:profiles!sender_id(username)), reactions:message_reactions(message_id, user_id, emoji)`)
+      .select(
+        `*, sender:profiles!sender_id(username, avatar_url), reply_to:messages!reply_to_id(id, content, type, sender:profiles!sender_id(username)), reactions:message_reactions(message_id, user_id, emoji)`,
+      )
       .single();
     return data;
   }
@@ -128,25 +132,25 @@ export class ConversationService {
   async uploadMedia(file: File, userId: string): Promise<string | null> {
     const ext = file.name.split('.').pop();
     const path = `${userId}/${Date.now()}.${ext}`;
-    const { error } = await this.supabase.client.storage
-      .from('chat-media')
-      .upload(path, file);
+    const { error } = await this.supabase.client.storage.from('chat-media').upload(path, file);
     if (error) return null;
-    const { data } = this.supabase.client.storage
-      .from('chat-media')
-      .getPublicUrl(path);
+    const { data } = this.supabase.client.storage.from('chat-media').getPublicUrl(path);
     return data.publicUrl;
   }
 
   subscribeToMessages(conversationId: string, callback: (payload: any) => void) {
     return this.supabase.client
       .channel(`conv-${conversationId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `conversation_id=eq.${conversationId}`,
-      }, callback)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        callback,
+      )
       .subscribe();
   }
 
