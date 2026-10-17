@@ -1,0 +1,330 @@
+@use 'styles' as *;
+
+.amis-page {
+  min-height: 100vh;
+  background: var(--background);
+  padding-bottom: 80px;
+}
+
+.amis-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1rem;
+  background: $bg-white;
+  border-bottom: 1px solid $border-color;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin: 0;
+  }
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: $text-dark;
+  padding: 4px 8px;
+  border-radius: 8px;
+  &:hover {
+    background: $bg-light;
+  }
+}
+
+.tabs {
+  display: flex;
+  background: $bg-white;
+  border-bottom: 2px solid $border-color;
+  padding: 0 1rem;
+  gap: 4px;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px 8px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $text-light;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+
+  &.active {
+    color: $primary;
+    border-bottom-color: $primary;
+  }
+}
+
+.badge {
+  background: $bg-light;
+  color: $text-light;
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 0.75rem;
+  font-weight: 700;
+
+  &.badge-red {
+    background: #e74c3c;
+    color: #fff;
+  }
+}
+
+.content {
+  padding: 1.5rem 1rem 6rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+// ─── Recherche ────────────────────────────────────
+.search-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  align-items: center;
+}
+
+.search-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    font-size: 0.9rem;
+    pointer-events: none;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 0.6rem 2.25rem 0.6rem 2.25rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    font-size: 0.9rem;
+    background: $bg-white;
+    color: $text-dark;
+    &:focus {
+      outline: none;
+      border-color: $primary;
+    }
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: $text-light;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0.25rem;
+    &:hover {
+      color: $text-dark;
+    }
+  }
+}
+
+// ─── Grille ───────────────────────────────────────
+.membres-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.membre-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-lg;
+  padding: 0.75rem 1rem;
+  transition:
+    box-shadow 0.2s,
+    transform 0.15s;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: $shadow;
+    transform: translateY(-1px);
+  }
+}
+
+.avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+
+  .avatar,
+  .avatar-placeholder {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $primary;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+}
+
+.membre-info {
+  min-width: 0;
+  flex: 1;
+
+  .membre-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: $text-dark;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .membre-bio {
+    font-size: 0.78rem;
+    color: $text-light;
+    margin-top: 0.15rem;
+  }
+}
+
+.inline-msg-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.78rem;
+  color: $primary;
+  cursor: pointer;
+  font-weight: 600;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.request-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.btn-accept {
+  padding: 4px 10px;
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.85;
+  }
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+.btn-decline,
+.btn-cancel {
+  padding: 4px 10px;
+  background: $bg-light;
+  color: $text-light;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover {
+    background: #e74c3c;
+    color: #fff;
+  }
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+// ─── Empty ────────────────────────────────────────
+.empty {
+  text-align: center;
+  padding: 48px 24px;
+
+  .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: $text-light;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+}
+
+.empty-search {
+  text-align: center;
+  color: $text-light;
+  font-size: 0.9rem;
+  padding: 24px;
+}
+
+.btn-outline {
+  padding: 10px 20px;
+  border: 2px solid $primary;
+  background: none;
+  color: $primary;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover {
+    background: $primary;
+    color: #fff;
+  }
+}
+
+// ─── Loader ───────────────────────────────────────
+.loader {
+  display: flex;
+  justify-content: center;
+  padding: 60px;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid $border-color;
+    border-top-color: $primary;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 480px) {
+  .membres-grid {
+    grid-template-columns: 1fr;
+  }
+}

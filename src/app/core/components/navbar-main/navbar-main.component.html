@@ -6,6 +6,9 @@
         @if (item.route === '/notifications' && unreadCount > 0) {
           <span class="notif-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
         }
+        @if (item.route === '/amis' && pendingFriendsCount > 0) {
+          <span class="notif-badge">{{ pendingFriendsCount }}</span>
+        }
       </div>
       <span class="nav-label">{{ item.label }}</span>
     </div>

@@ -1,0 +1,172 @@
+<div class="amis-page">
+  <header class="amis-header">
+    <button class="btn-back" (click)="router.navigate(['/dashboard'])">←</button>
+    <h1>Mes amis</h1>
+  </header>
+
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'amis'" (click)="activeTab = 'amis'">
+      Amis <span class="badge">{{ friends.length }}</span>
+    </button>
+    <button class="tab" [class.active]="activeTab === 'recues'" (click)="activeTab = 'recues'">
+      Reçues
+      <span class="badge" [class.badge-red]="received.length > 0">{{ received.length }}</span>
+    </button>
+    <button class="tab" [class.active]="activeTab === 'envoyees'" (click)="activeTab = 'envoyees'">
+      Envoyées <span class="badge">{{ sent.length }}</span>
+    </button>
+  </div>
+
+  @if (!loading) {
+    <div class="content">
+      <!-- ── Onglet Amis ── -->
+      @if (activeTab === 'amis') {
+        @if (friends.length > 0) {
+          <div class="search-row">
+            <div class="search-wrap">
+              <span class="search-icon">🔍</span>
+              <input
+                type="text"
+                [(ngModel)]="search"
+                placeholder="Rechercher un ami…"
+                class="search-input"
+              />
+              @if (search) {
+                <button class="clear-btn" (click)="search = ''">✕</button>
+              }
+            </div>
+          </div>
+        }
+        @if (friends.length === 0) {
+          <div class="empty">
+            <div class="empty-icon">👥</div>
+            <p>Vous n'avez pas encore d'amis.<br />Explorez les profils des membres !</p>
+            <button class="btn-outline" (click)="router.navigate(['/membres'])">
+              Voir les membres
+            </button>
+          </div>
+        }
+        @if (filteredFriends.length === 0 && search.trim()) {
+          <div class="empty-search">Aucun ami trouvé pour "{{ search }}"</div>
+        }
+        @if (filteredFriends.length > 0) {
+          <div class="membres-grid">
+            @for (f of filteredFriends; track f) {
+              <div class="membre-card" (click)="goToProfile(f, 'friend')">
+                <div class="avatar-wrap">
+                  @if (getProfile(f, 'friend')?.avatar_url) {
+                    <img [src]="getProfile(f, 'friend')!.avatar_url!" class="avatar" alt="" />
+                  }
+                  @if (!getProfile(f, 'friend')?.avatar_url) {
+                    <div class="avatar-placeholder">
+                      {{ getInitial($safeNavigationMigration(getProfile(f, 'friend')?.username)) }}
+                    </div>
+                  }
+                </div>
+                <div class="membre-info">
+                  <div class="membre-name">{{ getProfile(f, 'friend')?.username }}</div>
+                  <div class="membre-bio">
+                    <button class="inline-msg-btn" (click)="$event.stopPropagation(); openChat(f)">
+                      💬 Message
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+      <!-- ── Demandes reçues ── -->
+      @if (activeTab === 'recues') {
+        @if (received.length === 0) {
+          <div class="empty">
+            <div class="empty-icon">📭</div>
+            <p>Aucune demande d'ami reçue.</p>
+          </div>
+        }
+        @if (received.length > 0) {
+          <div class="membres-grid">
+            @for (f of received; track f) {
+              <div class="membre-card" (click)="goToProfile(f, 'requester')">
+                <div class="avatar-wrap">
+                  @if (f.requester?.avatar_url) {
+                    <img [src]="f.requester!.avatar_url!" class="avatar" alt="" />
+                  }
+                  @if (!f.requester?.avatar_url) {
+                    <div class="avatar-placeholder">
+                      {{ getInitial($safeNavigationMigration(f.requester?.username)) }}
+                    </div>
+                  }
+                </div>
+                <div class="membre-info">
+                  <div class="membre-name">{{ f.requester?.username }}</div>
+                  <div class="request-actions">
+                    <button
+                      class="btn-accept"
+                      (click)="$event.stopPropagation(); acceptRequest(f)"
+                      [disabled]="actionLoading === f.id"
+                    >
+                      ✓ Accepter
+                    </button>
+                    <button
+                      class="btn-decline"
+                      (click)="$event.stopPropagation(); declineRequest(f)"
+                      [disabled]="actionLoading === f.id"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+      <!-- ── Demandes envoyées ── -->
+      @if (activeTab === 'envoyees') {
+        @if (sent.length === 0) {
+          <div class="empty">
+            <div class="empty-icon">📤</div>
+            <p>Aucune demande d'ami envoyée.</p>
+          </div>
+        }
+        @if (sent.length > 0) {
+          <div class="membres-grid">
+            @for (f of sent; track f) {
+              <div class="membre-card" (click)="goToProfile(f, 'receiver')">
+                <div class="avatar-wrap">
+                  @if (f.receiver?.avatar_url) {
+                    <img [src]="f.receiver!.avatar_url!" class="avatar" alt="" />
+                  }
+                  @if (!f.receiver?.avatar_url) {
+                    <div class="avatar-placeholder">
+                      {{ getInitial($safeNavigationMigration(f.receiver?.username)) }}
+                    </div>
+                  }
+                </div>
+                <div class="membre-info">
+                  <div class="membre-name">{{ f.receiver?.username }}</div>
+                  <div class="request-actions">
+                    <button
+                      class="btn-cancel"
+                      (click)="$event.stopPropagation(); cancelRequest(f)"
+                      [disabled]="actionLoading === f.id"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+  }
+
+  @if (loading) {
+    <div class="loader">
+      <div class="spinner"></div>
+    </div>
+  }
+</div>

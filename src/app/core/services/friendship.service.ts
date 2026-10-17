@@ -6,6 +6,15 @@ import { Friendship } from '../models/friendship.model';
 export class FriendshipService {
   constructor(private supabase: SupabaseService) {}
 
+  async getPendingReceivedCount(userId: string): Promise<number> {
+    const { count } = await this.supabase.client
+      .from('friendships')
+      .select('*', { count: 'exact', head: true })
+      .eq('receiver_id', userId)
+      .eq('status', 'pending');
+    return count ?? 0;
+  }
+
   async getFriendshipStatus(userId: string, otherId: string): Promise<Friendship | null> {
     const { data } = await this.supabase.client
       .from('friendships')
@@ -25,6 +34,15 @@ export class FriendshipService {
       )
       .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`)
       .eq('status', 'accepted');
+    return (data ?? []) as Friendship[];
+  }
+
+  async getPendingSent(userId: string): Promise<Friendship[]> {
+    const { data } = await this.supabase.client
+      .from('friendships')
+      .select('*, receiver:profiles!receiver_id(id, username, avatar_url)')
+      .eq('requester_id', userId)
+      .eq('status', 'pending');
     return (data ?? []) as Friendship[];
   }
 
