@@ -30,7 +30,7 @@ const SORTIE_FIELDS = [
 function sortiePermissions(sortie, organizerId) {
   const readers = sortie.is_premium
     ? [Role.team('abonnes'), Role.team('admins'), Role.user(organizerId)]
-    : [Role.users()];
+    : [Role.verifiedUsers()];
   return [...readers.map(Permission.read), Permission.update(Role.user(organizerId))];
 }
 
@@ -148,7 +148,7 @@ async function like({ api, userId, input }) {
   ]);
   if (existing) return { liked: true };
   await api.createRow('favoris', uniqueId(), { user_id: userId, sortie_id: sortie.$id }, [
-    Permission.read(Role.users()),
+    Permission.read(Role.verifiedUsers()),
     Permission.delete(Role.user(userId)),
   ]);
   const actor = await usernameOf(api, userId);

@@ -54,7 +54,8 @@ export const Permission = {
 };
 
 export const Role = {
-  users: () => 'users',
+  /** Membres connectés dont l'adresse e-mail est confirmée. */
+  verifiedUsers: () => 'users/verified',
   user: (id) => `user:${id}`,
   team: (id) => `team:${id}`,
 };
@@ -203,11 +204,30 @@ export async function isAdmin(api, userId) {
 }
 
 /**
- * Point d'entrée commun : lit l'action demandée, vérifie que l'appel vient d'un
- * membre connecté, et transforme les erreurs en réponses JSON.
- * `onSchedule` est lancé quand Appwrite exécute la fonction selon son horaire (cron).
+ * L'adresse e-mail du membre qui appelle est-elle confirmée ? Lue avec le jeton (JWT)
+ * qu'Appwrite transmet pour ce membre, donc sans droit supplémentaire sur les comptes.
  */
-export function handler(actions, { onSchedule } = {}) {
+async function callerIsVerified(req) {
+  const jwt = req.headers['x-appwrite-user-jwt'];
+  if (!jwt) return false;
+  const response = await fetch(process.env.APPWRITE_FUNCTION_API_ENDPOINT + '/account', {
+    headers: {
+      'x-appwrite-project': process.env.APPWRITE_FUNCTION_PROJECT_ID,
+      'x-appwrite-jwt': jwt,
+    },
+  });
+  if (!response.ok) return false;
+  const account = await response.json();
+  return account.emailVerification === true;
+}
+
+/**
+ * Point d'entrée commun : lit l'action demandée, vérifie que l'appel vient d'un
+ * membre connecté dont l'adresse e-mail est confirmée, et transforme les erreurs en réponses JSON.
+ * `onSchedule` est lancé quand Appwrite exécute la fonction selon son horaire (cron).
+ * `unverified` : actions permises avant la confirmation de l'adresse (création du profil, suppression du compte).
+ */
+export function handler(actions, { onSchedule, unverified = [] } = {}) {
   return async ({ req, res, error: logError }) => {
     try {
       if (onSchedule && req.headers['x-appwrite-trigger'] === 'schedule') {
@@ -218,6 +238,9 @@ export function handler(actions, { onSchedule } = {}) {
       const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body ?? {});
       const action = actions[body.action];
       if (!action) fail(400, `Action inconnue : ${body.action}`);
+      if (!unverified.includes(body.action) && !(await callerIsVerified(req))) {
+        fail(403, 'Confirmez d’abord votre adresse e-mail.');
+      }
       const api = createApi(req);
       const result = await action({ api, userId, input: body, log: logError });
       return res.json({ ok: true, ...result });

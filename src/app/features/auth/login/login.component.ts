@@ -18,15 +18,22 @@ export class LoginComponent {
   password = '';
   errorMessage = '';
   loading = false;
-  /** Affiché après la suppression du compte. */
-  accountDeleted = false;
+  /** Affiché après la suppression du compte, un changement de mot de passe ou la confirmation de l'adresse. */
+  successMessage = '';
 
   constructor(
     private authService: AuthService,
     private router: Router,
     route: ActivatedRoute,
   ) {
-    this.accountDeleted = route.snapshot.queryParamMap.get('compte') === 'supprime';
+    const params = route.snapshot.queryParamMap;
+    if (params.get('compte') === 'supprime') {
+      this.successMessage = 'Votre compte et toutes vos données ont été supprimés.';
+    } else if (params.get('mot-de-passe') === 'modifie') {
+      this.successMessage = 'Votre mot de passe a été modifié. Vous pouvez vous connecter.';
+    } else if (params.get('email') === 'confirme') {
+      this.successMessage = 'Votre adresse est confirmée. Vous pouvez vous connecter.';
+    }
   }
 
   async onLogin() {

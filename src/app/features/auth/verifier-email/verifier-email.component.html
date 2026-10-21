@@ -1,0 +1,43 @@
+<div class="login-container">
+  <div class="login-card">
+    @switch (state) {
+      @case ('loading') {
+        <h1>Confirmation de l'adresse</h1>
+        <p class="info">Un instant…</p>
+      }
+      @case ('pending') {
+        <h1>Confirmez votre adresse</h1>
+        <p class="info">
+          Pour utiliser Funny, cliquez sur le lien envoyé à <strong>{{ email }}</strong
+          >. Pensez à regarder dans les courriers indésirables.
+        </p>
+        @if (sent) {
+          <div class="success">Un e-mail vient de vous être envoyé.</div>
+        }
+        @if (errorMessage) {
+          <div class="error">{{ errorMessage }}</div>
+        }
+        <button (click)="resend()" [disabled]="sending">
+          {{ sending ? 'Envoi...' : "Renvoyer l'e-mail" }}
+        </button>
+        <p class="register-link">
+          Mauvaise adresse ou autre compte ?
+          <a href="" (click)="$event.preventDefault(); logout()">Se déconnecter</a>
+        </p>
+      }
+      @case ('confirmed') {
+        <h1>Adresse confirmée</h1>
+        <div class="success">Merci, votre adresse e-mail est confirmée.</div>
+        <button (click)="continue()">Continuer</button>
+      }
+      @case ('error') {
+        <h1>Lien non valable</h1>
+        <div class="error">{{ errorMessage }}</div>
+        <p class="info">Connectez-vous : vous pourrez demander un nouvel e-mail de confirmation.</p>
+        <button routerLink="/login">Se connecter</button>
+      }
+    }
+
+    <app-metana-credit />
+  </div>
+</div>

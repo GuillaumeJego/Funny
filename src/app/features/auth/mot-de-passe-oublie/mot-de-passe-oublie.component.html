@@ -1,0 +1,39 @@
+<div class="login-container">
+  <div class="login-card">
+    <h1>Mot de passe oublié</h1>
+
+    @if (sent) {
+      <div class="success">
+        Si un compte existe avec cette adresse, un e-mail vient de partir. Cliquez sur le lien qu'il
+        contient pour choisir un nouveau mot de passe. Le lien est valable 1 heure.
+      </div>
+    } @else {
+      <p class="info">Indiquez l'adresse de votre compte : vous recevrez un lien par e-mail.</p>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          [(ngModel)]="email"
+          placeholder="votre@email.com"
+          (keyup.enter)="onSubmit()"
+        />
+      </div>
+
+      @if (errorMessage) {
+        <div class="error">{{ errorMessage }}</div>
+      }
+
+      <button (click)="onSubmit()" [disabled]="loading">
+        {{ loading ? 'Envoi...' : 'Recevoir le lien' }}
+      </button>
+    }
+
+    <p class="register-link">
+      <a routerLink="/login">Retour à la connexion</a>
+    </p>
+
+    <app-metana-credit />
+  </div>
+</div>

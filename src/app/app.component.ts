@@ -17,10 +17,13 @@ export class AppComponent implements OnInit {
   showNavbar = false;
   currentRoute = '';
 
-  // Pages sans navbar : connexion, inscription, et pages légales (lisibles sans compte)
+  // Pages sans navbar : connexion, inscription, liens reçus par e-mail, et pages légales (lisibles sans compte)
   private noNavbarRoutes = [
     '/login',
     '/register',
+    '/verifier-email',
+    '/mot-de-passe-oublie',
+    '/reinitialiser-mot-de-passe',
     '/mentions-legales',
     '/confidentialite',
     '/conditions',
