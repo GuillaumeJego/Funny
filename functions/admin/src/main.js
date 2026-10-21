@@ -1,6 +1,6 @@
 // Fonction « admin » : rôles, Premium manuel, accès aux profils et bannissements.
 // Seuls les membres de l'équipe « admins » peuvent l'utiliser.
-import { Permission, Role, fail, handler, isAdmin } from './shared/appwrite.js';
+import { Permission, Query, Role, fail, handler, isAdmin } from './shared/appwrite.js';
 
 const ROLES = ['user', 'user_premium', 'developer', 'admin'];
 
@@ -98,6 +98,19 @@ async function unban({ api, input }) {
   return { moderation };
 }
 
+/** Lancé chaque heure par Appwrite : réactive les comptes dont le bannissement est fini. */
+async function liftExpiredBans({ api }) {
+  const expired = await api.listAllRows('moderation', [
+    Query.equal('is_banned', true),
+    Query.lessThan('banned_until', new Date().toISOString()),
+  ]);
+  for (const row of expired) {
+    await api.updateRow('moderation', row.$id, { is_banned: false, banned_until: null });
+    await api.call('PATCH', `/users/${row.$id}/status`, { body: { status: true } });
+  }
+  return { lifted: expired.length };
+}
+
 const actions = { setRole, setPremium, setCanViewProfiles, ban, unban };
 
 export default handler(
@@ -110,4 +123,5 @@ export default handler(
       },
     ]),
   ),
+  { onSchedule: liftExpiredBans },
 );

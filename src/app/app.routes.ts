@@ -14,11 +14,28 @@ import { AdminComponent } from './features/admin/admin.component';
 import { MessagesComponent } from './features/messages/messages.component';
 import { ChatComponent } from './features/chat/chat.component';
 import { AmisComponent } from './features/amis/amis.component';
+import { MentionsLegalesComponent } from './features/legal/mentions-legales.component';
+import { ConfidentialiteComponent } from './features/legal/confidentialite.component';
+import { ConditionsComponent } from './features/legal/conditions.component';
+import { AideComponent } from './features/legal/aide.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  // Pages publiques, lisibles sans compte
+  {
+    path: 'mentions-legales',
+    component: MentionsLegalesComponent,
+    title: 'Mentions légales · Funny',
+  },
+  {
+    path: 'confidentialite',
+    component: ConfidentialiteComponent,
+    title: 'Confidentialité · Funny',
+  },
+  { path: 'conditions', component: ConditionsComponent, title: "Conditions d'utilisation · Funny" },
+  { path: 'aide', component: AideComponent, title: 'Aide · Funny' },
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
   { path: 'profile/edit', component: EditProfileComponent, canActivate: [authGuard] },
   { path: 'sorties/creer', component: CreateSortieComponent, canActivate: [authGuard] },

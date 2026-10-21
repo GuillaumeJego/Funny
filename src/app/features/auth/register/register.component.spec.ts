@@ -22,4 +22,15 @@ describe('RegisterComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('keeps the button disabled until both boxes are checked', () => {
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+    expect(button.disabled).toBe(true);
+    component.adult = true;
+    fixture.detectChanges();
+    expect(button.disabled).toBe(true);
+    component.acceptTerms = true;
+    fixture.detectChanges();
+    expect(button.disabled).toBe(false);
+  });
 });

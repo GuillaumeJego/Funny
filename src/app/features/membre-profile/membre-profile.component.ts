@@ -18,13 +18,15 @@ import { FavoriService } from '../../core/services/favori.service';
 import { FriendshipService } from '../../core/services/friendship.service';
 import { ConversationService } from '../../core/services/conversation.service';
 import { Friendship } from '../../core/models/friendship.model';
+import { ModerationService } from '../../core/services/moderation.service';
+import { MemberSafetyComponent } from '../../core/components/member-safety/member-safety.component';
 
 type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees';
 
 @Component({
   selector: 'app-membre-profile',
   standalone: true,
-  imports: [RouterModule, SortieDrawerComponent],
+  imports: [RouterModule, SortieDrawerComponent, MemberSafetyComponent],
   templateUrl: './membre-profile.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './membre-profile.component.scss',
@@ -51,6 +53,8 @@ export class MembreProfileComponent implements OnInit {
 
   friendship: Friendship | null = null;
   friendshipLoading = false;
+  /** Le membre connecté a bloqué ce membre. */
+  blocked = false;
   friends: Friendship[] = [];
   selectedSortie: SortieWithRelations | null = null;
   drawerOpen = false;
@@ -78,6 +82,7 @@ export class MembreProfileComponent implements OnInit {
     private favoriService: FavoriService,
     private friendshipService: FriendshipService,
     private conversationService: ConversationService,
+    private moderationService: ModerationService,
   ) {}
 
   async ngOnInit() {
@@ -161,6 +166,7 @@ export class MembreProfileComponent implements OnInit {
     this.availableLocations = [...locationsSet].sort();
 
     if (!this.isOwnProfile) {
+      this.blocked = await this.moderationService.isBlocked(targetId);
       this.friendship = await this.friendshipService.getFriendshipStatus(
         this.viewerUserId,
         targetId,
@@ -322,6 +328,14 @@ export class MembreProfileComponent implements OnInit {
     const targetId = this.route.snapshot.paramMap.get('id')!;
     this.friends = await this.friendshipService.getFriends(targetId);
     this.friendshipLoading = false;
+  }
+
+  async onBlockedChange(blocked: boolean) {
+    this.blocked = blocked;
+    if (!blocked) return;
+    // Le blocage supprime l'amitié : on met l'affichage à jour.
+    this.friendship = null;
+    this.friends = await this.friendshipService.getFriends(this.route.snapshot.paramMap.get('id')!);
   }
 
   async openChat() {

@@ -50,12 +50,17 @@ export class AppwriteProfileRepository extends ProfileRepository {
 
   async getAll(): Promise<RepositoryResult<Profile[]>> {
     return attempt(async () => {
-      const [rows, statuses] = await Promise.all([
+      // Les fiches de modération ne sont lisibles que par les admins (et chacun pour la sienne).
+      const [rows, statuses, moderation] = await Promise.all([
         this.appwrite.listAll<ProfileRow>('profiles', [Query.orderAsc('username')]),
         this.appwrite.listAll<StatusRow>('member_status'),
+        this.appwrite.listAll('moderation'),
       ]);
-      const byId = new Map(statuses.map((s) => [s.$id, s]));
-      return rows.map((row) => toProfile(row, byId.get(row.$id) ?? null));
+      const statusById = new Map(statuses.map((s) => [s.$id, s]));
+      const moderationById = new Map(moderation.map((m) => [m.$id, m]));
+      return rows.map((row) =>
+        toProfile(row, statusById.get(row.$id) ?? null, moderationById.get(row.$id) ?? null),
+      );
     });
   }
 

@@ -19,6 +19,9 @@ async function init({ api, userId, input }) {
   const existing = await api.getRow('profiles', userId);
   if (existing) return { profile: existing };
 
+  if (input.adult !== true || input.terms !== true) {
+    fail(400, "Il faut avoir 18 ans ou plus et accepter les conditions d'utilisation.");
+  }
   const username = String(input.username ?? '').trim();
   if (!USERNAME.test(username)) {
     fail(400, 'Pseudo invalide : 3 à 40 lettres, chiffres, points, tirets ou soulignés.');
@@ -31,7 +34,8 @@ async function init({ api, userId, input }) {
     Permission.update(Role.user(userId)),
   ]);
   if (!(await api.getRow('profiles_private', userId))) {
-    await api.createRow('profiles_private', userId, { birthdate: null }, [
+    const accepted = { birthdate: null, terms_accepted_at: new Date().toISOString() };
+    await api.createRow('profiles_private', userId, accepted, [
       Permission.read(Role.user(userId)),
       Permission.update(Role.user(userId)),
     ]);

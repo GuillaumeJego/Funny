@@ -25,6 +25,26 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+.header-actions {
+  margin-left: auto;
+}
+
+.chat-notice {
+  color: $text-light;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.blocked-bar {
+  flex-shrink: 0;
+  padding: 0.9rem 1rem;
+  padding-bottom: max(0.9rem, env(safe-area-inset-bottom));
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 .btn-back {
   background: none;
   border: none;

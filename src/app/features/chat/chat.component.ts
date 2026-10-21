@@ -15,13 +15,15 @@ import { ProfileService } from '../../core/services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ConversationService } from '../../core/services/conversation.service';
 import { Message } from '../../core/models/message.model';
+import { ModerationService } from '../../core/services/moderation.service';
+import { MemberSafetyComponent } from '../../core/components/member-safety/member-safety.component';
 
 const EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, MemberSafetyComponent],
   templateUrl: './chat.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './chat.component.scss',
@@ -36,6 +38,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   conversationId = '';
   friendName = '';
   friendAvatar: string | null = null;
+  friendId = '';
+  /** Le membre connecté a bloqué son interlocuteur. */
+  blocked = false;
+  /** La conversation n'est plus lisible (l'autre membre a bloqué le membre connecté). */
+  unavailable = false;
 
   text = '';
   sending = false;
@@ -55,6 +62,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     private auth: AuthService,
     private conversationService: ConversationService,
     private profileService: ProfileService,
+    private moderationService: ModerationService,
     private zone: NgZone,
   ) {}
 
@@ -86,6 +94,20 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.friendName = data?.username ?? '';
       this.friendAvatar = data?.avatar_url ?? null;
     }
+
+    this.friendId =
+      (await this.conversationService.getOtherParticipant(this.conversationId, this.myId)) ?? '';
+    if (!this.friendId) {
+      this.unavailable = true;
+      this.loading = false;
+      return;
+    }
+    if (!this.friendName) {
+      const { data } = await this.profileService.getProfileById(this.friendId);
+      this.friendName = data?.username ?? '';
+      this.friendAvatar = data?.avatar_url ?? null;
+    }
+    this.blocked = await this.moderationService.isBlocked(this.friendId);
 
     await this.loadMessages();
     this.loading = false;

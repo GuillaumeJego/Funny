@@ -1,0 +1,94 @@
+<app-legal-layout title="Politique de confidentialité">
+  <p>
+    Cette page explique quelles données Funny garde sur vous, pourquoi, combien de temps, et comment
+    exercer vos droits. Le responsable du traitement est {{ legal.editeur }} ({{ legal.contact }}).
+  </p>
+
+  <h2>Les données que nous gardons</h2>
+  <ul>
+    <li><strong>Votre compte</strong> : email, mot de passe (enregistré chiffré), pseudo.</li>
+    <li>
+      <strong>Votre profil, si vous le remplissez</strong> : photo, bio, ville, genre, situation
+      amoureuse, enfants, tabac, vapotage, alcool. Ces informations sont visibles par les autres
+      membres connectés.
+    </li>
+    <li>
+      <strong>Votre date de naissance, si vous la donnez</strong> : elle n'est visible que par vous.
+    </li>
+    <li>
+      <strong>Votre activité</strong> : sorties créées, inscriptions, likes, amis, notifications.
+    </li>
+    <li>
+      <strong>Vos conversations</strong> : messages, photos et vidéos, lisibles seulement par les
+      deux membres de la conversation.
+    </li>
+    <li>
+      <strong>La sécurité</strong> : membres que vous bloquez, signalements que vous envoyez ou qui
+      vous concernent, suspensions éventuelles, date d'acceptation des conditions.
+    </li>
+    <li>
+      <strong>Les journaux techniques du serveur</strong> : adresse IP, date et type de requête,
+      pour la sécurité du service.
+    </li>
+  </ul>
+
+  <h2>Pourquoi</h2>
+  <ul>
+    <li>Faire fonctionner Funny : votre compte, les sorties, les amis et les messages.</li>
+    <li>
+      Protéger les membres : traiter les signalements, suspendre un compte qui enfreint les règles.
+    </li>
+    <li>Respecter la loi, par exemple répondre à une demande d'une autorité.</li>
+  </ul>
+  <p>
+    Les informations facultatives du profil ne sont traitées que parce que vous choisissez de les
+    remplir ; vous pouvez les effacer à tout moment. Funny ne vend pas vos données, n'affiche pas de
+    publicité et n'utilise aucun outil de mesure d'audience.
+  </p>
+
+  <h2>Combien de temps</h2>
+  <ul>
+    <li>Tant que votre compte existe.</li>
+    <li>
+      Quand vous supprimez votre compte, tout est effacé immédiatement : profil, photos, sorties,
+      inscriptions, amis, conversations, signalements et blocages.
+    </li>
+    <li>Les journaux techniques : au plus un an, comme le prévoit la loi.</li>
+  </ul>
+
+  <h2>Qui peut les voir</h2>
+  <ul>
+    <li>Les autres membres connectés : votre profil public et vos sorties.</li>
+    <li>Les admins de Funny, pour la modération.</li>
+    <li>
+      Les hébergeurs (voir les <a routerLink="/mentions-legales">mentions légales</a>), qui stockent
+      les données sans les utiliser. Vercel, aux États-Unis, ne fournit que les pages du site et
+      voit votre adresse IP ; ce transfert est encadré par le cadre de protection des données
+      UE–États-Unis.
+    </li>
+  </ul>
+
+  <h2>Cookies</h2>
+  <p>
+    Funny n'utilise qu'un cookie de session, indispensable pour rester connecté. Il n'y a ni cookie
+    publicitaire ni cookie de mesure d'audience, donc pas de bandeau à accepter.
+  </p>
+
+  <h2>Vos droits</h2>
+  <p>
+    Vous pouvez consulter, corriger, exporter ou effacer vos données, et vous opposer à leur
+    utilisation. Le plus simple :
+  </p>
+  <ul>
+    <li>corriger : <strong>Mon profil</strong> ;</li>
+    <li>effacer : <strong>Mon profil → Supprimer mon compte</strong> ;</li>
+    <li>pour tout le reste : écrivez à {{ legal.contact }}. Nous répondons sous un mois.</li>
+  </ul>
+  <p>
+    Si vous pensez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la
+    CNIL (cnil.fr).
+  </p>
+
+  <h2>Âge minimum</h2>
+  <p>Funny est réservé aux personnes de 18 ans ou plus.</p>
+</app-legal-layout>

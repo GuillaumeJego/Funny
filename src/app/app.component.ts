@@ -17,8 +17,15 @@ export class AppComponent implements OnInit {
   showNavbar = false;
   currentRoute = '';
 
-  // Pages sans navbar (login et register)
-  private noNavbarRoutes = ['/login', '/register'];
+  // Pages sans navbar : connexion, inscription, et pages légales (lisibles sans compte)
+  private noNavbarRoutes = [
+    '/login',
+    '/register',
+    '/mentions-legales',
+    '/confidentialite',
+    '/conditions',
+    '/aide',
+  ];
 
   constructor(private router: Router) {}
 
@@ -27,7 +34,7 @@ export class AppComponent implements OnInit {
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: any) => {
         this.currentRoute = event.url;
-        this.showNavbar = !this.noNavbarRoutes.includes(event.url);
+        this.showNavbar = !this.noNavbarRoutes.includes(event.url.split(/[?#]/)[0]);
       });
   }
 }

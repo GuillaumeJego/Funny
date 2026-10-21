@@ -6,8 +6,13 @@ export class AuthService {
   constructor(private auth: AuthRepository) {}
 
   // Inscription
-  async register(email: string, password: string, username: string) {
-    return await this.auth.register(email, password, username);
+  async register(
+    email: string,
+    password: string,
+    username: string,
+    consent: { adult: boolean; terms: boolean },
+  ) {
+    return await this.auth.register(email, password, username, consent);
   }
 
   // Connexion
@@ -28,5 +33,10 @@ export class AuthService {
   // Une session est-elle ouverte ?
   async hasSession() {
     return await this.auth.hasSession();
+  }
+
+  // Suppression définitive du compte (droit RGPD)
+  async deleteAccount() {
+    return await this.auth.deleteAccount();
   }
 }

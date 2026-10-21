@@ -5,6 +5,7 @@ import { ConversationRepository } from '../../repositories/conversation.reposito
 import { FavoriRepository } from '../../repositories/favori.repository';
 import { FriendshipRepository } from '../../repositories/friendship.repository';
 import { InscriptionRepository } from '../../repositories/inscription.repository';
+import { ModerationRepository } from '../../repositories/moderation.repository';
 import { NotificationRepository } from '../../repositories/notification.repository';
 import { ProfileRepository } from '../../repositories/profile.repository';
 import { SettingsRepository } from '../../repositories/settings.repository';
@@ -23,6 +24,7 @@ const fakeAuth: AuthRepository = {
   logout: async () => ({ error: null }),
   getUser: async () => ({ data: { user: null } }),
   hasSession: async () => false,
+  deleteAccount: async () => ({ error: null }),
 };
 
 const fakeProfiles: ProfileRepository = {
@@ -72,6 +74,7 @@ const fakeFriendships: FriendshipRepository = {
 const fakeConversations: ConversationRepository = {
   open: async () => 'conversation-test',
   getForUser: async () => [],
+  getOtherParticipant: async () => null,
   getMessages: async () => [],
   sendMessage: async () => null,
   setReaction: async () => {},
@@ -105,6 +108,17 @@ const fakeAdmin: AdminRepository = {
   setRole: async () => ok,
   setPremium: async () => ok,
   setCanViewProfiles: async () => ok,
+  ban: async () => ok,
+  unban: async () => ok,
+  getOpenReports: async () => empty,
+  markReportHandled: async () => ok,
+};
+
+const fakeModeration: ModerationRepository = {
+  report: async () => ok,
+  block: async () => ok,
+  unblock: async () => ok,
+  getBlockedIds: async () => [],
 };
 
 export function provideBackendTesting(): EnvironmentProviders {
@@ -121,5 +135,6 @@ export function provideBackendTesting(): EnvironmentProviders {
     { provide: ThemeRepository, useValue: fakeThemes },
     { provide: StorageRepository, useValue: fakeStorage },
     { provide: AdminRepository, useValue: fakeAdmin },
+    { provide: ModerationRepository, useValue: fakeModeration },
   ]);
 }

@@ -16,6 +16,8 @@ export abstract class ConversationRepository {
   abstract open(otherUserId: string): Promise<string>;
   /** Conversations du membre, avec leurs participants et leur dernier message. */
   abstract getForUser(userId: string): Promise<Conversation[]>;
+  /** L'autre membre de la conversation, ou null si elle n'est pas lisible. */
+  abstract getOtherParticipant(conversationId: string, userId: string): Promise<string | null>;
   abstract getMessages(conversationId: string): Promise<Message[]>;
   abstract sendMessage(message: NewMessage): Promise<Message | null>;
   abstract setReaction(messageId: string, userId: string, emoji: string): Promise<void>;
