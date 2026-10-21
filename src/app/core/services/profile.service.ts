@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ProfileRepository } from '../repositories/profile.repository';
 import { StorageRepository } from '../repositories/storage.repository';
+import { AdminRepository } from '../repositories/admin.repository';
 import { Profile } from '../models/profile.model';
 
 /** Champs qu'un membre peut modifier sur son propre profil. */
@@ -29,6 +30,7 @@ export class ProfileService {
   constructor(
     private profiles: ProfileRepository,
     private storage: StorageRepository,
+    private admin: AdminRepository,
   ) {}
 
   // Récupérer son propre profil
@@ -60,13 +62,24 @@ export class ProfileService {
     const { data: url, error } = await this.storage.uploadAvatar(userId, image);
     if (error || !url) return { data: null, error };
     // Le paramètre ?t= force le navigateur à recharger la nouvelle image
-    const urlWithCache = `${url}?t=${Date.now()}`;
+    const urlWithCache = `${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`;
     await this.profiles.update(userId, { avatar_url: urlWithCache });
     return { data: urlWithCache, error: null };
   }
 
-  // Mise à jour par un administrateur (rôle, abonnement, accès aux profils)
+  // Mise à jour par un administrateur (rôle, abonnement, accès aux profils), vérifiée par le serveur
   async adminUpdateProfile(userId: string, updates: AdminProfileUpdate) {
-    return await this.profiles.update(userId, updates);
+    if (updates.role !== undefined) {
+      const result = await this.admin.setRole(userId, updates.role);
+      if (result.error) return result;
+    }
+    if (updates.subscription_end_date !== undefined) {
+      const result = await this.admin.setPremium(userId, updates.subscription_end_date || null);
+      if (result.error) return result;
+    }
+    if (updates.can_view_profiles !== undefined) {
+      return await this.admin.setCanViewProfiles(userId, updates.can_view_profiles);
+    }
+    return { data: null, error: null };
   }
 }

@@ -26,11 +26,22 @@ async function syncPremium(api, memberId, status) {
   else await api.removeTeamMember('abonnes', memberId);
 }
 
-async function setRole({ api, input }) {
+/** Les admins et les développeurs ont accès à l'espace d'administration. */
+const STAFF = ['admin', 'developer'];
+
+async function setRole({ api, userId, input }) {
   const memberId = await requireMember(api, input.userId);
   if (!ROLES.includes(input.role)) fail(400, 'Rôle invalide.');
+  // Seul un développeur peut nommer un développeur ou changer le rôle d'un développeur.
+  const [mine, current] = await Promise.all([
+    api.getRow('member_status', userId),
+    api.getRow('member_status', memberId),
+  ]);
+  if ((input.role === 'developer' || current?.role === 'developer') && mine?.role !== 'developer') {
+    fail(403, 'Réservé aux développeurs.');
+  }
   const status = await upsert(api, 'member_status', memberId, { role: input.role });
-  if (input.role === 'admin') await api.addTeamMember('admins', memberId);
+  if (STAFF.includes(input.role)) await api.addTeamMember('admins', memberId);
   else await api.removeTeamMember('admins', memberId);
   await syncPremium(api, memberId, status);
   return { status };

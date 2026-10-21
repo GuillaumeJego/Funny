@@ -14,11 +14,11 @@ import { MetanaCreditComponent } from '../../../core/components/metana-credit/me
   styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
+  username = '';
   email = '';
   password = '';
   confirmPassword = '';
   errorMessage = '';
-  successMessage = '';
   loading = false;
 
   constructor(
@@ -29,7 +29,6 @@ export class RegisterComponent {
   async onRegister() {
     this.loading = true;
     this.errorMessage = '';
-    this.successMessage = '';
 
     if (this.password !== this.confirmPassword) {
       this.errorMessage = 'Les mots de passe ne correspondent pas.';
@@ -37,15 +36,17 @@ export class RegisterComponent {
       return;
     }
 
-    const { error } = await this.authService.register(this.email, this.password);
-
-    if (error) {
-      this.errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
-    } else {
-      this.successMessage =
-        'Inscription réussie ! Vérifiez votre email pour confirmer votre compte.';
-    }
+    const { error } = await this.authService.register(
+      this.email,
+      this.password,
+      this.username.trim(),
+    );
 
     this.loading = false;
+    if (error) {
+      this.errorMessage = error.message || 'Une erreur est survenue. Veuillez réessayer.';
+      return;
+    }
+    this.router.navigate(['/dashboard']);
   }
 }

@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "config": "node scripts/generate-runtime-config.mjs",
+    "prestart": "npm run config",
     "start": "ng serve",
+    "prebuild": "npm run config",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
@@ -11,7 +14,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "appwrite:setup": "node scripts/appwrite/setup.mjs",
-    "appwrite:functions": "node scripts/appwrite/functions.mjs"
+    "appwrite:functions": "node scripts/appwrite/functions.mjs",
+    "appwrite:admin": "node scripts/appwrite/make-admin.mjs"
   },
   "private": true,
   "dependencies": {
@@ -22,7 +26,7 @@
     "@angular/platform-browser": "^22.2.3",
     "@angular/platform-browser-dynamic": "^22.2.3",
     "@angular/router": "^22.2.3",
-    "@supabase/supabase-js": "^2.107.0",
+    "appwrite": "28.2.0",
     "ngx-image-cropper": "^9.1.6",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

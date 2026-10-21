@@ -1,4 +1,5 @@
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
+import { AdminRepository } from '../../repositories/admin.repository';
 import { AuthRepository } from '../../repositories/auth.repository';
 import { ConversationRepository } from '../../repositories/conversation.repository';
 import { FavoriRepository } from '../../repositories/favori.repository';
@@ -46,7 +47,6 @@ const fakeInscriptions: InscriptionRepository = {
   getSortieIds: async () => [],
   getParticipants: async () => [],
   getWaitingUserIds: async () => [],
-  inscrireOrganisateur: async () => {},
   rejoindre: async () => ({ error: null, status: 'pending' }),
   quitter: async () => ({ error: null }),
 };
@@ -70,10 +70,8 @@ const fakeFriendships: FriendshipRepository = {
 };
 
 const fakeConversations: ConversationRepository = {
-  getConversationIds: async () => [],
-  findShared: async () => [],
-  create: async () => 'conversation-test',
-  getWithLastMessage: async () => [],
+  open: async () => 'conversation-test',
+  getForUser: async () => [],
   getMessages: async () => [],
   sendMessage: async () => null,
   setReaction: async () => {},
@@ -85,7 +83,6 @@ const fakeNotifications: NotificationRepository = {
   getForUser: async () => empty,
   countUnread: async () => 0,
   markAllRead: async () => ok,
-  createMany: async () => ok,
 };
 
 const fakeSettings: SettingsRepository = {
@@ -104,6 +101,12 @@ const fakeStorage: StorageRepository = {
   uploadChatMedia: async () => ok,
 };
 
+const fakeAdmin: AdminRepository = {
+  setRole: async () => ok,
+  setPremium: async () => ok,
+  setCanViewProfiles: async () => ok,
+};
+
 export function provideBackendTesting(): EnvironmentProviders {
   return makeEnvironmentProviders([
     { provide: AuthRepository, useValue: fakeAuth },
@@ -117,5 +120,6 @@ export function provideBackendTesting(): EnvironmentProviders {
     { provide: SettingsRepository, useValue: fakeSettings },
     { provide: ThemeRepository, useValue: fakeThemes },
     { provide: StorageRepository, useValue: fakeStorage },
+    { provide: AdminRepository, useValue: fakeAdmin },
   ]);
 }

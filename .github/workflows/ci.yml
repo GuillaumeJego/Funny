@@ -19,5 +19,9 @@ jobs:
         run: npm run format:check
       - name: Build
         run: npm run build
+        env:
+          # Valeurs publiques, seulement pour que le build passe (aucun appel à Appwrite ici).
+          APPWRITE_ENDPOINT: https://appwrite.metanafr.fr/v1
+          APPWRITE_PROJECT_ID: verification
       - name: Tests
         run: npm run test:ci
