@@ -12,6 +12,8 @@ export interface RepositoryResult<T> {
 export interface AuthUser {
   id: string;
   email?: string;
+  /** L'adresse e-mail a été confirmée en cliquant sur le lien reçu. */
+  emailVerified?: boolean;
 }
 
 /** Fonction à appeler pour arrêter une écoute en temps réel. */

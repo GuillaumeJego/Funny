@@ -3,7 +3,7 @@
 //
 // Droits (format Appwrite) :
 //   read("any")           tout le monde (seulement pour les images publiques)
-//   read("users")         tout membre connecté
+//   read("users/verified") tout membre connecté dont l'adresse e-mail est confirmée
 //   read("team:admins")   l'équipe admins
 //   aucun droit "create"  seul le serveur (clé API ou Appwrite Function) peut créer
 // Avec rowSecurity: true, chaque ligne reçoit en plus ses propres droits
@@ -13,7 +13,8 @@
 export const DATABASE_ID = 'funny';
 export const DATABASE_NAME = 'Funny';
 
-const MEMBRES = 'read("users")';
+const MEMBRES = 'read("users/verified")';
+const MEMBRES_CREENT = 'create("users/verified")';
 const PUBLIC = 'read("any")';
 const ADMINS_ECRIVENT = ['create("team:admins")', 'update("team:admins")', 'delete("team:admins")'];
 
@@ -92,7 +93,7 @@ export const TABLES = [
   },
   {
     // Sorties : créées par le serveur (Function « sorties »).
-    // Ligne normale : read("users"). Ligne Premium : read("team:abonnes") et l'organisateur.
+    // Ligne normale : read("users/verified"). Ligne Premium : read("team:abonnes") et l'organisateur.
     id: 'sorties',
     name: 'Sorties',
     permissions: [],
@@ -136,7 +137,7 @@ export const TABLES = [
     // Favoris (likes) : visibles par les membres, chacun crée et supprime les siens.
     id: 'favoris',
     name: 'Favoris',
-    permissions: [MEMBRES, 'create("users")'],
+    permissions: [MEMBRES, MEMBRES_CREENT],
     rowSecurity: true, // delete("user:<id>")
     columns: [str('user_id', ID, { required: true }), str('sortie_id', ID, { required: true })],
     indexes: [
@@ -174,7 +175,7 @@ export const TABLES = [
     // Messages : chaque participant écrit les siens avec read("team:<conversation>").
     id: 'messages',
     name: 'Messages',
-    permissions: ['create("users")'],
+    permissions: [MEMBRES_CREENT],
     rowSecurity: true,
     columns: [
       str('conversation_id', ID, { required: true }),
@@ -189,7 +190,7 @@ export const TABLES = [
   {
     id: 'message_reactions',
     name: 'Réactions',
-    permissions: ['create("users")'],
+    permissions: [MEMBRES_CREENT],
     rowSecurity: true,
     columns: [
       str('message_id', ID, { required: true }),
@@ -293,7 +294,7 @@ export const BUCKETS = [
     // la session Appwrite. Il faut connaître l'identifiant du fichier pour les voir.
     id: 'avatars',
     name: 'Photos de profil',
-    permissions: [PUBLIC, 'create("users")'],
+    permissions: [PUBLIC, MEMBRES_CREENT],
     fileSecurity: true, // update/delete("user:<id>")
     maximumFileSize: 2 * MO,
     allowedFileExtensions: IMAGES,
@@ -301,7 +302,7 @@ export const BUCKETS = [
   {
     id: 'sorties-images',
     name: 'Images des sorties',
-    permissions: [PUBLIC, 'create("users")'],
+    permissions: [PUBLIC, MEMBRES_CREENT],
     fileSecurity: true,
     maximumFileSize: 5 * MO,
     allowedFileExtensions: IMAGES,
@@ -310,7 +311,7 @@ export const BUCKETS = [
     // Fichiers privés : chaque fichier reçoit read("team:<conversation>").
     id: 'chat-media',
     name: 'Médias des conversations',
-    permissions: ['create("users")'],
+    permissions: [MEMBRES_CREENT],
     fileSecurity: true,
     maximumFileSize: 20 * MO,
     allowedFileExtensions: [...IMAGES, 'gif', 'mp4', 'webm', 'mov'],

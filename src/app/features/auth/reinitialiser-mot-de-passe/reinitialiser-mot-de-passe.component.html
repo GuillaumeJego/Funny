@@ -1,0 +1,40 @@
+<div class="login-container">
+  <div class="login-card">
+    <h1>Nouveau mot de passe</h1>
+
+    @if (linkIsValid) {
+      <div class="form-group">
+        <label for="password">Nouveau mot de passe</label>
+        <input id="password" type="password" [(ngModel)]="password" placeholder="••••••••" />
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirmer le mot de passe</label>
+        <input
+          id="confirmPassword"
+          type="password"
+          [(ngModel)]="confirmPassword"
+          placeholder="••••••••"
+          (keyup.enter)="onSubmit()"
+        />
+      </div>
+
+      @if (errorMessage) {
+        <div class="error">{{ errorMessage }}</div>
+      }
+
+      <button (click)="onSubmit()" [disabled]="loading || !password">
+        {{ loading ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    } @else {
+      <div class="error">Ce lien est incomplet. Demandez-en un nouveau.</div>
+      <button routerLink="/mot-de-passe-oublie">Demander un nouveau lien</button>
+    }
+
+    <p class="register-link">
+      <a routerLink="/login">Retour à la connexion</a>
+    </p>
+
+    <app-metana-credit />
+  </div>
+</div>

@@ -39,4 +39,25 @@ export class AuthService {
   async deleteAccount() {
     return await this.auth.deleteAccount();
   }
+
+  // E-mail de confirmation de l'adresse, avec un lien vers /verifier-email
+  async sendVerification() {
+    return await this.auth.sendVerification(`${window.location.origin}/verifier-email`);
+  }
+
+  async confirmVerification(userId: string, secret: string) {
+    return await this.auth.confirmVerification(userId, secret);
+  }
+
+  // Mot de passe oublié : lien vers /reinitialiser-mot-de-passe
+  async sendPasswordRecovery(email: string) {
+    return await this.auth.sendPasswordRecovery(
+      email,
+      `${window.location.origin}/reinitialiser-mot-de-passe`,
+    );
+  }
+
+  async resetPassword(userId: string, secret: string, password: string) {
+    return await this.auth.resetPassword(userId, secret, password);
+  }
 }

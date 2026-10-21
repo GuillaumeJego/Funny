@@ -30,7 +30,7 @@ async function init({ api, userId, input }) {
     fail(409, 'Ce pseudo est déjà pris.');
   }
   const profile = await api.createRow('profiles', userId, { username }, [
-    Permission.read(Role.users()),
+    Permission.read(Role.verifiedUsers()),
     Permission.update(Role.user(userId)),
   ]);
   if (!(await api.getRow('profiles_private', userId))) {
@@ -127,4 +127,4 @@ async function remove({ api, userId, input }) {
   return {};
 }
 
-export default handler({ init, delete: remove });
+export default handler({ init, delete: remove }, { unverified: ['init', 'delete'] });

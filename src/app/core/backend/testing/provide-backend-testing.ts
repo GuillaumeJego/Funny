@@ -25,6 +25,10 @@ const fakeAuth: AuthRepository = {
   getUser: async () => ({ data: { user: null } }),
   hasSession: async () => false,
   deleteAccount: async () => ({ error: null }),
+  sendVerification: async () => ({ error: null }),
+  confirmVerification: async () => ({ error: null }),
+  sendPasswordRecovery: async () => ({ error: null }),
+  resetPassword: async () => ({ error: null }),
 };
 
 const fakeProfiles: ProfileRepository = {

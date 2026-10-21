@@ -18,11 +18,30 @@ import { MentionsLegalesComponent } from './features/legal/mentions-legales.comp
 import { ConfidentialiteComponent } from './features/legal/confidentialite.component';
 import { ConditionsComponent } from './features/legal/conditions.component';
 import { AideComponent } from './features/legal/aide.component';
+import { VerifierEmailComponent } from './features/auth/verifier-email/verifier-email.component';
+import { MotDePasseOublieComponent } from './features/auth/mot-de-passe-oublie/mot-de-passe-oublie.component';
+import { ReinitialiserMotDePasseComponent } from './features/auth/reinitialiser-mot-de-passe/reinitialiser-mot-de-passe.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  // Liens reçus par e-mail : ouverts aussi sans session
+  {
+    path: 'verifier-email',
+    component: VerifierEmailComponent,
+    title: 'Confirmation de l’adresse · Funny',
+  },
+  {
+    path: 'mot-de-passe-oublie',
+    component: MotDePasseOublieComponent,
+    title: 'Mot de passe oublié · Funny',
+  },
+  {
+    path: 'reinitialiser-mot-de-passe',
+    component: ReinitialiserMotDePasseComponent,
+    title: 'Nouveau mot de passe · Funny',
+  },
   // Pages publiques, lisibles sans compte
   {
     path: 'mentions-legales',

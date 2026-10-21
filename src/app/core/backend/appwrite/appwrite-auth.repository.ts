@@ -13,6 +13,8 @@ const MESSAGES: Record<string, string> = {
   password_personal_data: 'Le mot de passe ne doit pas contenir votre nom ou votre email.',
   user_password_mismatch: 'Les mots de passe ne correspondent pas.',
   general_rate_limit_exceeded: 'Trop de tentatives, réessayez dans quelques minutes.',
+  user_invalid_token: 'Ce lien n’est plus valable. Demandez-en un nouveau.',
+  general_smtp_disabled: 'L’envoi d’e-mails n’est pas encore activé. Réessayez plus tard.',
 };
 
 function authError(error: unknown): RepositoryError {
@@ -26,6 +28,17 @@ function authError(error: unknown): RepositoryError {
     }
   }
   return toError(error);
+}
+
+/** Erreur d'un lien reçu par e-mail : lien expiré, déjà utilisé ou modifié. */
+function linkError(error: unknown): RepositoryError {
+  if (
+    error instanceof AppwriteException &&
+    (error.type === 'user_not_found' || error.code === 401 || error.code === 404)
+  ) {
+    return { message: MESSAGES['user_invalid_token'] };
+  }
+  return authError(error);
 }
 
 @Injectable()
@@ -77,7 +90,9 @@ export class AppwriteAuthRepository extends AuthRepository {
   async getUser(): Promise<{ data: { user: AuthUser | null } }> {
     try {
       const user = await this.appwrite.account.get();
-      return { data: { user: { id: user.$id, email: user.email } } };
+      return {
+        data: { user: { id: user.$id, email: user.email, emailVerified: user.emailVerification } },
+      };
     } catch {
       return { data: { user: null } };
     }
@@ -91,6 +106,56 @@ export class AppwriteAuthRepository extends AuthRepository {
     // Le serveur supprime aussi le compte Appwrite, donc la session disparaît avec lui.
     const { error } = await this.appwrite.run('account', 'delete', { confirm: 'SUPPRIMER' });
     return { error };
+  }
+
+  async sendVerification(url: string): Promise<{ error: RepositoryError | null }> {
+    try {
+      await this.appwrite.account.createEmailVerification({ url });
+      return { error: null };
+    } catch (error) {
+      return { error: authError(error) };
+    }
+  }
+
+  async confirmVerification(
+    userId: string,
+    secret: string,
+  ): Promise<{ error: RepositoryError | null }> {
+    try {
+      await this.appwrite.account.updateEmailVerification({ userId, secret });
+      return { error: null };
+    } catch (error) {
+      return { error: linkError(error) };
+    }
+  }
+
+  async sendPasswordRecovery(
+    email: string,
+    url: string,
+  ): Promise<{ error: RepositoryError | null }> {
+    try {
+      await this.appwrite.account.createRecovery({ email, url });
+    } catch (error) {
+      // Adresse inconnue : on répond comme si l'e-mail était parti, pour ne rien révéler.
+      if (error instanceof AppwriteException && error.type === 'user_not_found') {
+        return { error: null };
+      }
+      return { error: authError(error) };
+    }
+    return { error: null };
+  }
+
+  async resetPassword(
+    userId: string,
+    secret: string,
+    password: string,
+  ): Promise<{ error: RepositoryError | null }> {
+    try {
+      await this.appwrite.account.updateRecovery({ userId, secret, password });
+      return { error: null };
+    } catch (error) {
+      return { error: linkError(error) };
+    }
   }
 
   private async openSession(email: string, password: string) {

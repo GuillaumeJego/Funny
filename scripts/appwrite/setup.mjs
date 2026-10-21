@@ -9,7 +9,7 @@
 //   npm run appwrite:setup
 //   Remove-Item Env:APPWRITE_API_KEY
 
-import { Client, Storage, TablesDB, Teams } from 'node-appwrite';
+import { Client, Query, Storage, TablesDB, Teams } from 'node-appwrite';
 import { BUCKETS, DATABASE_ID, DATABASE_NAME, TABLES, TEAMS } from './schema.mjs';
 
 const endpoint = process.env.APPWRITE_ENDPOINT ?? 'https://appwrite.metanafr.fr/v1';
@@ -158,12 +158,41 @@ async function ensureTeam(team) {
   log('+', `équipe « ${team.id} » créée`);
 }
 
+// Lot 9 : les lignes lisibles par « tout membre connecté » deviennent lisibles seulement par
+// les membres dont l'adresse e-mail est confirmée. Ne touche qu'aux lignes encore à l'ancien droit.
+async function restrictRowsToVerifiedUsers(table) {
+  if (!table.rowSecurity) return;
+  let changed = 0;
+  let cursor;
+  for (;;) {
+    const queries = [Query.limit(100), ...(cursor ? [Query.cursorAfter(cursor)] : [])];
+    const { rows } = await db.listRows({ databaseId: DATABASE_ID, tableId: table.id, queries });
+    for (const row of rows) {
+      if (!row.$permissions.includes('read("users")')) continue;
+      const permissions = row.$permissions.map((p) =>
+        p === 'read("users")' ? 'read("users/verified")' : p,
+      );
+      await db.updateRow({
+        databaseId: DATABASE_ID,
+        tableId: table.id,
+        rowId: row.$id,
+        permissions,
+      });
+      changed++;
+    }
+    if (rows.length < 100) break;
+    cursor = rows[rows.length - 1].$id;
+  }
+  if (changed) log('~', `${table.id} : ${changed} ligne(s) réservée(s) aux adresses confirmées`);
+}
+
 try {
   console.log(`Projet ${projectId} sur ${endpoint}\n`);
   for (const team of TEAMS) await ensureTeam(team);
   await ensureDatabase();
   for (const table of TABLES) await ensureTable(table);
   for (const bucket of BUCKETS) await ensureBucket(bucket);
+  for (const table of TABLES) await restrictRowsToVerifiedUsers(table);
   console.log('\nTerminé. Pense à supprimer la clé API dans la console Appwrite.');
 } catch (error) {
   console.error(`\nArrêt : ${error.message}`);

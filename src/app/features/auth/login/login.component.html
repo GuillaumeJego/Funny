@@ -2,8 +2,8 @@
   <div class="login-card">
     <h1>Connexion</h1>
 
-    @if (accountDeleted) {
-      <div class="success">Votre compte et toutes vos données ont été supprimés.</div>
+    @if (successMessage) {
+      <div class="success">{{ successMessage }}</div>
     }
 
     <div class="form-group">
@@ -15,6 +15,10 @@
       <label for="password">Mot de passe</label>
       <input id="password" type="password" [(ngModel)]="password" placeholder="••••••••" />
     </div>
+
+    <p class="forgot-link">
+      <a routerLink="/mot-de-passe-oublie">Mot de passe oublié ?</a>
+    </p>
 
     @if (errorMessage) {
       <div class="error">

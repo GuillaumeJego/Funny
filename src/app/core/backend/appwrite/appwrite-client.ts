@@ -38,7 +38,9 @@ export class AppwriteClientService {
   };
   readonly client = new Client()
     .setEndpoint(this.config.appwriteEndpoint)
-    .setProject(this.config.appwriteProjectId);
+    .setProject(this.config.appwriteProjectId)
+    // Les e-mails envoyés par Appwrite (confirmation, mot de passe oublié) sont en français.
+    .setLocale('fr');
   readonly account = new Account(this.client);
   readonly tables = new TablesDB(this.client);
   readonly storage = new Storage(this.client);

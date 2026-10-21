@@ -56,6 +56,11 @@ export class RegisterComponent {
       this.errorMessage = error.message || 'Une erreur est survenue. Veuillez réessayer.';
       return;
     }
-    this.router.navigate(['/dashboard']);
+    // Le compte est créé : on envoie l'e-mail de confirmation. En cas d'échec,
+    // la page suivante permet de le renvoyer.
+    const sent = await this.authService.sendVerification();
+    this.router.navigate(['/verifier-email'], {
+      queryParams: sent.error ? {} : { envoye: '1' },
+    });
   }
 }
