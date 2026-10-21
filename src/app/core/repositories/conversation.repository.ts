@@ -7,16 +7,15 @@ export interface NewMessage {
   content: string | null;
   type: 'text' | 'image' | 'video';
   reply_to_id: string | null;
-  media_url: string | null;
+  /** Identifiant du fichier envoyé avec StorageRepository.uploadChatMedia. */
+  media_file_id: string | null;
 }
 
 export abstract class ConversationRepository {
-  abstract getConversationIds(userId: string): Promise<string[]>;
-  /** Parmi `conversationIds`, celles où `userId` participe aussi. */
-  abstract findShared(userId: string, conversationIds: string[]): Promise<string[]>;
-  abstract create(participantIds: string[]): Promise<string>;
-  /** Conversations avec leurs participants et leur dernier message. */
-  abstract getWithLastMessage(conversationIds: string[]): Promise<Conversation[]>;
+  /** Ouvre (ou retrouve) la conversation avec un ami ; renvoie son identifiant. */
+  abstract open(otherUserId: string): Promise<string>;
+  /** Conversations du membre, avec leurs participants et leur dernier message. */
+  abstract getForUser(userId: string): Promise<Conversation[]>;
   abstract getMessages(conversationId: string): Promise<Message[]>;
   abstract sendMessage(message: NewMessage): Promise<Message | null>;
   abstract setReaction(messageId: string, userId: string, emoji: string): Promise<void>;

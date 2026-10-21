@@ -13,8 +13,7 @@ export abstract class InscriptionRepository {
   ): Promise<{ user_id: string; status: 'pending' | 'confirmed' }[]>;
   /** Membres en liste d'attente, dans l'ordre d'inscription. */
   abstract getWaitingUserIds(sortieId: string): Promise<string[]>;
-  abstract inscrireOrganisateur(sortieId: string, userId: string): Promise<void>;
-  /** Inscription atomique : renvoie le statut obtenu ('pending' ou 'waiting'). */
+  /** Inscription par le serveur : renvoie le statut obtenu ('pending' ou 'waiting'). */
   abstract rejoindre(
     userId: string,
     sortieId: string,

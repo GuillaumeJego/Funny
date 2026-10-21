@@ -1,4 +1,5 @@
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
+import { AdminRepository } from '../repositories/admin.repository';
 import { AuthRepository } from '../repositories/auth.repository';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { FavoriRepository } from '../repositories/favori.repository';
@@ -10,34 +11,33 @@ import { SettingsRepository } from '../repositories/settings.repository';
 import { SortieRepository } from '../repositories/sortie.repository';
 import { StorageRepository } from '../repositories/storage.repository';
 import { ThemeRepository } from '../repositories/theme.repository';
-import { SupabaseAuthRepository } from './supabase/supabase-auth.repository';
-import { SupabaseConversationRepository } from './supabase/supabase-conversation.repository';
-import { SupabaseFavoriRepository } from './supabase/supabase-favori.repository';
-import { SupabaseFriendshipRepository } from './supabase/supabase-friendship.repository';
-import { SupabaseInscriptionRepository } from './supabase/supabase-inscription.repository';
-import { SupabaseNotificationRepository } from './supabase/supabase-notification.repository';
-import { SupabaseProfileRepository } from './supabase/supabase-profile.repository';
-import { SupabaseSettingsRepository } from './supabase/supabase-settings.repository';
-import { SupabaseSortieRepository } from './supabase/supabase-sortie.repository';
-import { SupabaseStorageRepository } from './supabase/supabase-storage.repository';
-import { SupabaseThemeRepository } from './supabase/supabase-theme.repository';
+import { AppwriteAdminRepository } from './appwrite/appwrite-admin.repository';
+import { AppwriteAuthRepository } from './appwrite/appwrite-auth.repository';
+import { AppwriteConversationRepository } from './appwrite/appwrite-conversation.repository';
+import { AppwriteFavoriRepository } from './appwrite/appwrite-favori.repository';
+import { AppwriteFriendshipRepository } from './appwrite/appwrite-friendship.repository';
+import { AppwriteInscriptionRepository } from './appwrite/appwrite-inscription.repository';
+import { AppwriteNotificationRepository } from './appwrite/appwrite-notification.repository';
+import { AppwriteProfileRepository } from './appwrite/appwrite-profile.repository';
+import { AppwriteSettingsRepository } from './appwrite/appwrite-settings.repository';
+import { AppwriteSortieRepository } from './appwrite/appwrite-sortie.repository';
+import { AppwriteStorageRepository } from './appwrite/appwrite-storage.repository';
+import { AppwriteThemeRepository } from './appwrite/appwrite-theme.repository';
 
-/**
- * Seul endroit qui choisit le fournisseur de données.
- * Pour passer à Appwrite, on remplacera ces implémentations par celles de `backend/appwrite/`.
- */
+/** Seul endroit qui choisit le fournisseur de données : Appwrite (`backend/appwrite/`). */
 export function provideBackend(): EnvironmentProviders {
   return makeEnvironmentProviders([
-    { provide: AuthRepository, useClass: SupabaseAuthRepository },
-    { provide: ProfileRepository, useClass: SupabaseProfileRepository },
-    { provide: SortieRepository, useClass: SupabaseSortieRepository },
-    { provide: InscriptionRepository, useClass: SupabaseInscriptionRepository },
-    { provide: FavoriRepository, useClass: SupabaseFavoriRepository },
-    { provide: FriendshipRepository, useClass: SupabaseFriendshipRepository },
-    { provide: ConversationRepository, useClass: SupabaseConversationRepository },
-    { provide: NotificationRepository, useClass: SupabaseNotificationRepository },
-    { provide: SettingsRepository, useClass: SupabaseSettingsRepository },
-    { provide: ThemeRepository, useClass: SupabaseThemeRepository },
-    { provide: StorageRepository, useClass: SupabaseStorageRepository },
+    { provide: AuthRepository, useClass: AppwriteAuthRepository },
+    { provide: ProfileRepository, useClass: AppwriteProfileRepository },
+    { provide: SortieRepository, useClass: AppwriteSortieRepository },
+    { provide: InscriptionRepository, useClass: AppwriteInscriptionRepository },
+    { provide: FavoriRepository, useClass: AppwriteFavoriRepository },
+    { provide: FriendshipRepository, useClass: AppwriteFriendshipRepository },
+    { provide: ConversationRepository, useClass: AppwriteConversationRepository },
+    { provide: NotificationRepository, useClass: AppwriteNotificationRepository },
+    { provide: SettingsRepository, useClass: AppwriteSettingsRepository },
+    { provide: ThemeRepository, useClass: AppwriteThemeRepository },
+    { provide: StorageRepository, useClass: AppwriteStorageRepository },
+    { provide: AdminRepository, useClass: AppwriteAdminRepository },
   ]);
 }

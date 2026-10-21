@@ -11,16 +11,13 @@ export class ConversationService {
     private storage: StorageRepository,
   ) {}
 
-  async getOrCreateConversation(userId1: string, userId2: string): Promise<string> {
-    const ids = await this.conversations.getConversationIds(userId1);
-    const shared = await this.conversations.findShared(userId2, ids);
-    if (shared.length) return shared[0];
-    return await this.conversations.create([userId1, userId2]);
+  // Ouvre (ou retrouve) la conversation avec un ami : le serveur vérifie l'amitié
+  async getOrCreateConversation(_myId: string, friendId: string): Promise<string> {
+    return await this.conversations.open(friendId);
   }
 
   async getConversations(userId: string): Promise<Conversation[]> {
-    const convIds = await this.conversations.getConversationIds(userId);
-    let conversations = await this.conversations.getWithLastMessage(convIds);
+    let conversations = await this.conversations.getForUser(userId);
 
     conversations.sort((a, b) => {
       const ta = a.last_message?.created_at ?? a.created_at;
@@ -50,7 +47,7 @@ export class ConversationService {
     content: string,
     type: 'text' | 'image' | 'video' = 'text',
     replyToId?: string,
-    mediaUrl?: string,
+    mediaFileId?: string,
   ): Promise<Message | null> {
     return await this.conversations.sendMessage({
       conversation_id: conversationId,
@@ -58,7 +55,7 @@ export class ConversationService {
       content: content || null,
       type,
       reply_to_id: replyToId || null,
-      media_url: mediaUrl || null,
+      media_file_id: mediaFileId || null,
     });
   }
 
@@ -70,8 +67,9 @@ export class ConversationService {
     }
   }
 
-  async uploadMedia(file: File, userId: string): Promise<string | null> {
-    const { data } = await this.storage.uploadChatMedia(userId, file);
+  // Envoie une photo ou une vidéo, lisible par les seuls participants ; renvoie son identifiant
+  async uploadMedia(file: File, userId: string, conversationId: string): Promise<string | null> {
+    const { data } = await this.storage.uploadChatMedia(userId, conversationId, file);
     return data;
   }
 

@@ -6,7 +6,6 @@ import { InscriptionRepository } from '../repositories/inscription.repository';
 import { FavoriRepository } from '../repositories/favori.repository';
 import { ProfileRepository } from '../repositories/profile.repository';
 import { MiniProfile } from '../repositories/repository.types';
-import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class SortieService {
@@ -16,7 +15,6 @@ export class SortieService {
     private favoris: FavoriRepository,
     private profiles: ProfileRepository,
     private storage: StorageRepository,
-    private notifService: NotificationService,
   ) {}
 
   // Récupérer toutes les sorties publiées
@@ -34,13 +32,9 @@ export class SortieService {
     return await this.sorties.getFirstThemeImage(themeId);
   }
 
-  // Créer une sortie, puis y inscrire son organisateur
+  // Créer une sortie : le serveur y inscrit aussi son organisateur
   async createSortie(sortie: Partial<Sortie>) {
-    const result = await this.sorties.create(sortie);
-    if (result.data && sortie.created_by) {
-      await this.inscriptions.inscrireOrganisateur(result.data.id, sortie.created_by);
-    }
-    return result;
+    return await this.sorties.create(sortie);
   }
 
   // Envoyer l'image personnalisée d'une sortie ; renvoie son adresse
@@ -48,44 +42,8 @@ export class SortieService {
     return await this.storage.uploadSortieImage(userId, image);
   }
 
-  // Supprimer une sortie + envoyer des notifications aux inscrits et aux likeurs
-  async deleteSortieWithNotifications(
-    sortieId: string,
-    sortieTitle: string,
-    organizerUsername: string,
-  ) {
-    // 1. Récupérer inscrits et likeurs avant suppression
-    const [inscrits, likes] = await Promise.all([
-      this.getMembresInscrits(sortieId),
-      this.getMembresLikes(sortieId),
-    ]);
-
-    // 2. Construire les notifications (éviter les doublons)
-    const notifications: { user_id: string; title: string; message: string }[] = [];
-    const seen = new Set<string>();
-
-    for (const p of inscrits) {
-      if (!p?.id || seen.has(p.id)) continue;
-      seen.add(p.id);
-      notifications.push({
-        user_id: p.id,
-        title: 'Sortie annulée',
-        message: `Vous étiez inscrit à la sortie "${sortieTitle}". L'organisateur ${organizerUsername} a annulé la sortie. Si vous avez payé pour y participer, vous serez remboursé.`,
-      });
-    }
-
-    for (const p of likes) {
-      if (!p?.id || seen.has(p.id)) continue;
-      seen.add(p.id);
-      notifications.push({
-        user_id: p.id,
-        title: 'Sortie annulée',
-        message: `Vous aviez liké la sortie "${sortieTitle}". L'organisateur ${organizerUsername} a annulé la sortie. Si vous avez payé pour y participer, vous serez remboursé.`,
-      });
-    }
-
-    // 3. Envoyer les notifications puis supprimer
-    await this.notifService.createMany(notifications);
+  // Supprimer une sortie : le serveur prévient les inscrits et les membres qui l'ont aimée
+  async deleteSortie(sortieId: string) {
     return await this.sorties.delete(sortieId);
   }
 

@@ -2,6 +2,7 @@
 // Ce fichier ne contient aucun secret. Il est lu par setup.mjs, qui crée ce qui manque.
 //
 // Droits (format Appwrite) :
+//   read("any")           tout le monde (seulement pour les images publiques)
 //   read("users")         tout membre connecté
 //   read("team:admins")   l'équipe admins
 //   aucun droit "create"  seul le serveur (clé API ou Appwrite Function) peut créer
@@ -13,6 +14,7 @@ export const DATABASE_ID = 'funny';
 export const DATABASE_NAME = 'Funny';
 
 const MEMBRES = 'read("users")';
+const PUBLIC = 'read("any")';
 const ADMINS_ECRIVENT = ['create("team:admins")', 'update("team:admins")', 'delete("team:admins")'];
 
 // Types de colonnes : string (taille max), text, enum, datetime, integer, float, boolean, stringArray.
@@ -286,9 +288,11 @@ const MO = 1024 * 1024;
 
 export const BUCKETS = [
   {
+    // Lecture publique : les images s'affichent dans des balises <img>, qui n'envoient pas
+    // la session Appwrite. Il faut connaître l'identifiant du fichier pour les voir.
     id: 'avatars',
     name: 'Photos de profil',
-    permissions: [MEMBRES, 'create("users")'],
+    permissions: [PUBLIC, 'create("users")'],
     fileSecurity: true, // update/delete("user:<id>")
     maximumFileSize: 2 * MO,
     allowedFileExtensions: IMAGES,
@@ -296,7 +300,7 @@ export const BUCKETS = [
   {
     id: 'sorties-images',
     name: 'Images des sorties',
-    permissions: [MEMBRES, 'create("users")'],
+    permissions: [PUBLIC, 'create("users")'],
     fileSecurity: true,
     maximumFileSize: 5 * MO,
     allowedFileExtensions: IMAGES,

@@ -11,16 +11,9 @@ export interface AppNotification {
   actor?: { username: string; avatar_url: string | null };
 }
 
-export interface NewNotification {
-  user_id: string;
-  title: string;
-  message: string;
-  actor_id?: string;
-}
-
+/** Les notifications sont créées par le serveur (Appwrite Functions) ; ici, on les lit. */
 export abstract class NotificationRepository {
   abstract getForUser(userId: string): Promise<RepositoryResult<AppNotification[]>>;
   abstract countUnread(userId: string): Promise<number>;
   abstract markAllRead(userId: string): Promise<RepositoryResult<null>>;
-  abstract createMany(notifications: NewNotification[]): Promise<RepositoryResult<null>>;
 }

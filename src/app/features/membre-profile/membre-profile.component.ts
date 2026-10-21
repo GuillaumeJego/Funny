@@ -15,7 +15,6 @@ import { Profile } from '../../core/models/profile.model';
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { InscriptionService, InscriptionStatus } from '../../core/services/inscription.service';
 import { FavoriService } from '../../core/services/favori.service';
-import { NotificationService } from '../../core/services/notification.service';
 import { FriendshipService } from '../../core/services/friendship.service';
 import { ConversationService } from '../../core/services/conversation.service';
 import { Friendship } from '../../core/models/friendship.model';
@@ -77,7 +76,6 @@ export class MembreProfileComponent implements OnInit {
     private settingsService: SettingsService,
     private inscriptionService: InscriptionService,
     private favoriService: FavoriService,
-    private notificationService: NotificationService,
     private friendshipService: FriendshipService,
     private conversationService: ConversationService,
   ) {}
@@ -294,7 +292,6 @@ export class MembreProfileComponent implements OnInit {
     this.friendshipLoading = true;
     const targetId = this.route.snapshot.paramMap.get('id')!;
     await this.friendshipService.sendRequest(this.viewerUserId, targetId);
-    await this.notificationService.notifyFriendRequest(targetId, this.viewerUserId);
     this.friendship = await this.friendshipService.getFriendshipStatus(this.viewerUserId, targetId);
     this.friendshipLoading = false;
   }
@@ -371,14 +368,6 @@ export class MembreProfileComponent implements OnInit {
     } else {
       this.viewerFavoris.add(sortieId);
       await this.favoriService.addFavori(this.viewerUserId, sortieId);
-      if (this.selectedSortie?.created_by) {
-        this.notificationService.notifyOrganizer(
-          this.selectedSortie.created_by,
-          this.viewerUserId,
-          this.selectedSortie.title,
-          'liked',
-        );
-      }
     }
     this.viewerFavoris = new Set(this.viewerFavoris);
   }
@@ -393,15 +382,6 @@ export class MembreProfileComponent implements OnInit {
       if (this.selectedSortie) {
         this.selectedSortie.inscriptionsCount =
           await this.sortieService.getInscriptionsCount(sortieId);
-        if (this.selectedSortie.created_by) {
-          const type = status === 'waiting' ? 'waiting' : 'joined';
-          this.notificationService.notifyOrganizer(
-            this.selectedSortie.created_by,
-            this.viewerUserId,
-            this.selectedSortie.title,
-            type,
-          );
-        }
       }
     }
   }
@@ -413,14 +393,6 @@ export class MembreProfileComponent implements OnInit {
       if (this.selectedSortie) {
         this.selectedSortie.inscriptionsCount =
           await this.sortieService.getInscriptionsCount(sortieId);
-        if (this.selectedSortie.created_by) {
-          this.notificationService.notifyOrganizer(
-            this.selectedSortie.created_by,
-            this.viewerUserId,
-            this.selectedSortie.title,
-            'left',
-          );
-        }
       }
     }
   }

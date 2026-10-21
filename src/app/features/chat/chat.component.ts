@@ -81,7 +81,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.friendName = state.friendName;
       this.friendAvatar = state.friendAvatar ?? null;
     } else if (state?.friendId) {
-      // Fallback : charge le profil depuis Supabase
+      // Sinon : charge le profil de l'ami
       const { data } = await this.profileService.getProfileById(state.friendId);
       this.friendName = data?.username ?? '';
       this.friendAvatar = data?.avatar_url ?? null;
@@ -168,15 +168,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (!file) return;
     this.uploading = true;
     const type: 'image' | 'video' = file.type.startsWith('video') ? 'video' : 'image';
-    const url = await this.conversationService.uploadMedia(file, this.myId);
-    if (url) {
+    const fileId = await this.conversationService.uploadMedia(file, this.myId, this.conversationId);
+    if (fileId) {
       const msg = await this.conversationService.sendMessage(
         this.conversationId,
         this.myId,
         '',
         type,
         this.replyTo?.id,
-        url,
+        fileId,
       );
       if (msg) {
         this.messages = [...this.messages, msg];

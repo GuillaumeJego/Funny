@@ -6,8 +6,8 @@ export class AuthService {
   constructor(private auth: AuthRepository) {}
 
   // Inscription
-  async register(email: string, password: string) {
-    return await this.auth.register(email, password);
+  async register(email: string, password: string, username: string) {
+    return await this.auth.register(email, password, username);
   }
 
   // Connexion

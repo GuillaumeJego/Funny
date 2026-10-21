@@ -7,6 +7,9 @@
 /bazel-out
 
 # Environment files
+.env
+.env.*
+/public/runtime-config.js
 
 # IDEs and editors
 .idea/
