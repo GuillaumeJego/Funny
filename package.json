@@ -10,7 +10,8 @@
     "test:ci": "ng test --watch=false",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "appwrite:setup": "node scripts/appwrite/setup.mjs"
+    "appwrite:setup": "node scripts/appwrite/setup.mjs",
+    "appwrite:functions": "node scripts/appwrite/functions.mjs"
   },
   "private": true,
   "dependencies": {
