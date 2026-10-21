@@ -51,6 +51,14 @@
           @if (profile.gender === 'Femme') {
             <span class="gender-icon">♀</span>
           }
+          @if (!isOwnProfile) {
+            <app-member-safety
+              [memberId]="profile.id"
+              [username]="profile.username"
+              [blocked]="blocked"
+              (blockedChange)="onBlockedChange($event)"
+            />
+          }
         </div>
       </div>
       <!-- Chips badges bas de photo -->
@@ -90,7 +98,12 @@
       </div>
     </div>
     <!-- ── Actions amis (si profil autre) ── -->
-    @if (!isOwnProfile) {
+    @if (!isOwnProfile && blocked) {
+      <div class="blocked-notice">
+        🚫 Vous avez bloqué ce membre. Pour le débloquer, utilisez le bouton ⋯ en haut à droite.
+      </div>
+    }
+    @if (!isOwnProfile && !blocked) {
       <div class="friend-actions">
         @switch (friendshipStatus) {
           @case ('none') {

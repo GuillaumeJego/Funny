@@ -505,3 +505,88 @@
     cursor: not-allowed;
   }
 }
+
+// ─── Signalements ─────────────────────────────────────────
+.count-badge {
+  display: inline-block;
+  min-width: 1.4rem;
+  padding: 0 0.4rem;
+  margin-left: 0.4rem;
+  border-radius: 999px;
+  background: $error;
+  color: #fff;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.report-card {
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  padding: 0.85rem 1rem;
+  margin-top: 0.75rem;
+}
+
+.report-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.report-target {
+  font-weight: 700;
+  color: $primary;
+  cursor: pointer;
+}
+
+.report-details {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: $text-dark;
+  white-space: pre-line;
+}
+
+.report-meta {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: $text-light;
+}
+
+.report-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.6rem;
+}
+
+.btn-ban,
+.btn-handled {
+  padding: 0.45rem 0.9rem;
+  border-radius: $border-radius;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-ban {
+  border: 1px solid rgba($error, 0.4);
+  background: rgba($error, 0.08);
+  color: $error;
+}
+
+.btn-handled {
+  border: 1px solid $border-color;
+  background: $bg-white;
+  color: $text-medium;
+}
+
+.btn-confirm.danger {
+  background: $error;
+}
+
+.modal-error {
+  color: $error;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}

@@ -60,6 +60,11 @@ export class AppwriteConversationRepository extends ConversationRepository {
     );
   }
 
+  async getOtherParticipant(conversationId: string, userId: string): Promise<string | null> {
+    const row = await this.appwrite.getRowOrNull<ConversationRow>('conversations', conversationId);
+    return row?.participant_ids.find((id) => id !== userId) ?? null;
+  }
+
   async getMessages(conversationId: string): Promise<Message[]> {
     const [rows, reactions] = await Promise.all([
       this.appwrite.listAll<MessageRow>('messages', [

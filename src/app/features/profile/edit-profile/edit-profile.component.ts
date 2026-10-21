@@ -26,6 +26,11 @@ export class EditProfileComponent implements OnInit {
   isPremium = false;
   subscriptionEndDate?: Date;
 
+  deleteDialogOpen = false;
+  deleteConfirmation = '';
+  deleting = false;
+  deleteError = '';
+
   genderOptions = ['Homme', 'Femme', 'secret'];
   habitOptions = ['Pas du tout', 'Un peu', 'Beaucoup', 'secret'];
   childrenOptions = ["J'en veux", "J'en ai", "Je n'en ai pas", 'secret'];
@@ -87,5 +92,28 @@ export class EditProfileComponent implements OnInit {
 
   cancel() {
     this.location.back();
+  }
+
+  openDeleteDialog() {
+    this.deleteConfirmation = '';
+    this.deleteError = '';
+    this.deleteDialogOpen = true;
+  }
+
+  closeDeleteDialog() {
+    if (!this.deleting) this.deleteDialogOpen = false;
+  }
+
+  async deleteAccount() {
+    if (this.deleteConfirmation.trim() !== 'SUPPRIMER') return;
+    this.deleting = true;
+    this.deleteError = '';
+    const { error } = await this.authService.deleteAccount();
+    this.deleting = false;
+    if (error) {
+      this.deleteError = error.message;
+      return;
+    }
+    this.router.navigate(['/login'], { queryParams: { compte: 'supprime' } });
   }
 }

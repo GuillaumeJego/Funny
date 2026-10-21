@@ -53,12 +53,13 @@ export const TABLES = [
     indexes: [{ key: 'username_unique', type: 'unique', columns: ['username'] }],
   },
   {
-    // Informations que seul le membre voit (date de naissance).
+    // Informations que seul le membre voit (date de naissance, acceptation des conditions).
     id: 'profiles_private',
     name: 'Profils (privé)',
     permissions: [],
     rowSecurity: true, // read/update("user:<id>")
-    columns: [datetime('birthdate')],
+    // terms_accepted_at : date d'acceptation des conditions (et de l'âge minimum) à l'inscription.
+    columns: [datetime('birthdate'), datetime('terms_accepted_at')],
     indexes: [],
   },
   {
@@ -243,10 +244,10 @@ export const TABLES = [
     indexes: [{ key: 'theme_position', type: 'key', columns: ['theme_id', 'position'] }],
   },
   {
-    // Signalements : tout membre peut signaler, seuls les admins lisent.
+    // Signalements : créés par le serveur (Function « social »), lus et traités par les admins.
     id: 'reports',
     name: 'Signalements',
-    permissions: ['create("users")', 'read("team:admins")', 'update("team:admins")'],
+    permissions: ['read("team:admins")', 'update("team:admins")'],
     rowSecurity: false,
     columns: [
       str('reporter_id', ID, { required: true }),
@@ -258,11 +259,11 @@ export const TABLES = [
     indexes: [{ key: 'status', type: 'key', columns: ['status'] }],
   },
   {
-    // Blocages : chacun gère sa propre liste.
+    // Blocages : créés et supprimés par le serveur (Function « social »).
     id: 'blocks',
     name: 'Blocages',
-    permissions: ['create("users")'],
-    rowSecurity: true, // read/delete("user:<id>")
+    permissions: [],
+    rowSecurity: true, // read("user:<celui qui bloque>")
     columns: [str('blocker_id', ID, { required: true }), str('blocked_id', ID, { required: true })],
     indexes: [{ key: 'pair_unique', type: 'unique', columns: ['blocker_id', 'blocked_id'] }],
   },

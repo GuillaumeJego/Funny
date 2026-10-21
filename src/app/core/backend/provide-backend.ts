@@ -5,6 +5,7 @@ import { ConversationRepository } from '../repositories/conversation.repository'
 import { FavoriRepository } from '../repositories/favori.repository';
 import { FriendshipRepository } from '../repositories/friendship.repository';
 import { InscriptionRepository } from '../repositories/inscription.repository';
+import { ModerationRepository } from '../repositories/moderation.repository';
 import { NotificationRepository } from '../repositories/notification.repository';
 import { ProfileRepository } from '../repositories/profile.repository';
 import { SettingsRepository } from '../repositories/settings.repository';
@@ -17,6 +18,7 @@ import { AppwriteConversationRepository } from './appwrite/appwrite-conversation
 import { AppwriteFavoriRepository } from './appwrite/appwrite-favori.repository';
 import { AppwriteFriendshipRepository } from './appwrite/appwrite-friendship.repository';
 import { AppwriteInscriptionRepository } from './appwrite/appwrite-inscription.repository';
+import { AppwriteModerationRepository } from './appwrite/appwrite-moderation.repository';
 import { AppwriteNotificationRepository } from './appwrite/appwrite-notification.repository';
 import { AppwriteProfileRepository } from './appwrite/appwrite-profile.repository';
 import { AppwriteSettingsRepository } from './appwrite/appwrite-settings.repository';
@@ -39,5 +41,6 @@ export function provideBackend(): EnvironmentProviders {
     { provide: ThemeRepository, useClass: AppwriteThemeRepository },
     { provide: StorageRepository, useClass: AppwriteStorageRepository },
     { provide: AdminRepository, useClass: AppwriteAdminRepository },
+    { provide: ModerationRepository, useClass: AppwriteModerationRepository },
   ]);
 }

@@ -18,6 +18,8 @@ export class RegisterComponent {
   email = '';
   password = '';
   confirmPassword = '';
+  adult = false;
+  acceptTerms = false;
   errorMessage = '';
   loading = false;
 
@@ -30,6 +32,12 @@ export class RegisterComponent {
     this.loading = true;
     this.errorMessage = '';
 
+    if (!this.adult || !this.acceptTerms) {
+      this.errorMessage = 'Cochez les deux cases pour continuer.';
+      this.loading = false;
+      return;
+    }
+
     if (this.password !== this.confirmPassword) {
       this.errorMessage = 'Les mots de passe ne correspondent pas.';
       this.loading = false;
@@ -40,6 +48,7 @@ export class RegisterComponent {
       this.email,
       this.password,
       this.username.trim(),
+      { adult: this.adult, terms: this.acceptTerms },
     );
 
     this.loading = false;

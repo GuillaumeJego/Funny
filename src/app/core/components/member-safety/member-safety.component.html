@@ -1,0 +1,116 @@
+<div class="safety">
+  <button
+    type="button"
+    class="btn-more"
+    aria-label="Signaler ou bloquer"
+    aria-haspopup="menu"
+    [attr.aria-expanded]="menuOpen"
+    (click)="menuOpen = !menuOpen; $event.stopPropagation()"
+  >
+    ⋯
+  </button>
+  @if (menuOpen) {
+    <div class="menu" role="menu">
+      <button type="button" role="menuitem" (click)="open('report')">🚩 Signaler</button>
+      @if (blocked) {
+        <button type="button" role="menuitem" (click)="unblock()" [disabled]="busy">
+          🔓 Débloquer
+        </button>
+      } @else {
+        <button type="button" role="menuitem" class="danger" (click)="open('block')">
+          🚫 Bloquer
+        </button>
+      }
+    </div>
+  }
+</div>
+
+@if (dialog) {
+  <div class="modal-overlay" (click)="close()" (keydown.escape)="close()">
+    <div
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="safety-title"
+      (click)="$event.stopPropagation()"
+    >
+      @switch (dialog) {
+        @case ('report') {
+          <h3 id="safety-title" class="modal-title">🚩 Signaler {{ username }}</h3>
+          <p class="modal-desc">
+            Les admins de Funny liront votre signalement. {{ username }} ne saura pas qui l'a
+            signalé.
+          </p>
+          <fieldset class="reasons">
+            <legend>Motif</legend>
+            @for (r of reasons; track r.value) {
+              <label class="reason">
+                <input type="radio" name="reason" [value]="r.value" [(ngModel)]="reason" />
+                {{ r.label }}
+              </label>
+            }
+          </fieldset>
+          <label class="details-label" for="report-details">Détails (facultatif)</label>
+          <textarea
+            id="report-details"
+            rows="3"
+            maxlength="2000"
+            [(ngModel)]="details"
+            placeholder="Que s'est-il passé ?"
+          ></textarea>
+          <p class="hint">
+            En cas de danger immédiat, appelez le 17 (police) ou le 112. Vous pouvez aussi bloquer
+            ce membre.
+          </p>
+          @if (errorMessage) {
+            <div class="error">{{ errorMessage }}</div>
+          }
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" (click)="close()">Annuler</button>
+            <button
+              type="button"
+              class="btn-danger"
+              (click)="sendReport()"
+              [disabled]="!reason || busy"
+            >
+              {{ busy ? 'Envoi…' : 'Envoyer' }}
+            </button>
+          </div>
+        }
+        @case ('reported') {
+          <h3 id="safety-title" class="modal-title">Merci</h3>
+          <p class="modal-desc">
+            Votre signalement a été envoyé aux admins. Voulez-vous aussi bloquer {{ username }} ?
+          </p>
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" (click)="close()">Non, fermer</button>
+            @if (!blocked) {
+              <button type="button" class="btn-danger" (click)="open('block')">Bloquer</button>
+            }
+          </div>
+        }
+        @case ('block') {
+          <h3 id="safety-title" class="modal-title">🚫 Bloquer {{ username }} ?</h3>
+          <ul class="modal-list">
+            <li>Vous ne serez plus amis.</li>
+            <li>Ni vous ni {{ username }} ne pourrez vous envoyer de demande d'ami.</li>
+            <li>
+              {{ username }} n'aura plus accès à votre conversation. Vous gardez l'historique.
+            </li>
+            <li>{{ username }} n'est pas prévenu.</li>
+          </ul>
+          <p class="hint">Vous pourrez le débloquer depuis son profil.</p>
+          @if (errorMessage) {
+            <div class="error">{{ errorMessage }}</div>
+          }
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" (click)="close()">Annuler</button>
+            <button type="button" class="btn-danger" (click)="confirmBlock()" [disabled]="busy">
+              {{ busy ? 'Blocage…' : 'Bloquer' }}
+            </button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+}

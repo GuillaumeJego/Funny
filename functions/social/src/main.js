@@ -1,4 +1,4 @@
-// Fonction « social » : demandes d'amis et ouverture des conversations privées.
+// Fonction « social » : demandes d'amis, conversations privées, signalements et blocages.
 import {
   Permission,
   Query,
@@ -29,10 +29,22 @@ async function isBlocked(api, a, b) {
   return !!block;
 }
 
+function conversationBetween(api, a, b) {
+  return api.findRow('conversations', [
+    Query.contains('participant_ids', a),
+    Query.contains('participant_ids', b),
+  ]);
+}
+
+async function requireOtherMember(api, userId, otherId) {
+  const id = String(otherId ?? '');
+  if (!id || id === userId) fail(400, 'Membre invalide.');
+  if (!(await api.getRow('profiles', id))) fail(404, 'Membre introuvable.');
+  return id;
+}
+
 async function friendRequest({ api, userId, input }) {
-  const otherId = String(input.userId ?? '');
-  if (!otherId || otherId === userId) fail(400, 'Membre invalide.');
-  if (!(await api.getRow('profiles', otherId))) fail(404, 'Membre introuvable.');
+  const otherId = await requireOtherMember(api, userId, input.userId);
   if (await isBlocked(api, userId, otherId)) fail(403, 'Impossible de contacter ce membre.');
 
   const existing = await friendshipBetween(api, userId, otherId);
@@ -99,11 +111,12 @@ async function openConversation({ api, userId, input }) {
   }
   if (await isBlocked(api, userId, otherId)) fail(403, 'Impossible de contacter ce membre.');
 
-  const existing = await api.findRow('conversations', [
-    Query.contains('participant_ids', userId),
-    Query.contains('participant_ids', otherId),
-  ]);
-  if (existing) return { conversationId: existing.$id };
+  const existing = await conversationBetween(api, userId, otherId);
+  if (existing) {
+    // Après un blocage puis un déblocage, le membre bloqué doit retrouver l'accès.
+    for (const id of [userId, otherId]) await api.addTeamMember(existing.$id, id);
+    return { conversationId: existing.$id };
+  }
 
   const conversationId = uniqueId();
   await api.call('POST', '/teams', { body: { teamId: conversationId, name: 'Conversation' } });
@@ -114,4 +127,95 @@ async function openConversation({ api, userId, input }) {
   return { conversationId };
 }
 
-export default handler({ friendRequest, friendRespond, friendRemove, openConversation });
+const REPORT_REASONS = [
+  'harcelement',
+  'comportement',
+  'faux_profil',
+  'contenu_choquant',
+  'arnaque',
+  'mineur',
+  'autre',
+];
+
+/** Signale un membre aux admins. Un seul signalement ouvert par membre signalé. */
+async function report({ api, userId, input }) {
+  const targetId = await requireOtherMember(api, userId, input.userId);
+  const reason = String(input.reason ?? '');
+  if (!REPORT_REASONS.includes(reason)) fail(400, 'Motif invalide.');
+  const details = String(input.details ?? '')
+    .trim()
+    .slice(0, 2000);
+
+  const open = await api.findRow('reports', [
+    Query.equal('reporter_id', userId),
+    Query.equal('target_user_id', targetId),
+    Query.equal('status', 'open'),
+  ]);
+  if (open) {
+    await api.updateRow('reports', open.$id, { reason, details });
+    return {};
+  }
+  await api.createRow('reports', uniqueId(), {
+    reporter_id: userId,
+    target_user_id: targetId,
+    reason,
+    details,
+    status: 'open',
+  });
+
+  const target = await usernameOf(api, targetId);
+  const admins = await api.call('GET', '/teams/admins/memberships', {
+    queries: [Query.limit(100)],
+  });
+  await notify(
+    api,
+    admins.memberships.map((m) => ({
+      user_id: m.userId,
+      title: '🚩 Nouveau signalement',
+      message: `${target} a été signalé. Voir l'espace admin.`,
+    })),
+  );
+  return {};
+}
+
+/**
+ * Bloque un membre : plus d'amitié, plus de demande d'ami possible dans un sens ou dans
+ * l'autre, et il perd l'accès à la conversation. Celui qui bloque garde l'historique.
+ */
+async function block({ api, userId, input }) {
+  const otherId = await requireOtherMember(api, userId, input.userId);
+  const existing = await api.findRow('blocks', [
+    Query.equal('blocker_id', userId),
+    Query.equal('blocked_id', otherId),
+  ]);
+  if (!existing) {
+    await api.createRow('blocks', uniqueId(), { blocker_id: userId, blocked_id: otherId }, [
+      Permission.read(Role.user(userId)),
+    ]);
+  }
+  const friendship = await friendshipBetween(api, userId, otherId);
+  if (friendship) await api.deleteRow('friendships', friendship.$id);
+  const conversation = await conversationBetween(api, userId, otherId);
+  if (conversation) await api.removeTeamMember(conversation.$id, otherId);
+  return {};
+}
+
+async function unblock({ api, userId, input }) {
+  const otherId = String(input.userId ?? '');
+  const existing = await api.findRow('blocks', [
+    Query.equal('blocker_id', userId),
+    Query.equal('blocked_id', otherId),
+  ]);
+  if (existing) await api.deleteRow('blocks', existing.$id);
+  return {};
+}
+
+export default handler({
+  friendRequest,
+  friendRespond,
+  friendRemove,
+  openConversation,
+  report,
+  block,
+  unblock,
+});

@@ -46,6 +46,28 @@
       }
     }
 
+    .consent {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      margin-bottom: 0.85rem;
+      font-size: 0.9rem;
+      color: $text-medium;
+      cursor: pointer;
+
+      input {
+        margin-top: 0.2rem;
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        accent-color: $primary;
+      }
+
+      a {
+        color: $primary;
+      }
+    }
+
     .error {
       color: $error;
       margin-bottom: 1rem;

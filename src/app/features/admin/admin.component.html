@@ -10,6 +10,44 @@
   }
 
   @if (!loading) {
+    <!-- ── Signalements ── -->
+    <section class="section">
+      <h2 class="section-title">
+        Signalements
+        @if (reports.length) {
+          <span class="count-badge">{{ reports.length }}</span>
+        }
+      </h2>
+      @if (reports.length === 0) {
+        <p class="section-desc">Aucun signalement en attente.</p>
+      }
+      @for (r of reports; track r.id) {
+        <div class="report-card">
+          <div class="report-head">
+            <a class="report-target" (click)="router.navigate(['/membres', r.target_user_id])">
+              {{ r.target?.username ?? 'Membre supprimé' }}
+            </a>
+            <span class="tag tag-denied">{{ reasonLabel(r.reason) }}</span>
+          </div>
+          @if (r.details) {
+            <p class="report-details">{{ r.details }}</p>
+          }
+          <p class="report-meta">
+            Signalé par {{ r.reporter?.username ?? 'un membre supprimé' }}, le
+            {{ r.created_at | date: 'dd/MM/yyyy à HH:mm' }}
+          </p>
+          <div class="report-actions">
+            @if (memberById(r.target_user_id); as target) {
+              @if (!isBanned(target)) {
+                <button class="btn-ban" (click)="openBanModal(target)">🚫 Suspendre</button>
+              }
+            }
+            <button class="btn-handled" (click)="markHandled(r)">✓ Traité</button>
+          </div>
+        </div>
+      }
+    </section>
+
     <!-- ── Paramètres globaux ── -->
     <section class="section">
       <h2 class="section-title">Paramètres globaux</h2>
@@ -106,6 +144,11 @@
               <div>
                 <div class="m-name">{{ m.username }}</div>
                 <span class="tag" [class]="getRoleClass(m)">{{ getRoleLabel(m) }}</span>
+                @if (isBanned(m)) {
+                  <span class="tag tag-denied"
+                    >Suspendu jusqu'au {{ m.banned_until | date: 'dd/MM/yyyy' }}</span
+                  >
+                }
               </div>
             </div>
             <div class="membre-actions">
@@ -134,6 +177,22 @@
               >
                 ⭐
               </button>
+              <!-- Suspension (pas pour l'équipe) -->
+              @if (m.role !== 'admin' && m.role !== 'developer') {
+                @if (isBanned(m)) {
+                  <button class="btn-action allow" (click)="unban(m)" title="Réactiver le compte">
+                    ↺
+                  </button>
+                } @else {
+                  <button
+                    class="btn-action deny"
+                    (click)="openBanModal(m)"
+                    title="Suspendre le compte"
+                  >
+                    🚫
+                  </button>
+                }
+              }
               <!-- Accès profils (inutile pour admin/dev qui ont toujours accès) -->
               @if (m.role !== 'admin' && m.role !== 'developer') {
                 <span class="tag" [class]="getAccessClass(m)" title="Accès aux profils">{{
@@ -213,6 +272,42 @@
         <button class="btn-cancel" (click)="premiumModal = null">Annuler</button>
         <button class="btn-confirm" (click)="confirmPremium()" [disabled]="premiumModal.mois < 1">
           Accorder {{ premiumModal.mois }} mois
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modale Suspension -->
+@if (banModal) {
+  <div class="modal-overlay" (click)="banModal = null" (keydown.escape)="banModal = null">
+    <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <h3 class="modal-title">🚫 Suspendre {{ banModal.membre.username }}</h3>
+      <p class="modal-desc">
+        Le membre ne pourra plus se connecter. Le compte se réactive tout seul à la fin de la durée.
+      </p>
+      <div class="modal-presets">
+        @for (d of banPresets; track d.days) {
+          <button
+            class="preset-btn"
+            (click)="banModal.days = d.days"
+            [class.active]="banModal.days === d.days"
+          >
+            {{ d.label }}
+          </button>
+        }
+      </div>
+      <div class="modal-custom">
+        <label for="ban-reason">Motif (gardé pour l'historique) :</label>
+        <input id="ban-reason" type="text" [(ngModel)]="banModal.reason" class="days-input" />
+      </div>
+      @if (banError) {
+        <p class="modal-error">{{ banError }}</p>
+      }
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="banModal = null">Annuler</button>
+        <button class="btn-confirm danger" (click)="confirmBan()" [disabled]="banning">
+          Suspendre
         </button>
       </div>
     </div>

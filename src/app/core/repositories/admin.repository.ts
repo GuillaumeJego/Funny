@@ -1,3 +1,4 @@
+import { Report } from '../models/report.model';
 import { RepositoryResult } from './repository.types';
 
 /** Actions réservées aux administrateurs : le serveur vérifie l'appartenance à l'équipe admins. */
@@ -9,4 +10,10 @@ export abstract class AdminRepository {
     userId: string,
     value: boolean | null,
   ): Promise<RepositoryResult<null>>;
+  /** Suspend le compte : le membre ne peut plus se connecter pendant `days` jours. */
+  abstract ban(userId: string, days: number, reason: string): Promise<RepositoryResult<null>>;
+  abstract unban(userId: string): Promise<RepositoryResult<null>>;
+  /** Signalements pas encore traités, du plus récent au plus ancien. */
+  abstract getOpenReports(): Promise<RepositoryResult<Report[]>>;
+  abstract markReportHandled(reportId: string): Promise<RepositoryResult<null>>;
 }

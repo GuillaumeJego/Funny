@@ -142,8 +142,59 @@
             {{ saving ? 'Sauvegarde...' : 'Sauvegarder' }}
           </button>
         </div>
+        <!-- Supprimer mon compte -->
+        <section class="danger-section">
+          <h2>Supprimer mon compte</h2>
+          <p>
+            Votre profil, vos sorties, vos inscriptions, vos amis, vos conversations et vos photos
+            seront effacés pour toujours.
+          </p>
+          <button class="btn-delete-account" (click)="openDeleteDialog()">
+            Supprimer mon compte
+          </button>
+        </section>
         <app-metana-credit />
       </div>
     }
   </div>
 </div>
+
+@if (deleteDialogOpen) {
+  <div class="modal-overlay" (click)="closeDeleteDialog()" (keydown.escape)="closeDeleteDialog()">
+    <div
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-title"
+      (click)="$event.stopPropagation()"
+    >
+      <h3 id="delete-title">Supprimer mon compte ?</h3>
+      <p>
+        C'est définitif. Les sorties que vous organisez seront annulées et leurs inscrits prévenus.
+      </p>
+      <label for="delete-confirm">Pour confirmer, écrivez <strong>SUPPRIMER</strong> :</label>
+      <input
+        id="delete-confirm"
+        type="text"
+        [(ngModel)]="deleteConfirmation"
+        autocomplete="off"
+        autocapitalize="characters"
+      />
+      @if (deleteError) {
+        <div class="error">{{ deleteError }}</div>
+      }
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeDeleteDialog()" [disabled]="deleting">
+          Annuler
+        </button>
+        <button
+          class="btn-delete-account"
+          (click)="deleteAccount()"
+          [disabled]="deleteConfirmation.trim() !== 'SUPPRIMER' || deleting"
+        >
+          {{ deleting ? 'Suppression…' : 'Supprimer définitivement' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

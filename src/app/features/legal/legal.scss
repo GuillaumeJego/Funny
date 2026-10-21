@@ -1,0 +1,95 @@
+@use 'styles' as *;
+
+.legal-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 1rem 1rem 3rem;
+}
+
+.btn-back {
+  border: none;
+  background: none;
+  color: $primary;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.5rem 0;
+}
+
+.legal-card {
+  background: $bg-white;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow;
+  padding: 1.5rem;
+  line-height: 1.6;
+  color: $text-dark;
+
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  ::ng-deep {
+    h2 {
+      font-size: 1.1rem;
+      margin: 1.5rem 0 0.5rem;
+      color: $primary;
+    }
+
+    p,
+    ul {
+      margin-bottom: 0.75rem;
+      font-size: 0.95rem;
+    }
+
+    ul {
+      padding-left: 1.3rem;
+    }
+
+    li {
+      margin-bottom: 0.3rem;
+    }
+
+    a {
+      color: $primary;
+    }
+
+    details {
+      border-bottom: 1px solid $border-color;
+      padding: 0.6rem 0;
+
+      summary {
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      p {
+        margin: 0.5rem 0 0.25rem;
+      }
+    }
+  }
+}
+
+.updated {
+  font-size: 0.85rem;
+  color: $text-light;
+  margin-bottom: 1rem;
+}
+
+.legal-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+  font-size: 0.88rem;
+
+  a {
+    color: $text-medium;
+
+    &.active {
+      color: $primary;
+      font-weight: 600;
+    }
+  }
+}

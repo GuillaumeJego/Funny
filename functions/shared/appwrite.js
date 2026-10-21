@@ -28,6 +28,7 @@ const q = (method, attribute, values) =>
 export const Query = {
   equal: (attribute, value) => q('equal', attribute, value),
   notEqual: (attribute, value) => q('notEqual', attribute, value),
+  lessThan: (attribute, value) => q('lessThan', attribute, value),
   contains: (attribute, value) => q('contains', attribute, value),
   orderAsc: (attribute) => q('orderAsc', attribute),
   orderDesc: (attribute) => q('orderDesc', attribute),
@@ -204,10 +205,14 @@ export async function isAdmin(api, userId) {
 /**
  * Point d'entrée commun : lit l'action demandée, vérifie que l'appel vient d'un
  * membre connecté, et transforme les erreurs en réponses JSON.
+ * `onSchedule` est lancé quand Appwrite exécute la fonction selon son horaire (cron).
  */
-export function handler(actions) {
+export function handler(actions, { onSchedule } = {}) {
   return async ({ req, res, error: logError }) => {
     try {
+      if (onSchedule && req.headers['x-appwrite-trigger'] === 'schedule') {
+        return res.json({ ok: true, ...(await onSchedule({ api: createApi(req) })) });
+      }
       const userId = req.headers['x-appwrite-user-id'];
       if (!userId) fail(401, 'Connexion requise.');
       const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body ?? {});

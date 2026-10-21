@@ -1,16 +1,19 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
+import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { SettingsService } from '../../core/services/settings.service';
+import { ModerationService } from '../../core/services/moderation.service';
 import { Profile } from '../../core/models/profile.model';
+import { Report, reportReasonLabel } from '../../core/models/report.model';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, DatePipe],
   templateUrl: './admin.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin.component.scss',
@@ -23,11 +26,23 @@ export class AdminComponent implements OnInit {
   membres: Profile[] = [];
   searchQuery = '';
   currentUserRole = '';
+  reports: Report[] = [];
+
+  banModal: { membre: Profile; days: number; reason: string } | null = null;
+  banning = false;
+  banError = '';
+  banPresets = [
+    { days: 1, label: '1 jour' },
+    { days: 7, label: '7 jours' },
+    { days: 30, label: '30 jours' },
+    { days: 3650, label: 'Définitif' },
+  ];
 
   constructor(
     private auth: AuthService,
     private profileService: ProfileService,
     private settingsService: SettingsService,
+    private moderationService: ModerationService,
     public router: Router,
   ) {}
 
@@ -47,11 +62,13 @@ export class AdminComponent implements OnInit {
     }
     this.currentUserRole = profile.role ?? '';
 
-    const [setting, creationSetting, membres] = await Promise.all([
+    const [setting, creationSetting, membres, reports] = await Promise.all([
       this.settingsService.get('profile_page_premium_only'),
       this.settingsService.get('sortie_creation_access'),
       this.profileService.getAllProfiles(),
+      this.moderationService.getOpenReports(),
     ]);
+    this.reports = reports.data ?? [];
 
     this.profilePagePremiumOnly = setting === true;
     this.sortieCreationAccess = creationSetting ?? 'all';
@@ -140,6 +157,51 @@ export class AdminComponent implements OnInit {
   async revokePremium(m: Profile) {
     await this.profileService.adminUpdateProfile(m.id, { subscription_end_date: null as any });
     m.subscription_end_date = undefined;
+  }
+
+  reasonLabel(reason: string): string {
+    return reportReasonLabel(reason);
+  }
+
+  memberById(id: string): Profile | undefined {
+    return this.membres.find((m) => m.id === id);
+  }
+
+  async markHandled(report: Report) {
+    const { error } = await this.moderationService.markReportHandled(report.id);
+    if (!error) this.reports = this.reports.filter((r) => r.id !== report.id);
+  }
+
+  isBanned(m: Profile): boolean {
+    return !!m.is_banned && !!m.banned_until && new Date(m.banned_until) > new Date();
+  }
+
+  openBanModal(m: Profile) {
+    this.banError = '';
+    this.banModal = { membre: m, days: 7, reason: '' };
+  }
+
+  async confirmBan() {
+    if (!this.banModal) return;
+    const { membre, days, reason } = this.banModal;
+    this.banning = true;
+    const { error } = await this.moderationService.banMember(membre.id, days, reason);
+    this.banning = false;
+    if (error) {
+      this.banError = error.message;
+      return;
+    }
+    membre.is_banned = true;
+    membre.banned_until = new Date(Date.now() + days * 86400000).toISOString();
+    this.banModal = null;
+  }
+
+  async unban(m: Profile) {
+    const { error } = await this.moderationService.unbanMember(m.id);
+    if (!error) {
+      m.is_banned = false;
+      m.banned_until = undefined;
+    }
   }
 
   get filteredMembres(): Profile[] {

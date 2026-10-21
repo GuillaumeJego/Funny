@@ -37,6 +37,11 @@ export class ConversationService {
     return conversations;
   }
 
+  // L'autre membre de la conversation (pour signaler ou bloquer depuis le chat)
+  async getOtherParticipant(conversationId: string, myId: string): Promise<string | null> {
+    return await this.conversations.getOtherParticipant(conversationId, myId);
+  }
+
   async getMessages(conversationId: string): Promise<Message[]> {
     return await this.conversations.getMessages(conversationId);
   }

@@ -38,6 +38,7 @@ export class AppwriteAuthRepository extends AuthRepository {
     email: string,
     password: string,
     username: string,
+    consent: { adult: boolean; terms: boolean },
   ): Promise<{ error: RepositoryError | null }> {
     try {
       await this.appwrite.account.create({ userId: ID.unique(), email, password });
@@ -45,9 +46,9 @@ export class AppwriteAuthRepository extends AuthRepository {
     } catch (error) {
       return { error: authError(error) };
     }
-    const { error } = await this.appwrite.run('account', 'init', { username });
+    const { error } = await this.appwrite.run('account', 'init', { username, ...consent });
     if (error) {
-      // Pseudo refusé : on supprime le compte tout juste créé (et sa session) pour pouvoir recommencer.
+      // Pseudo ou consentement refusé : on supprime le compte tout juste créé (et sa session) pour pouvoir recommencer.
       const removed = await this.appwrite.run('account', 'delete', { confirm: 'SUPPRIMER' });
       if (removed.error) await this.logout();
       return { error };
@@ -84,6 +85,12 @@ export class AppwriteAuthRepository extends AuthRepository {
 
   async hasSession(): Promise<boolean> {
     return (await this.getUser()).data.user !== null;
+  }
+
+  async deleteAccount(): Promise<{ error: RepositoryError | null }> {
+    // Le serveur supprime aussi le compte Appwrite, donc la session disparaît avec lui.
+    const { error } = await this.appwrite.run('account', 'delete', { confirm: 'SUPPRIMER' });
+    return { error };
   }
 
   private async openSession(email: string, password: string) {

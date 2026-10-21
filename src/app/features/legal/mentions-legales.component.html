@@ -1,0 +1,33 @@
+<app-legal-layout title="Mentions légales">
+  <h2>Éditeur</h2>
+  <p>
+    Funny est édité par {{ legal.editeur }}.<br />
+    Statut : {{ legal.statut }}.<br />
+    Contact : <a [href]="'mailto:' + legal.contact">{{ legal.contact }}</a>
+  </p>
+  <p>Directeur de la publication : {{ legal.editeur }}.</p>
+
+  <h2>Hébergement</h2>
+  <p>
+    <strong>Site web</strong> : Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis
+    (vercel.com).
+  </p>
+  <p>
+    <strong>Comptes, profils, sorties, messages et photos</strong> : serveur Appwrite géré par
+    l'éditeur, hébergé chez {{ legal.hebergeurServeur }}, dans le centre de données de
+    {{ legal.paysServeur }}.
+  </p>
+
+  <h2>Propriété intellectuelle</h2>
+  <p>
+    Le nom Funny, le logo MetanaFr et le code du site appartiennent à l'éditeur. Les photos et
+    textes publiés par les membres restent leur propriété ; voir les
+    <a routerLink="/conditions">conditions d'utilisation</a>.
+  </p>
+
+  <h2>Signaler un contenu illicite</h2>
+  <p>
+    Utilisez le bouton ⋯ puis « Signaler » sur le profil ou dans la conversation, ou écrivez à
+    {{ legal.contact }} en indiquant le contenu concerné et pourquoi il vous paraît illicite.
+  </p>
+</app-legal-layout>

@@ -46,6 +46,8 @@ const FUNCTIONS = [
     id: 'admin',
     name: 'Administration',
     timeout: 30,
+    // Chaque heure : fin des bannissements arrivés à échéance.
+    schedule: '0 * * * *',
     scopes: ['rows.read', 'rows.write', 'teams.read', 'teams.write', 'users.write'],
   },
   {
@@ -114,6 +116,7 @@ async function ensureFunction(fn) {
     entrypoint: 'src/main.js',
     commands: '',
     scopes: fn.scopes,
+    schedule: fn.schedule ?? '',
     logging: true,
   };
   try {

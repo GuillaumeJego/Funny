@@ -33,11 +33,26 @@
       />
     </div>
 
+    <label class="consent">
+      <input type="checkbox" [(ngModel)]="adult" />
+      <span>J'ai 18 ans ou plus.</span>
+    </label>
+
+    <label class="consent">
+      <input type="checkbox" [(ngModel)]="acceptTerms" />
+      <span>
+        J'accepte les
+        <a routerLink="/conditions" target="_blank">conditions d'utilisation</a>
+        et j'ai lu la
+        <a routerLink="/confidentialite" target="_blank">politique de confidentialité</a>.
+      </span>
+    </label>
+
     @if (errorMessage) {
       <div class="error">{{ errorMessage }}</div>
     }
 
-    <button (click)="onRegister()" [disabled]="loading">
+    <button (click)="onRegister()" [disabled]="loading || !adult || !acceptTerms">
       {{ loading ? 'Inscription...' : "S'inscrire" }}
     </button>
 

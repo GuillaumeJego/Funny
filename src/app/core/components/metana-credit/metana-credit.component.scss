@@ -25,3 +25,23 @@
     }
   }
 }
+
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 0.9rem;
+  margin-top: 0.6rem;
+
+  a {
+    font-size: 0.75rem;
+    color: $text-light;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      color: $primary;
+      text-decoration: underline;
+    }
+  }
+}
