@@ -11,6 +11,7 @@ import {
   usernameOf,
 } from './shared/appwrite.js';
 import { deleteSortie, promoteFromWaitingList } from './shared/sorties.js';
+import { stripe } from './shared/stripe.js';
 
 const USERNAME = /^[\p{L}\p{N}._-]{3,40}$/u;
 
@@ -67,10 +68,51 @@ async function deleteConversation(api, conversation) {
   }
 }
 
+/** Arrête tout de suite un abonnement Stripe encore en cours. */
+async function cancelSubscription(subscription) {
+  if (!subscription.stripe_subscription_id || subscription.status === 'canceled') return;
+  try {
+    await stripe('DELETE', `/subscriptions/${subscription.stripe_subscription_id}`);
+  } catch (error) {
+    if (error.code !== 404) throw error;
+  }
+}
+
+/**
+ * Vérifie le mot de passe du membre en ouvrant une session avec, comme à la connexion,
+ * puis ferme aussitôt cette session. Les essais sont limités par Appwrite.
+ */
+async function checkPassword(api, userId, password) {
+  if (typeof password !== 'string' || !password) fail(400, 'Mot de passe manquant.');
+  const { email } = await api.call('GET', `/users/${userId}`);
+  const response = await fetch(
+    `${process.env.APPWRITE_FUNCTION_API_ENDPOINT}/account/sessions/email`,
+    {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-appwrite-project': process.env.APPWRITE_FUNCTION_PROJECT_ID,
+      },
+      body: JSON.stringify({ email, password }),
+    },
+  );
+  if (response.status === 429) fail(429, 'Trop d’essais. Réessayez dans une heure.');
+  if (!response.ok) fail(403, 'Mot de passe incorrect.');
+  const session = await response.json();
+  await api.call('DELETE', `/users/${userId}/sessions/${session.$id}`);
+}
+
 /** Supprime le compte du membre connecté et tout ce qui le concerne. */
 async function remove({ api, userId, input }) {
-  if (input.confirm !== 'SUPPRIMER') fail(400, 'Confirmation manquante.');
+  await checkPassword(api, userId, input.password);
   const username = await usernameOf(api, userId);
+
+  // Son abonnement payant : arrêté chez Stripe avant tout, pour qu'il ne soit plus prélevé.
+  for (const subscription of await api.listAllRows('subscriptions', [
+    Query.equal('user_id', userId),
+  ])) {
+    await cancelSubscription(subscription);
+  }
 
   // Ses sorties : supprimées, inscrits et likeurs prévenus.
   for (const sortie of await api.listAllRows('sorties', [Query.equal('created_by', userId)])) {

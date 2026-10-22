@@ -113,7 +113,14 @@
               <span class="sub-icon">{{ isPremium ? '⭐' : '🔓' }}</span>
               <div>
                 <div class="sub-label">{{ isPremium ? 'Abonné Premium' : 'Non abonné' }}</div>
-                @if (isPremium && subscriptionEndDate) {
+                @if (hasPaidSubscription && subscription?.current_period_end) {
+                  <div class="sub-detail">
+                    {{
+                      subscription?.cancel_at_period_end ? 'Résilié, se termine le' : 'Renouvelé le'
+                    }}
+                    {{ subscription?.current_period_end | date: 'dd/MM/yyyy' }}
+                  </div>
+                } @else if (isPremium && subscriptionEndDate) {
                   <div class="sub-detail">
                     Expire le {{ subscriptionEndDate | date: 'dd/MM/yyyy' }}
                   </div>
@@ -123,10 +130,24 @@
                 }
               </div>
             </div>
-            @if (!isPremium) {
-              <button class="btn-premium" (click)="goToPremium()">⭐ Passer Premium</button>
+            @if (hasPaidSubscription) {
+              <button
+                type="button"
+                class="btn-premium"
+                (click)="openPortal()"
+                [disabled]="openingPortal"
+              >
+                {{ openingPortal ? 'Ouverture…' : 'Gérer ou résilier mon abonnement' }}
+              </button>
+            } @else if (!isPremium) {
+              <button type="button" class="btn-premium" (click)="goToPremium()">
+                ⭐ Passer Premium
+              </button>
             }
           </div>
+          @if (portalError) {
+            <div class="error">{{ portalError }}</div>
+          }
         </section>
         <!-- Messages -->
         @if (successMessage) {
@@ -172,13 +193,17 @@
       <p>
         C'est définitif. Les sorties que vous organisez seront annulées et leurs inscrits prévenus.
       </p>
-      <label for="delete-confirm">Pour confirmer, écrivez <strong>SUPPRIMER</strong> :</label>
+      @if (hasPaidSubscription) {
+        <p>Votre abonnement Premium sera arrêté tout de suite et ne sera plus prélevé.</p>
+      }
+      <label for="delete-password">Pour confirmer, entrez votre mot de passe :</label>
       <input
-        id="delete-confirm"
-        type="text"
-        [(ngModel)]="deleteConfirmation"
-        autocomplete="off"
-        autocapitalize="characters"
+        id="delete-password"
+        type="password"
+        [(ngModel)]="deletePassword"
+        (ngModelChange)="deleteError = ''"
+        autocomplete="current-password"
+        (keydown.enter)="deleteAccount()"
       />
       @if (deleteError) {
         <div class="error">{{ deleteError }}</div>
@@ -190,7 +215,7 @@
         <button
           class="btn-delete-account"
           (click)="deleteAccount()"
-          [disabled]="deleteConfirmation.trim() !== 'SUPPRIMER' || deleting"
+          [disabled]="!deletePassword || deleting"
         >
           {{ deleting ? 'Suppression…' : 'Supprimer définitivement' }}
         </button>

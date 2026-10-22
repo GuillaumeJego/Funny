@@ -36,8 +36,8 @@ export class AuthService {
   }
 
   // Suppression définitive du compte (droit RGPD)
-  async deleteAccount() {
-    return await this.auth.deleteAccount();
+  async deleteAccount(password: string) {
+    return await this.auth.deleteAccount(password);
   }
 
   // E-mail de confirmation de l'adresse, avec un lien vers /verifier-email

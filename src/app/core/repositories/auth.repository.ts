@@ -15,8 +15,8 @@ export abstract class AuthRepository {
   abstract logout(): Promise<{ error: RepositoryError | null }>;
   abstract getUser(): Promise<{ data: { user: AuthUser | null } }>;
   abstract hasSession(): Promise<boolean>;
-  /** Supprime définitivement le compte connecté et toutes ses données. */
-  abstract deleteAccount(): Promise<{ error: RepositoryError | null }>;
+  /** Supprime définitivement le compte connecté et toutes ses données, après vérification du mot de passe. */
+  abstract deleteAccount(password: string): Promise<{ error: RepositoryError | null }>;
   /** Envoie au membre connecté un e-mail avec un lien vers `url` pour confirmer son adresse. */
   abstract sendVerification(url: string): Promise<{ error: RepositoryError | null }>;
   /** Valide l'adresse avec les paramètres du lien reçu (marche aussi sans session). */
