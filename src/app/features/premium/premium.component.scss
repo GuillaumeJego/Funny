@@ -200,8 +200,13 @@
   cursor: pointer;
   transition: background 0.2s;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: $primary-hover;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
@@ -231,4 +236,84 @@
     background: $bg-light;
     border-color: $primary;
   }
+}
+
+// ─── Paiement ─────────────────────────────────────────────
+.notice,
+.welcome,
+.error {
+  padding: 0.85rem 1rem;
+  border-radius: $border-radius;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.notice {
+  background: $bg-light;
+  border: 1px solid $border-color;
+  color: $text-dark;
+}
+
+.welcome {
+  background: rgba($warning, 0.12);
+  border: 1px solid rgba($warning, 0.4);
+  color: $text-dark;
+  font-weight: 700;
+  text-align: center;
+  font-size: 1.05rem;
+}
+
+.error {
+  background: rgba($error, 0.08);
+  border: 1px solid rgba($error, 0.3);
+  color: $error;
+}
+
+.subscribed-card {
+  padding: 1.25rem;
+  border-radius: $border-radius-lg;
+  border: 1px solid rgba($warning, 0.35);
+  background: rgba($warning, 0.08);
+  color: $text-dark;
+  line-height: 1.5;
+
+  .subscribed-title {
+    font-weight: 800;
+    font-size: 1.15rem;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+  }
+
+  .warning {
+    color: $error;
+  }
+}
+
+.waiver {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: $text-dark;
+  line-height: 1.4;
+  cursor: pointer;
+
+  input {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+  }
+}
+
+.terms {
+  margin-top: 0.75rem;
+  font-size: 0.78rem;
+  color: $text-light;
+  text-align: center;
+  line-height: 1.4;
 }

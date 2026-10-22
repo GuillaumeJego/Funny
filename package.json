@@ -15,7 +15,8 @@
     "format:check": "prettier --check .",
     "appwrite:setup": "node scripts/appwrite/setup.mjs",
     "appwrite:functions": "node scripts/appwrite/functions.mjs",
-    "appwrite:admin": "node scripts/appwrite/make-admin.mjs"
+    "appwrite:admin": "node scripts/appwrite/make-admin.mjs",
+    "stripe:setup": "node scripts/stripe/setup.mjs"
   },
   "private": true,
   "dependencies": {

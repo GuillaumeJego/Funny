@@ -31,42 +31,104 @@
     </ul>
   </section>
 
-  <!-- Plans -->
-  <section class="section">
-    <h2>Choisissez votre plan</h2>
-    <div class="plans">
-      @for (plan of plans; track plan; let i = $index) {
-        <div
-          class="plan-card"
-          [class.selected]="selectedPlan === i"
-          [class.highlight]="plan.highlight"
-          (click)="selectPlan(i)"
-        >
-          <div class="plan-top">
-            <span class="plan-label">{{ plan.label }}</span>
-            @if (plan.note) {
-              <span class="plan-note">{{ plan.note }}</span>
+  @if (paiement === 'annule' && !isSubscribed) {
+    <div class="notice">Paiement annulé : rien n'a été prélevé.</div>
+  }
+  @if (activating) {
+    <div class="notice">Paiement reçu, activation de votre Premium en cours…</div>
+  }
+  @if (paiement === 'ok' && !activating && !loading && !isSubscribed) {
+    <div class="notice">
+      Votre paiement est en cours de confirmation. Revenez sur cette page dans quelques minutes.
+    </div>
+  }
+
+  @if (isSubscribed && subscription) {
+    <!-- Abonné -->
+    <section class="section">
+      @if (paiement === 'ok') {
+        <div class="welcome">Bienvenue dans Premium ⭐</div>
+      }
+      <div class="subscribed-card">
+        <div class="subscribed-title">⭐ Vous êtes Premium</div>
+        @if (subscription.status === 'past_due') {
+          <p class="warning">
+            Le dernier paiement a échoué. Mettez à jour votre carte pour garder votre Premium.
+          </p>
+        }
+        @if (subscription.current_period_end) {
+          <p>
+            @if (subscription.cancel_at_period_end) {
+              Abonnement résilié : votre Premium s'arrête le
+            } @else {
+              Prochain renouvellement le
+            }
+            <strong>{{ subscription.current_period_end | date: 'dd/MM/yyyy' }}</strong
+            >.
+          </p>
+        }
+        <button class="btn-subscribe" (click)="onManage()" [disabled]="redirecting">
+          {{ redirecting ? 'Ouverture…' : 'Gérer ou résilier mon abonnement' }}
+        </button>
+      </div>
+    </section>
+  } @else if (!loading && !activating) {
+    <!-- Plans -->
+    <section class="section">
+      <h2>Choisissez votre plan</h2>
+      <div class="plans">
+        @for (plan of plans; track plan.id; let i = $index) {
+          <div
+            class="plan-card"
+            [class.selected]="selectedPlan === i"
+            [class.highlight]="plan.highlight"
+            (click)="selectPlan(i)"
+          >
+            <div class="plan-top">
+              <span class="plan-label">{{ plan.label }}</span>
+              @if (plan.note) {
+                <span class="plan-note">{{ plan.note }}</span>
+              }
+            </div>
+            <div class="plan-price">
+              <span class="price">{{ plan.price }} €</span>
+              <span class="period">/ {{ plan.period }}</span>
+            </div>
+            @if (selectedPlan === i) {
+              <div class="plan-check">✓</div>
             }
           </div>
-          <div class="plan-price">
-            <span class="price">{{ plan.price }} €</span>
-            <span class="period">/ {{ plan.period }}</span>
-          </div>
-          @if (selectedPlan === i) {
-            <div class="plan-check">✓</div>
-          }
-        </div>
-      }
-    </div>
+        }
+      </div>
 
-    <button class="btn-subscribe" (click)="onSubscribe()">⭐ S'abonner maintenant</button>
-  </section>
+      <label class="waiver">
+        <input type="checkbox" [(ngModel)]="waiver" />
+        <span>
+          Je demande l'accès immédiat à Premium et je renonce à mon droit de rétractation de 14
+          jours.
+        </span>
+      </label>
 
-  <!-- Contact admin -->
-  <section class="section section-contact">
-    <p>Une question avant de vous abonner ?</p>
-    <button class="btn-contact" (click)="contactAdmin()">
-      ✉️ Envoyer un message aux administrateurs
-    </button>
-  </section>
+      <button class="btn-subscribe" (click)="onSubscribe()" [disabled]="!waiver || redirecting">
+        {{ redirecting ? 'Ouverture du paiement…' : "⭐ S'abonner maintenant" }}
+      </button>
+      <p class="terms">
+        Prix TTC. Abonnement sans engagement, renouvelé automatiquement, résiliable à tout moment
+        depuis votre profil. Paiement sécurisé par Stripe.
+      </p>
+    </section>
+  }
+  @if (errorMessage) {
+    <div class="error">{{ errorMessage }}</div>
+  }
+
+  @if (!isSubscribed) {
+    <!-- Contact admin -->
+    <section class="section section-contact">
+      <p>Une question avant de vous abonner ?</p>
+      <button class="btn-contact" (click)="contactAdmin()">
+        ✉️ Envoyer un message aux administrateurs
+      </button>
+    </section>
+  }
 </div>

@@ -269,7 +269,8 @@ export const TABLES = [
     indexes: [{ key: 'pair_unique', type: 'unique', columns: ['blocker_id', 'blocked_id'] }],
   },
   {
-    // Abonnements payants (lot 10) : lus par leur propriétaire, écrits par le serveur.
+    // Abonnements payants : lus par leur propriétaire, écrits par le serveur (fonctions billing
+    // et stripe-webhook).
     id: 'subscriptions',
     name: 'Abonnements',
     permissions: [],
@@ -280,8 +281,14 @@ export const TABLES = [
       str('stripe_subscription_id', 100),
       enumeration('status', ['active', 'past_due', 'canceled', 'incomplete'], { required: true }),
       datetime('current_period_end'),
+      bool('cancel_at_period_end', { default: false }),
+      // Date à laquelle le membre a demandé l'accès immédiat et renoncé à sa rétractation.
+      datetime('withdrawal_waiver_at'),
     ],
-    indexes: [{ key: 'user_unique', type: 'unique', columns: ['user_id'] }],
+    indexes: [
+      { key: 'user_unique', type: 'unique', columns: ['user_id'] },
+      { key: 'customer', type: 'key', columns: ['stripe_customer_id'] },
+    ],
   },
 ];
 

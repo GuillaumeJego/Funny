@@ -54,7 +54,30 @@ const FUNCTIONS = [
     id: 'account',
     name: 'Compte',
     timeout: 300,
-    scopes: ['rows.read', 'rows.write', 'teams.read', 'teams.write', 'users.write', 'files.write'],
+    scopes: [
+      'rows.read',
+      'rows.write',
+      'teams.read',
+      'teams.write',
+      'users.read',
+      'users.write',
+      'files.write',
+    ],
+  },
+  {
+    id: 'billing',
+    name: 'Paiement',
+    timeout: 30,
+    scopes: ['rows.read', 'rows.write', 'users.read'],
+  },
+  {
+    // Appelée par Stripe à l'adresse de son domaine, sans session : ouverte à tous ("any"),
+    // elle refuse chaque message dont la signature Stripe n'est pas valable.
+    id: 'stripe-webhook',
+    name: 'Webhook Stripe',
+    timeout: 30,
+    execute: ['any'],
+    scopes: ['rows.read', 'rows.write', 'teams.read', 'teams.write'],
   },
 ];
 
@@ -111,7 +134,7 @@ async function ensureFunction(fn) {
     functionId: fn.id,
     name: fn.name,
     runtime,
-    execute: ['users'],
+    execute: fn.execute ?? ['users'],
     timeout: fn.timeout,
     entrypoint: 'src/main.js',
     commands: '',

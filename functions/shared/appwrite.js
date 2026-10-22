@@ -154,7 +154,13 @@ export function createApi(req) {
     },
     async addTeamMember(teamId, userId) {
       if (await api.isTeamMember(teamId, userId)) return;
-      await call('POST', `/teams/${teamId}/memberships`, { body: { userId, roles: [] } });
+      try {
+        await call('POST', `/teams/${teamId}/memberships`, { body: { userId, roles: [] } });
+      } catch (error) {
+        // Deux appels en même temps (par exemple deux messages Stripe) : le second échoue
+        // parce que le premier vient d'ajouter le membre, ce qui n'est pas une erreur.
+        if (!(await api.isTeamMember(teamId, userId))) throw error;
+      }
     },
     async removeTeamMember(teamId, userId) {
       const data = await call('GET', `/teams/${teamId}/memberships`, {

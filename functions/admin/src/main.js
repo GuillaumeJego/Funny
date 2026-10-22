@@ -1,6 +1,7 @@
 // Fonction « admin » : rôles, Premium manuel, accès aux profils et bannissements.
 // Seuls les membres de l'équipe « admins » peuvent l'utiliser.
 import { Permission, Query, Role, fail, handler, isAdmin } from './shared/appwrite.js';
+import { removeExpiredPremium, syncPremium } from './shared/premium.js';
 
 const ROLES = ['user', 'user_premium', 'developer', 'admin'];
 
@@ -13,17 +14,6 @@ async function requireMember(api, userId) {
 async function upsert(api, table, id, data, permissions) {
   if (await api.getRow(table, id)) return api.updateRow(table, id, data);
   return api.createRow(table, id, data, permissions);
-}
-
-/** Met l'équipe « abonnes » en accord avec le rôle et la date d'abonnement. */
-async function syncPremium(api, memberId, status) {
-  const active =
-    status.role === 'user_premium' ||
-    status.role === 'admin' ||
-    status.role === 'developer' ||
-    (status.subscription_end_date && new Date(status.subscription_end_date) > new Date());
-  if (active) await api.addTeamMember('abonnes', memberId);
-  else await api.removeTeamMember('abonnes', memberId);
 }
 
 /** Les admins et les développeurs ont accès à l'espace d'administration. */
@@ -98,8 +88,11 @@ async function unban({ api, input }) {
   return { moderation };
 }
 
-/** Lancé chaque heure par Appwrite : réactive les comptes dont le bannissement est fini. */
-async function liftExpiredBans({ api }) {
+/**
+ * Lancé chaque heure par Appwrite : réactive les comptes dont le bannissement est fini
+ * et retire le Premium arrivé à sa date de fin.
+ */
+async function hourly({ api }) {
   const expired = await api.listAllRows('moderation', [
     Query.equal('is_banned', true),
     Query.lessThan('banned_until', new Date().toISOString()),
@@ -108,7 +101,7 @@ async function liftExpiredBans({ api }) {
     await api.updateRow('moderation', row.$id, { is_banned: false, banned_until: null });
     await api.call('PATCH', `/users/${row.$id}/status`, { body: { status: true } });
   }
-  return { lifted: expired.length };
+  return { lifted: expired.length, premiumRemoved: await removeExpiredPremium(api) };
 }
 
 const actions = { setRole, setPremium, setCanViewProfiles, ban, unban };
@@ -123,5 +116,5 @@ export default handler(
       },
     ]),
   ),
-  { onSchedule: liftExpiredBans },
+  { onSchedule: hourly },
 );

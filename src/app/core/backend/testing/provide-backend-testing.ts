@@ -1,6 +1,7 @@
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 import { AdminRepository } from '../../repositories/admin.repository';
 import { AuthRepository } from '../../repositories/auth.repository';
+import { BillingRepository } from '../../repositories/billing.repository';
 import { ConversationRepository } from '../../repositories/conversation.repository';
 import { FavoriRepository } from '../../repositories/favori.repository';
 import { FriendshipRepository } from '../../repositories/friendship.repository';
@@ -125,6 +126,12 @@ const fakeModeration: ModerationRepository = {
   getBlockedIds: async () => [],
 };
 
+const fakeBilling: BillingRepository = {
+  checkout: async () => ok,
+  portal: async () => ok,
+  getSubscription: async () => ok,
+};
+
 export function provideBackendTesting(): EnvironmentProviders {
   return makeEnvironmentProviders([
     { provide: AuthRepository, useValue: fakeAuth },
@@ -140,5 +147,6 @@ export function provideBackendTesting(): EnvironmentProviders {
     { provide: StorageRepository, useValue: fakeStorage },
     { provide: AdminRepository, useValue: fakeAdmin },
     { provide: ModerationRepository, useValue: fakeModeration },
+    { provide: BillingRepository, useValue: fakeBilling },
   ]);
 }

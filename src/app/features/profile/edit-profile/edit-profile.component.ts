@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
+import { BillingService } from '../../../core/services/billing.service';
+import { Subscription } from '../../../core/models/subscription.model';
 import { Profile } from '../../../core/models/profile.model';
 import { AvatarUploadComponent } from '../avatar-upload/avatar-upload.component';
 import { MetanaCreditComponent } from '../../../core/components/metana-credit/metana-credit.component';
@@ -25,9 +27,13 @@ export class EditProfileComponent implements OnInit {
   errorMessage = '';
   isPremium = false;
   subscriptionEndDate?: Date;
+  /** Abonnement payé avec Stripe : donne accès à l'espace client (factures, résiliation). */
+  subscription: Subscription | null = null;
+  openingPortal = false;
+  portalError = '';
 
   deleteDialogOpen = false;
-  deleteConfirmation = '';
+  deletePassword = '';
   deleting = false;
   deleteError = '';
 
@@ -39,6 +45,7 @@ export class EditProfileComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private profileService: ProfileService,
+    private billing: BillingService,
     private router: Router,
     private location: Location,
   ) {}
@@ -58,11 +65,14 @@ export class EditProfileComponent implements OnInit {
     const { data, error } = await this.profileService.getMyProfile(user.id);
     if (data) {
       this.profile = data;
-      this.isPremium = ['user_premium', 'admin', 'developer'].includes(data.role || '');
       if (data.subscription_end_date) {
         this.subscriptionEndDate = new Date(data.subscription_end_date);
       }
+      this.isPremium =
+        ['user_premium', 'admin', 'developer'].includes(data.role || '') ||
+        (!!this.subscriptionEndDate && this.subscriptionEndDate > new Date());
     }
+    this.subscription = (await this.billing.getSubscription(user.id)).data;
 
     this.loading = false;
   }
@@ -86,6 +96,21 @@ export class EditProfileComponent implements OnInit {
     }
   }
 
+  /** Abonnement Stripe en cours (même résilié, tant que la période payée n'est pas finie). */
+  get hasPaidSubscription() {
+    return this.subscription?.status === 'active' || this.subscription?.status === 'past_due';
+  }
+
+  async openPortal() {
+    this.portalError = '';
+    this.openingPortal = true;
+    const error = await this.billing.manage();
+    if (error) {
+      this.portalError = error;
+      this.openingPortal = false;
+    }
+  }
+
   goToPremium() {
     this.router.navigate(['/premium']);
   }
@@ -95,7 +120,7 @@ export class EditProfileComponent implements OnInit {
   }
 
   openDeleteDialog() {
-    this.deleteConfirmation = '';
+    this.deletePassword = '';
     this.deleteError = '';
     this.deleteDialogOpen = true;
   }
@@ -105,12 +130,13 @@ export class EditProfileComponent implements OnInit {
   }
 
   async deleteAccount() {
-    if (this.deleteConfirmation.trim() !== 'SUPPRIMER') return;
+    if (!this.deletePassword || this.deleting) return;
     this.deleting = true;
     this.deleteError = '';
-    const { error } = await this.authService.deleteAccount();
+    const { error } = await this.authService.deleteAccount(this.deletePassword);
     this.deleting = false;
     if (error) {
+      this.deletePassword = '';
       this.deleteError = error.message;
       return;
     }
