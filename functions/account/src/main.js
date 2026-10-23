@@ -104,7 +104,9 @@ async function checkPassword(api, userId, password) {
 
 /** Supprime le compte du membre connecté et tout ce qui le concerne. */
 async function remove({ api, userId, input }) {
-  await checkPassword(api, userId, input.password);
+  // Un compte sans profil n'a pas fini son inscription (pseudo refusé) : l'application
+  // l'efface aussitôt, sans redemander le mot de passe. Il n'a encore aucune donnée.
+  if (await api.getRow('profiles', userId)) await checkPassword(api, userId, input.password);
   const username = await usernameOf(api, userId);
 
   // Son abonnement payant : arrêté chez Stripe avant tout, pour qu'il ne soit plus prélevé.
