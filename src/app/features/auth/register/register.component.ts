@@ -5,6 +5,9 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { MetanaCreditComponent } from '../../../core/components/metana-credit/metana-credit.component';
 
+/** Même règle que le serveur (fonction « account ») : vérifiée avant de créer le compte. */
+const USERNAME = /^[\p{L}\p{N}._-]{3,40}$/u;
+
 @Component({
   selector: 'app-register',
   standalone: true,
@@ -34,6 +37,13 @@ export class RegisterComponent {
 
     if (!this.adult || !this.acceptTerms) {
       this.errorMessage = 'Cochez les deux cases pour continuer.';
+      this.loading = false;
+      return;
+    }
+
+    if (!USERNAME.test(this.username.trim())) {
+      this.errorMessage =
+        'Pseudo invalide : 3 à 40 lettres, chiffres, points, tirets ou soulignés, sans espace.';
       this.loading = false;
       return;
     }
