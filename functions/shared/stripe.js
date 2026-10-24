@@ -118,7 +118,9 @@ export async function syncSubscription(api, subscriptionId) {
     stripe_subscription_id: subscription.id,
     status,
     current_period_end: end,
-    cancel_at_period_end: !!subscription.cancel_at_period_end,
+    // Les versions récentes de Stripe notent une résiliation en fin de période dans
+    // « cancel_at » (une date) et laissent « cancel_at_period_end » à false.
+    cancel_at_period_end: !!(subscription.cancel_at_period_end || subscription.cancel_at),
   };
   await upsert(api, 'subscriptions', row?.$id ?? userId, data, [`read("user:${userId}")`]);
 
