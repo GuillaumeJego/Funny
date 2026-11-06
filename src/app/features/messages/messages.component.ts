@@ -1,5 +1,6 @@
 import {
   Component,
+  OnDestroy,
   OnInit,
   ChangeDetectionStrategy,
   inject,
@@ -24,7 +25,7 @@ import { ClickableDirective } from '../../core/directives/clickable.directive';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './messages.component.scss',
 })
-export class MessagesComponent implements OnInit {
+export class MessagesComponent implements OnInit, OnDestroy {
   private auth = inject(AuthService);
   private conversationService = inject(ConversationService);
   private friendshipService = inject(FriendshipService);
@@ -36,6 +37,9 @@ export class MessagesComponent implements OnInit {
   myId = '';
   readonly search = signal('');
   readonly openingChat = signal(false);
+  private stopListening: (() => void) | null = null;
+  private destroyed = false;
+  private refreshTimer: ReturnType<typeof setTimeout> | undefined;
 
   async ngOnInit() {
     const {
@@ -53,6 +57,21 @@ export class MessagesComponent implements OnInit {
     this.conversations.set(conversations);
     this.friends.set(friends);
     this.loading.set(false);
+    if (this.destroyed) return;
+
+    // Un nouveau message remonte sa conversation en haut de la liste, sans recharger la page.
+    this.stopListening = this.conversationService.subscribeToAllMessages(() => {
+      clearTimeout(this.refreshTimer);
+      this.refreshTimer = setTimeout(async () => {
+        this.conversations.set(await this.conversationService.getConversations(this.myId));
+      }, 500);
+    });
+  }
+
+  ngOnDestroy() {
+    this.destroyed = true;
+    clearTimeout(this.refreshTimer);
+    this.stopListening?.();
   }
 
   readonly filteredFriends = computed<Friendship[]>(() => {

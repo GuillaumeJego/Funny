@@ -84,6 +84,9 @@ const fakeConversations: ConversationRepository = {
   setReaction: async () => {},
   removeReaction: async () => {},
   onNewMessage: () => () => {},
+  getReactions: async () => [],
+  onAnyNewMessage: () => () => {},
+  onReactionChange: () => () => {},
 };
 
 const fakeNotifications: NotificationRepository = {

@@ -76,6 +76,20 @@ export class ConversationService {
     return data;
   }
 
+  // Écoute les nouveaux messages de toutes ses conversations (liste des conversations)
+  subscribeToAllMessages(callback: () => void): Unsubscribe {
+    return this.conversations.onAnyNewMessage(callback);
+  }
+
+  async getReactions(messageId: string) {
+    return await this.conversations.getReactions(messageId);
+  }
+
+  // Écoute les réactions (ajoutées, changées, retirées) ; donne le message concerné
+  subscribeToReactions(conversationId: string, callback: (messageId: string) => void): Unsubscribe {
+    return this.conversations.onReactionChange(conversationId, callback);
+  }
+
   // Écoute les nouveaux messages ; appeler la fonction renvoyée pour arrêter
   subscribeToMessages(conversationId: string, callback: (message: Message) => void): Unsubscribe {
     return this.conversations.onNewMessage(conversationId, callback);

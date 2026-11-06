@@ -515,3 +515,12 @@
   font-size: 0.85rem;
   z-index: 600;
 }
+
+// ─── Message non envoyé ──────────────────────────────────
+.send-error {
+  padding: 0.4rem 1rem;
+  font-size: 0.82rem;
+  color: #b91c1c;
+  background: #fef2f2;
+  border-top: 1px solid #fecaca;
+}

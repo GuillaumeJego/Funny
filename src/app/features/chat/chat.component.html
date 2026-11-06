@@ -120,7 +120,7 @@
                       appClickable
                       class="reaction-chip"
                       [class.mine]="myReaction(msg) === r.emoji"
-                      (click)="react(r.emoji); $event.stopPropagation()"
+                      (click)="react(r.emoji, msg); $event.stopPropagation()"
                     >
                       {{ r.emoji }}
                       @if (r.count > 1) {
@@ -195,6 +195,9 @@
   <!-- Barre d'input -->
   @if (!blocked() && !unavailable()) {
     <div class="input-area">
+      @if (sendError()) {
+        <div class="send-error" role="alert">{{ sendError() }}</div>
+      }
       <!-- Réponse en cours -->
       @if (replyTo(); as reply) {
         <div class="reply-bar">

@@ -176,6 +176,34 @@ export class AppwriteConversationRepository extends ConversationRepository {
     );
   }
 
+  onAnyNewMessage(callback: () => void): Unsubscribe {
+    // Appwrite n'envoie que les messages des conversations du membre.
+    return this.appwrite.client.subscribe(
+      Channel.tablesdb(DB).table('messages').row().create(),
+      () => callback(),
+    );
+  }
+
+  async getReactions(messageId: string): Promise<MessageReaction[]> {
+    const rows = await this.appwrite.listAll<ReactionRow>('message_reactions', [
+      Query.equal('message_id', messageId),
+    ]);
+    return rows
+      .filter((r) => writtenBy(r, r.user_id))
+      .map((r) => ({ message_id: r.message_id, user_id: r.user_id, emoji: r.emoji }));
+  }
+
+  onReactionChange(conversationId: string, callback: (messageId: string) => void): Unsubscribe {
+    // Ajout, changement et retrait : tous les événements des réactions de la conversation.
+    return this.appwrite.client.subscribe<ReactionRow>(
+      Channel.tablesdb(DB).table('message_reactions').row(),
+      (event) => {
+        if (event.payload.conversation_id !== conversationId) return;
+        callback(event.payload.message_id);
+      },
+    );
+  }
+
   private permissions(conversationId: string, userId: string): string[] {
     return [
       Permission.read(Role.team(conversationId)),

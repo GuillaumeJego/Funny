@@ -64,7 +64,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   readonly reactionPickerPos = signal({ top: 0, left: 0 });
   emojis = EMOJIS;
 
+  /** Message qui n'a pas pu partir : affiché sous la zone de saisie. */
+  readonly sendError = signal('');
+
   private stopListening: (() => void) | null = null;
+  private stopReactions: (() => void) | null = null;
+  private destroyed = false;
   private shouldScroll = false;
 
   async ngOnInit() {
@@ -111,21 +116,42 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
     this.blocked.set(await this.moderationService.isBlocked(this.friendId()));
 
+    if (this.destroyed) return;
+
+    // On écoute avant de charger : un message envoyé pendant le chargement n'est pas perdu.
+    this.stopListening = this.conversationService.subscribeToMessages(
+      this.conversationId,
+      (message) => this.zone.run(() => this.addMessages([message])),
+    );
+    this.stopReactions = this.conversationService.subscribeToReactions(
+      this.conversationId,
+      (messageId) => this.zone.run(() => this.refreshReactions(messageId)),
+    );
+
     await this.loadMessages();
     this.loading.set(false);
     this.shouldScroll = true;
+  }
 
-    this.stopListening = this.conversationService.subscribeToMessages(
-      this.conversationId,
-      (message) => {
-        // Ajoute seulement le nouveau message, sans recharger toute la conversation.
-        this.zone.run(() => {
-          if (this.messages().some((m) => m.id === message.id)) return;
-          this.messages.set([...this.messages(), message]);
-          this.shouldScroll = true;
-        });
-      },
+  /**
+   * Ajoute des messages sans doublon, dans l'ordre d'envoi. Un même message peut arriver
+   * deux fois : par la réponse du serveur à l'envoi, et par le temps réel.
+   */
+  private addMessages(messages: Message[]) {
+    const known = new Set(this.messages().map((m) => m.id));
+    const fresh = messages.filter((m) => !known.has(m.id));
+    if (!fresh.length) return;
+    this.messages.set(
+      [...this.messages(), ...fresh].sort((a, b) => a.created_at.localeCompare(b.created_at)),
     );
+    this.shouldScroll = true;
+  }
+
+  /** Relit les réactions d'un seul message (après un ajout ou un retrait, chez soi ou chez l'autre). */
+  private async refreshReactions(messageId: string) {
+    if (!this.messages().some((m) => m.id === messageId)) return;
+    const reactions = await this.conversationService.getReactions(messageId);
+    this.messages.update((list) => list.map((m) => (m.id === messageId ? { ...m, reactions } : m)));
   }
 
   ngAfterViewChecked() {
@@ -136,11 +162,17 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   ngOnDestroy() {
+    this.destroyed = true;
     this.stopListening?.();
+    this.stopReactions?.();
   }
 
   async loadMessages() {
-    this.messages.set(await this.conversationService.getMessages(this.conversationId));
+    const loaded = await this.conversationService.getMessages(this.conversationId);
+    // Garde les messages arrivés en direct pendant le chargement.
+    const live = this.messages();
+    this.messages.set(loaded);
+    this.addMessages(live);
   }
 
   scrollToBottom() {
@@ -157,8 +189,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     const content = this.text().trim();
     if (!content || this.sending()) return;
     this.sending.set(true);
+    this.sendError.set('');
+    const replyTo = this.replyTo();
     this.text.set('');
-    const replyId = this.replyTo()?.id;
     this.replyTo.set(null);
 
     const msg = await this.conversationService.sendMessage(
@@ -166,11 +199,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.myId,
       content,
       'text',
-      replyId,
+      replyTo?.id,
     );
     if (msg) {
-      this.messages.set([...this.messages(), msg]);
-      this.shouldScroll = true;
+      this.addMessages([msg]);
+    } else {
+      // Rien n'est perdu : le texte revient dans la zone de saisie pour réessayer.
+      if (!this.text()) this.text.set(content);
+      this.replyTo.set(replyTo);
+      this.sendError.set("Le message n'est pas parti. Vérifie ta connexion et réessaie.");
     }
     this.sending.set(false);
   }
@@ -192,6 +229,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
     this.uploading.set(true);
+    this.sendError.set('');
     const type: 'image' | 'video' = file.type.startsWith('video') ? 'video' : 'image';
     const fileId = await this.conversationService.uploadMedia(file, this.myId, this.conversationId);
     if (fileId) {
@@ -204,11 +242,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         fileId,
       );
       if (msg) {
-        this.messages.set([...this.messages(), msg]);
-        this.shouldScroll = true;
+        this.addMessages([msg]);
+        this.replyTo.set(null);
       }
-      this.replyTo.set(null);
     }
+    if (!fileId) this.sendError.set("La photo ou la vidéo n'a pas pu être envoyée. Réessaie.");
     this.uploading.set(false);
     (event.target as HTMLInputElement).value = '';
   }
@@ -228,14 +266,14 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.reactionTarget.set(null);
   }
 
-  async react(emoji: string) {
-    const msg = this.reactionTarget();
+  /** Ajoute, change ou retire sa réaction : depuis le sélecteur, ou en touchant une réaction. */
+  async react(emoji: string, target?: Message) {
+    const msg = target ?? this.reactionTarget();
     if (!msg) return;
+    this.reactionTarget.set(null);
     const existing = msg.reactions?.find((r) => r.user_id === this.myId);
     await this.conversationService.toggleReaction(msg.id, this.myId, emoji, existing?.emoji);
-    const msgs = await this.conversationService.getMessages(this.conversationId);
-    this.messages.set(msgs);
-    this.reactionTarget.set(null);
+    await this.refreshReactions(msg.id);
   }
 
   myReaction(msg: Message): string | undefined {

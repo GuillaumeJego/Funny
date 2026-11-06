@@ -1,4 +1,4 @@
-import { Conversation, Message } from '../models/message.model';
+import { Conversation, Message, MessageReaction } from '../models/message.model';
 import { Unsubscribe } from './repository.types';
 
 export interface NewMessage {
@@ -24,4 +24,13 @@ export abstract class ConversationRepository {
   abstract removeReaction(messageId: string, userId: string): Promise<void>;
   /** Prévient à chaque nouveau message de la conversation, avec le message prêt à afficher. */
   abstract onNewMessage(conversationId: string, callback: (message: Message) => void): Unsubscribe;
+  /** Prévient à chaque nouveau message, dans n'importe laquelle de ses conversations. */
+  abstract onAnyNewMessage(callback: () => void): Unsubscribe;
+  /** Réactions d'un message (celles qui viennent vraiment de leur auteur). */
+  abstract getReactions(messageId: string): Promise<MessageReaction[]>;
+  /** Prévient quand une réaction est ajoutée, changée ou retirée : donne le message concerné. */
+  abstract onReactionChange(
+    conversationId: string,
+    callback: (messageId: string) => void,
+  ): Unsubscribe;
 }
