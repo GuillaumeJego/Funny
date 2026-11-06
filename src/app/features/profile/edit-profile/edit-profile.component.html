@@ -55,12 +55,10 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Statut conjugal</label>
+            <label>Situation</label>
             <select [(ngModel)]="profile().relationship">
-              @for (opt of relationshipOptions; track opt) {
-                <option [value]="opt">
-                  {{ opt === 'secret' ? "C'est secret" : opt }}
-                </option>
+              @for (opt of relationshipOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
               }
             </select>
           </div>

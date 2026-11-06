@@ -13,7 +13,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { BillingService } from '../../../core/services/billing.service';
 import { Subscription } from '../../../core/models/subscription.model';
-import { Profile } from '../../../core/models/profile.model';
+import { Profile, RELATIONSHIP_OPTIONS } from '../../../core/models/profile.model';
 import { AvatarUploadComponent } from '../avatar-upload/avatar-upload.component';
 import { MetanaCreditComponent } from '../../../core/components/metana-credit/metana-credit.component';
 import { isPremiumMember } from '../../../core/utils/premium';
@@ -54,7 +54,7 @@ export class EditProfileComponent implements OnInit {
   genderOptions = ['Homme', 'Femme', 'secret'];
   habitOptions = ['Pas du tout', 'Un peu', 'Beaucoup', 'secret'];
   childrenOptions = ["J'en veux", "J'en ai", "Je n'en ai pas", 'secret'];
-  relationshipOptions = ['En couple', 'Célibataire', 'secret'];
+  relationshipOptions = RELATIONSHIP_OPTIONS;
 
   async ngOnInit() {
     this.loading.set(true);
