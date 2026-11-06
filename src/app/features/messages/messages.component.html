@@ -13,24 +13,24 @@
         placeholder="Rechercher un ami…"
         class="search-input"
       />
-      @if (search) {
-        <button class="clear-btn" (click)="search = ''">✕</button>
+      @if (search()) {
+        <button class="clear-btn" (click)="search.set('')">✕</button>
       }
     </div>
   </div>
 
-  @if (loading) {
+  @if (loading()) {
     <div class="loading">Chargement…</div>
   }
 
   <!-- Résultats de recherche d'amis -->
-  @if (!loading && search.trim()) {
-    @if (filteredFriends.length === 0) {
+  @if (!loading() && search().trim()) {
+    @if (filteredFriends().length === 0) {
       <div class="empty">Aucun ami trouvé.</div>
     }
-    @if (filteredFriends.length > 0) {
+    @if (filteredFriends().length > 0) {
       <div class="membres-grid">
-        @for (f of filteredFriends; track f) {
+        @for (f of filteredFriends(); track f) {
           <div appClickable class="membre-card" (click)="openChatWithFriend(f)">
             <div class="avatar-wrap">
               @if (getFriendProfile(f)?.avatar_url) {
@@ -53,17 +53,17 @@
   }
 
   <!-- Liste des conversations existantes -->
-  @if (!loading && !search.trim()) {
-    @if (conversations.length === 0) {
+  @if (!loading() && !search().trim()) {
+    @if (conversations().length === 0) {
       <div class="empty-state">
         <div class="empty-icon">💬</div>
         <p>Aucune conversation</p>
         <span>Recherchez un ami ci-dessus pour démarrer une discussion.</span>
       </div>
     }
-    @if (conversations.length > 0) {
+    @if (conversations().length > 0) {
       <div class="membres-grid">
-        @for (conv of conversations; track conv) {
+        @for (conv of conversations(); track conv) {
           <div appClickable class="membre-card" (click)="openChat(conv)">
             <div class="avatar-wrap">
               @if (getFriend(conv)?.avatar_url) {

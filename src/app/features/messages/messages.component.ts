@@ -1,4 +1,11 @@
-import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -14,7 +21,7 @@ import { ClickableDirective } from '../../core/directives/clickable.directive';
   standalone: true,
   imports: [ClickableDirective, FormsModule],
   templateUrl: './messages.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './messages.component.scss',
 })
 export class MessagesComponent implements OnInit {
@@ -23,12 +30,12 @@ export class MessagesComponent implements OnInit {
   private friendshipService = inject(FriendshipService);
   router = inject(Router);
 
-  conversations: Conversation[] = [];
-  friends: Friendship[] = [];
-  loading = true;
+  readonly conversations = signal<Conversation[]>([]);
+  readonly friends = signal<Friendship[]>([]);
+  readonly loading = signal(true);
   myId = '';
-  search = '';
-  openingChat = false;
+  readonly search = signal('');
+  readonly openingChat = signal(false);
 
   async ngOnInit() {
     const {
@@ -39,21 +46,23 @@ export class MessagesComponent implements OnInit {
       return;
     }
     this.myId = user.id;
-    [this.conversations, this.friends] = await Promise.all([
+    const [conversations, friends] = await Promise.all([
       this.conversationService.getConversations(user.id),
       this.friendshipService.getFriends(user.id),
     ]);
-    this.loading = false;
+    this.conversations.set(conversations);
+    this.friends.set(friends);
+    this.loading.set(false);
   }
 
-  get filteredFriends(): Friendship[] {
-    const q = this.search.trim().toLowerCase();
+  readonly filteredFriends = computed<Friendship[]>(() => {
+    const q = this.search().trim().toLowerCase();
     if (!q) return [];
-    return this.friends.filter((f) => {
+    return this.friends().filter((f) => {
       const p = this.friendshipService.getFriendProfile(f, this.myId);
       return p?.username?.toLowerCase().includes(q);
     });
-  }
+  });
 
   getFriendProfile(f: Friendship) {
     return this.friendshipService.getFriendProfile(f, this.myId);
@@ -65,8 +74,8 @@ export class MessagesComponent implements OnInit {
 
   async openChatWithFriend(f: Friendship) {
     const p = this.friendshipService.getFriendProfile(f, this.myId);
-    if (!p?.id || this.openingChat) return;
-    this.openingChat = true;
+    if (!p?.id || this.openingChat()) return;
+    this.openingChat.set(true);
     const convId = await this.conversationService.getOrCreateConversation(this.myId, p.id);
     this.router.navigate(['/messages', convId], {
       state: { friendName: p.username, friendAvatar: p.avatar_url, friendId: p.id },

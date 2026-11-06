@@ -4,16 +4,16 @@
     class="btn-more"
     aria-label="Signaler ou bloquer"
     aria-haspopup="menu"
-    [attr.aria-expanded]="menuOpen"
-    (click)="menuOpen = !menuOpen; $event.stopPropagation()"
+    [attr.aria-expanded]="menuOpen()"
+    (click)="menuOpen.set(!menuOpen()); $event.stopPropagation()"
   >
     ⋯
   </button>
-  @if (menuOpen) {
+  @if (menuOpen()) {
     <div class="menu" role="menu">
       <button type="button" role="menuitem" (click)="open('report')">🚩 Signaler</button>
       @if (blocked()) {
-        <button type="button" role="menuitem" (click)="unblock()" [disabled]="busy">
+        <button type="button" role="menuitem" (click)="unblock()" [disabled]="busy()">
           🔓 Débloquer
         </button>
       } @else {
@@ -25,7 +25,7 @@
   }
 </div>
 
-@if (dialog) {
+@if (dialog()) {
   <div class="modal-overlay" (click)="close()" (keydown.escape)="close()">
     <div
       class="modal"
@@ -34,11 +34,11 @@
       aria-labelledby="safety-title"
       (click)="$event.stopPropagation()"
     >
-      @switch (dialog) {
+      @switch (dialog()) {
         @case ('report') {
-          <h3 id="safety-title" class="modal-title">🚩 Signaler {{ username }}</h3>
+          <h3 id="safety-title" class="modal-title">🚩 Signaler {{ username() }}</h3>
           <p class="modal-desc">
-            Les admins de Funny liront votre signalement. {{ username }} ne saura pas qui l'a
+            Les admins de Funny liront votre signalement. {{ username() }} ne saura pas qui l'a
             signalé.
           </p>
           <fieldset class="reasons">
@@ -62,8 +62,8 @@
             En cas de danger immédiat, appelez le 17 (police) ou le 112. Vous pouvez aussi bloquer
             ce membre.
           </p>
-          @if (errorMessage) {
-            <div class="error">{{ errorMessage }}</div>
+          @if (errorMessage()) {
+            <div class="error">{{ errorMessage() }}</div>
           }
           <div class="modal-actions">
             <button type="button" class="btn-cancel" (click)="close()">Annuler</button>
@@ -71,16 +71,16 @@
               type="button"
               class="btn-danger"
               (click)="sendReport()"
-              [disabled]="!reason || busy"
+              [disabled]="!reason() || busy()"
             >
-              {{ busy ? 'Envoi…' : 'Envoyer' }}
+              {{ busy() ? 'Envoi…' : 'Envoyer' }}
             </button>
           </div>
         }
         @case ('reported') {
           <h3 id="safety-title" class="modal-title">Merci</h3>
           <p class="modal-desc">
-            Votre signalement a été envoyé aux admins. Voulez-vous aussi bloquer {{ username }} ?
+            Votre signalement a été envoyé aux admins. Voulez-vous aussi bloquer {{ username() }} ?
           </p>
           <div class="modal-actions">
             <button type="button" class="btn-cancel" (click)="close()">Non, fermer</button>
@@ -90,23 +90,23 @@
           </div>
         }
         @case ('block') {
-          <h3 id="safety-title" class="modal-title">🚫 Bloquer {{ username }} ?</h3>
+          <h3 id="safety-title" class="modal-title">🚫 Bloquer {{ username() }} ?</h3>
           <ul class="modal-list">
             <li>Vous ne serez plus amis.</li>
-            <li>Ni vous ni {{ username }} ne pourrez vous envoyer de demande d'ami.</li>
+            <li>Ni vous ni {{ username() }} ne pourrez vous envoyer de demande d'ami.</li>
             <li>
-              {{ username }} n'aura plus accès à votre conversation. Vous gardez l'historique.
+              {{ username() }} n'aura plus accès à votre conversation. Vous gardez l'historique.
             </li>
-            <li>{{ username }} n'est pas prévenu.</li>
+            <li>{{ username() }} n'est pas prévenu.</li>
           </ul>
           <p class="hint">Vous pourrez le débloquer depuis son profil.</p>
-          @if (errorMessage) {
-            <div class="error">{{ errorMessage }}</div>
+          @if (errorMessage()) {
+            <div class="error">{{ errorMessage() }}</div>
           }
           <div class="modal-actions">
             <button type="button" class="btn-cancel" (click)="close()">Annuler</button>
-            <button type="button" class="btn-danger" (click)="confirmBlock()" [disabled]="busy">
-              {{ busy ? 'Blocage…' : 'Bloquer' }}
+            <button type="button" class="btn-danger" (click)="confirmBlock()" [disabled]="busy()">
+              {{ busy() ? 'Blocage…' : 'Bloquer' }}
             </button>
           </div>
         }
