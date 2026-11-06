@@ -10,6 +10,19 @@ type MessageRow = Models.Row & Omit<NewMessage, 'media_file_id'> & { media_file_
 type ConversationRow = Models.Row & { participant_ids: string[] };
 type ReactionRow = Models.Row & MessageReaction & { conversation_id: string };
 
+/** Nombre de messages chargés à l'ouverture d'une conversation. */
+const MESSAGES_LOADED = 200;
+
+/**
+ * Le message (ou la réaction) a-t-il vraiment été écrit par `authorId` ? Le navigateur choisit
+ * lui-même `sender_id`, mais Appwrite ne laisse donner le droit « update » qu'à soi-même :
+ * seul l'auteur réel peut figurer dans ce droit. Un message qui prétend venir de l'autre
+ * membre est donc ignoré.
+ */
+function writtenBy(row: Models.Row, authorId: string): boolean {
+  return row.$permissions.includes(`update("user:${authorId}")`);
+}
+
 /**
  * Chaque conversation est une équipe Appwrite à deux membres, créée par le serveur.
  * Messages, réactions et fichiers sont lisibles par cette équipe seulement.
@@ -49,7 +62,7 @@ export class AppwriteConversationRepository extends ConversationRepository {
             Query.limit(1),
           ],
         });
-        const last = page.rows[0];
+        const last = page.rows.find((r) => writtenBy(r, r.sender_id));
         return {
           id: row.$id,
           created_at: row.$createdAt,
@@ -65,17 +78,29 @@ export class AppwriteConversationRepository extends ConversationRepository {
     return row?.participant_ids.find((id) => id !== userId) ?? null;
   }
 
+  /** Les derniers messages (MESSAGES_LOADED au plus), du plus ancien au plus récent. */
   async getMessages(conversationId: string): Promise<Message[]> {
-    const [rows, reactions] = await Promise.all([
-      this.appwrite.listAll<MessageRow>('messages', [
+    const page = await this.appwrite.tables.listRows<MessageRow>({
+      databaseId: DB,
+      tableId: 'messages',
+      queries: [
         Query.equal('conversation_id', conversationId),
-        Query.orderAsc('$createdAt'),
-      ]),
-      this.appwrite.listAll<ReactionRow>('message_reactions', [
-        Query.equal('conversation_id', conversationId),
-      ]),
-    ]);
-    return this.enrich(rows, reactions);
+        Query.orderDesc('$createdAt'),
+        Query.limit(MESSAGES_LOADED),
+      ],
+    });
+    const rows = page.rows.filter((r) => writtenBy(r, r.sender_id)).reverse();
+    const reactions = rows.length
+      ? await this.appwrite.listIn<ReactionRow>(
+          'message_reactions',
+          'message_id',
+          rows.map((r) => r.$id),
+        )
+      : [];
+    return this.enrich(
+      rows,
+      reactions.filter((r) => writtenBy(r, r.user_id)),
+    );
   }
 
   async sendMessage(message: NewMessage): Promise<Message | null> {
@@ -138,11 +163,17 @@ export class AppwriteConversationRepository extends ConversationRepository {
     }
   }
 
-  onNewMessage(conversationId: string, callback: () => void): Unsubscribe {
+  onNewMessage(conversationId: string, callback: (message: Message) => void): Unsubscribe {
     return this.appwrite.client.subscribe<MessageRow>(
       Channel.tablesdb(DB).table('messages').row().create(),
-      (event) => {
-        if (event.payload.conversation_id === conversationId) callback();
+      async (event) => {
+        const row = event.payload;
+        if (row.conversation_id !== conversationId || !writtenBy(row, row.sender_id)) return;
+        const replied = row.reply_to_id
+          ? await this.appwrite.getRowOrNull<MessageRow>('messages', row.reply_to_id)
+          : null;
+        const [message] = await this.enrich([row], [], replied ? [replied] : []);
+        callback(message);
       },
     );
   }

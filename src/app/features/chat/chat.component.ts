@@ -115,10 +115,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     this.stopListening = this.conversationService.subscribeToMessages(
       this.conversationId,
-      async () => {
-        const msgs = await this.conversationService.getMessages(this.conversationId);
+      (message) => {
+        // Ajoute seulement le nouveau message, sans recharger toute la conversation.
         this.zone.run(() => {
-          this.messages = msgs;
+          if (this.messages.some((m) => m.id === message.id)) return;
+          this.messages = [...this.messages, message];
           this.shouldScroll = true;
         });
       },

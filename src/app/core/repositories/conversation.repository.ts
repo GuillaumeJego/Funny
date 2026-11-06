@@ -22,5 +22,6 @@ export abstract class ConversationRepository {
   abstract sendMessage(message: NewMessage): Promise<Message | null>;
   abstract setReaction(messageId: string, userId: string, emoji: string): Promise<void>;
   abstract removeReaction(messageId: string, userId: string): Promise<void>;
-  abstract onNewMessage(conversationId: string, callback: () => void): Unsubscribe;
+  /** Prévient à chaque nouveau message de la conversation, avec le message prêt à afficher. */
+  abstract onNewMessage(conversationId: string, callback: (message: Message) => void): Unsubscribe;
 }

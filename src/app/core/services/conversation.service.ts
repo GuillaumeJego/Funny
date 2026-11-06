@@ -79,7 +79,7 @@ export class ConversationService {
   }
 
   // Écoute les nouveaux messages ; appeler la fonction renvoyée pour arrêter
-  subscribeToMessages(conversationId: string, callback: () => void): Unsubscribe {
+  subscribeToMessages(conversationId: string, callback: (message: Message) => void): Unsubscribe {
     return this.conversations.onNewMessage(conversationId, callback);
   }
 }

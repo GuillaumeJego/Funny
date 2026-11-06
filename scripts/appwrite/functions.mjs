@@ -34,7 +34,8 @@ const FUNCTIONS = [
     id: 'sorties',
     name: 'Sorties',
     timeout: 30,
-    scopes: ['rows.read', 'rows.write', 'teams.read', 'files.write'],
+    // files.read : vérifier que la photo d'une sortie est bien dans notre stockage.
+    scopes: ['rows.read', 'rows.write', 'teams.read', 'files.read', 'files.write'],
   },
   {
     id: 'social',

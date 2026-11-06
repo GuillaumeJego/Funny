@@ -10,6 +10,9 @@ import {
   usernameOf,
 } from './shared/appwrite.js';
 
+/** Délai avant de pouvoir redemander en ami un membre qui a refusé : 30 jours. */
+const RETRY_AFTER_DECLINE_MS = 30 * 24 * 3600 * 1000;
+
 async function friendshipBetween(api, a, b) {
   return api.findRow('friendships', [
     Query.or([
@@ -49,6 +52,15 @@ async function friendRequest({ api, userId, input }) {
 
   const existing = await friendshipBetween(api, userId, otherId);
   if (existing && existing.status !== 'declined') return { friendship: existing };
+  // Après un refus, celui qui avait demandé doit attendre avant de redemander :
+  // pas de rafale de notifications pour le membre qui a dit non.
+  if (
+    existing &&
+    existing.requester_id === userId &&
+    Date.now() - new Date(existing.$updatedAt).getTime() < RETRY_AFTER_DECLINE_MS
+  ) {
+    fail(429, 'Ce membre a refusé votre demande récemment. Réessayez dans quelques semaines.');
+  }
   if (existing) await api.deleteRow('friendships', existing.$id);
 
   const friendship = await api.createRow(
