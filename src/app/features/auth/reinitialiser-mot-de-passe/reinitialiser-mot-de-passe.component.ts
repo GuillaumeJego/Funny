@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -10,7 +10,7 @@ import { MetanaCreditComponent } from '../../../core/components/metana-credit/me
   standalone: true,
   imports: [FormsModule, RouterLink, MetanaCreditComponent],
   templateUrl: './reinitialiser-mot-de-passe.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: '../login/login.component.scss',
 })
 export class ReinitialiserMotDePasseComponent {
@@ -19,8 +19,8 @@ export class ReinitialiserMotDePasseComponent {
 
   password = '';
   confirmPassword = '';
-  loading = false;
-  errorMessage = '';
+  readonly loading = signal(false);
+  readonly errorMessage = signal('');
   private readonly userId: string | null;
   private readonly secret: string | null;
 
@@ -36,20 +36,20 @@ export class ReinitialiserMotDePasseComponent {
   }
 
   async onSubmit() {
-    this.errorMessage = '';
+    this.errorMessage.set('');
     if (this.password !== this.confirmPassword) {
-      this.errorMessage = 'Les mots de passe ne correspondent pas.';
+      this.errorMessage.set('Les mots de passe ne correspondent pas.');
       return;
     }
-    this.loading = true;
+    this.loading.set(true);
     const { error } = await this.authService.resetPassword(
       this.userId!,
       this.secret!,
       this.password,
     );
-    this.loading = false;
+    this.loading.set(false);
     if (error) {
-      this.errorMessage = error.message;
+      this.errorMessage.set(error.message);
       return;
     }
     this.router.navigate(['/login'], { queryParams: { 'mot-de-passe': 'modifie' } });

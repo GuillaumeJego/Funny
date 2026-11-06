@@ -23,7 +23,7 @@ import { LEGAL } from './legal-info';
       </nav>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './legal.scss',
 })
 export class LegalLayoutComponent {

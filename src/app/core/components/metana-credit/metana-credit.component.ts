@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
   selector: 'app-metana-credit',
   imports: [RouterLink],
   templateUrl: './metana-credit.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './metana-credit.component.scss',
 })
 export class MetanaCreditComponent {}

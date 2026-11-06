@@ -8,7 +8,7 @@
     </div>
 
     <!-- Menu déroulant ancré sous le burger -->
-    @if (menuOpen) {
+    @if (menuOpen()) {
       <div class="dropdown-menu">
         <div appClickable class="menu-item" (click)="logout()">🚪 Déconnexion</div>
       </div>
@@ -24,24 +24,24 @@
     <div
       appClickable
       class="subscription-badge"
-      [class.premium]="isPremium"
-      [class.not-premium]="!isPremium"
+      [class.premium]="isPremium()"
+      [class.not-premium]="!isPremium()"
       (click)="goToPremium()"
-      [title]="isPremium ? 'Abonné Premium' : 'Passer Premium'"
+      [title]="isPremium() ? 'Abonné Premium' : 'Passer Premium'"
     >
-      <span class="badge-icon">{{ isPremium ? '⭐' : '🔓' }}</span>
-      @if (isPremium && subscriptionLabel) {
-        <span class="badge-label">{{ subscriptionLabel }}</span>
+      <span class="badge-icon">{{ isPremium() ? '⭐' : '🔓' }}</span>
+      @if (isPremium() && subscriptionLabel()) {
+        <span class="badge-label">{{ subscriptionLabel() }}</span>
       }
-      @if (!isPremium) {
+      @if (!isPremium()) {
         <span class="badge-label">Non abonné</span>
       }
     </div>
 
     <!-- Avatar -->
     <div appClickable class="profile-btn" (click)="goToProfile()">
-      @if (avatarUrl) {
-        <img [src]="avatarUrl" alt="Avatar" class="avatar" />
+      @if (avatarUrl()) {
+        <img [src]="avatarUrl()" alt="Avatar" class="avatar" />
       } @else {
         <div class="avatar-placeholder">👤</div>
       }

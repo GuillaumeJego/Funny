@@ -1,10 +1,10 @@
 <!-- Navbars (cachées sur login/register) -->
-@if (showNavbar) {
+@if (showNavbar()) {
   <app-navbar-top />
   <app-navbar-main />
 }
 
 <!-- Contenu de la page -->
-<main [class.with-navbar]="showNavbar">
+<main [class.with-navbar]="showNavbar()">
   <router-outlet />
 </main>

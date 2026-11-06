@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -13,7 +13,7 @@ const USERNAME = /^[\p{L}\p{N}._-]{3,40}$/u;
   standalone: true,
   imports: [FormsModule, RouterLink, MetanaCreditComponent],
   templateUrl: './register.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
@@ -26,29 +26,30 @@ export class RegisterComponent {
   confirmPassword = '';
   adult = false;
   acceptTerms = false;
-  errorMessage = '';
-  loading = false;
+  readonly errorMessage = signal('');
+  readonly loading = signal(false);
 
   async onRegister() {
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
     if (!this.adult || !this.acceptTerms) {
-      this.errorMessage = 'Cochez les deux cases pour continuer.';
-      this.loading = false;
+      this.errorMessage.set('Cochez les deux cases pour continuer.');
+      this.loading.set(false);
       return;
     }
 
     if (!USERNAME.test(this.username.trim())) {
-      this.errorMessage =
-        'Pseudo invalide : 3 à 40 lettres, chiffres, points, tirets ou soulignés, sans espace.';
-      this.loading = false;
+      this.errorMessage.set(
+        'Pseudo invalide : 3 à 40 lettres, chiffres, points, tirets ou soulignés, sans espace.',
+      );
+      this.loading.set(false);
       return;
     }
 
     if (this.password !== this.confirmPassword) {
-      this.errorMessage = 'Les mots de passe ne correspondent pas.';
-      this.loading = false;
+      this.errorMessage.set('Les mots de passe ne correspondent pas.');
+      this.loading.set(false);
       return;
     }
 
@@ -59,9 +60,9 @@ export class RegisterComponent {
       { adult: this.adult, terms: this.acceptTerms },
     );
 
-    this.loading = false;
+    this.loading.set(false);
     if (error) {
-      this.errorMessage = error.message || 'Une erreur est survenue. Veuillez réessayer.';
+      this.errorMessage.set(error.message || 'Une erreur est survenue. Veuillez réessayer.');
       return;
     }
     // Le compte est créé : on envoie l'e-mail de confirmation. En cas d'échec,

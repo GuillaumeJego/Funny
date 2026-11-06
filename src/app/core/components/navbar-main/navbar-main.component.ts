@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { DrawerService } from '../../services/drawer.service';
@@ -13,7 +13,7 @@ import { ClickableDirective } from '../../directives/clickable.directive';
   standalone: true,
   imports: [ClickableDirective],
   templateUrl: './navbar-main.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './navbar-main.component.scss',
 })
 export class NavbarMainComponent implements OnInit {
@@ -34,9 +34,9 @@ export class NavbarMainComponent implements OnInit {
     { icon: '🔔', label: 'Notifs', route: '/notifications' },
   ];
 
-  unreadCount = 0;
-  pendingFriendsCount = 0;
-  isAdmin = false;
+  readonly unreadCount = signal(0);
+  readonly pendingFriendsCount = signal(0);
+  readonly isAdmin = signal(false);
 
   async ngOnInit() {
     const {
@@ -48,14 +48,14 @@ export class NavbarMainComponent implements OnInit {
         this.profileService.getMyProfile(user.id),
         this.friendshipService.getPendingReceivedCount(user.id),
       ]);
-      this.unreadCount = count;
-      this.pendingFriendsCount = pendingFriends;
-      this.isAdmin = profile.data?.role === 'admin' || profile.data?.role === 'developer';
+      this.unreadCount.set(count);
+      this.pendingFriendsCount.set(pendingFriends);
+      this.isAdmin.set(profile.data?.role === 'admin' || profile.data?.role === 'developer');
     }
   }
 
   navigate(route: string) {
-    if (route === '/notifications') this.unreadCount = 0;
+    if (route === '/notifications') this.unreadCount.set(0);
     this.drawerService.closeAll();
     this.router.navigate([route]);
   }

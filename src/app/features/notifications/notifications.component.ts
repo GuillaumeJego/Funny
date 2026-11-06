@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -9,7 +9,7 @@ import { NotificationService, Notification } from '../../core/services/notificat
   standalone: true,
   imports: [],
   templateUrl: './notifications.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './notifications.component.scss',
 })
 export class NotificationsComponent implements OnInit {
@@ -17,8 +17,8 @@ export class NotificationsComponent implements OnInit {
   private notifService = inject(NotificationService);
   private router = inject(Router);
 
-  notifications: Notification[] = [];
-  loading = true;
+  readonly notifications = signal<Notification[]>([]);
+  readonly loading = signal(true);
   userId = '';
 
   async ngOnInit() {
@@ -32,8 +32,8 @@ export class NotificationsComponent implements OnInit {
     this.userId = user.id;
 
     const { data } = await this.notifService.getMyNotifications(user.id);
-    this.notifications = (data ?? []) as Notification[];
-    this.loading = false;
+    this.notifications.set((data ?? []) as Notification[]);
+    this.loading.set(false);
 
     // Marquer toutes comme lues après affichage
     await this.notifService.markAllRead(user.id);

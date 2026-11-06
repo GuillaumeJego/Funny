@@ -48,12 +48,12 @@
       </span>
     </label>
 
-    @if (errorMessage) {
-      <div class="error">{{ errorMessage }}</div>
+    @if (errorMessage()) {
+      <div class="error">{{ errorMessage() }}</div>
     }
 
-    <button (click)="onRegister()" [disabled]="loading || !adult || !acceptTerms">
-      {{ loading ? 'Inscription...' : "S'inscrire" }}
+    <button (click)="onRegister()" [disabled]="loading() || !adult || !acceptTerms">
+      {{ loading() ? 'Inscription...' : "S'inscrire" }}
     </button>
 
     <p class="login-link">

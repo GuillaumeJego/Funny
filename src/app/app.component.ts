@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { NavbarTopComponent } from './core/components/navbar-top/navbar-top.component';
@@ -10,14 +10,14 @@ import { filter } from 'rxjs/operators';
   standalone: true,
   imports: [RouterOutlet, NavbarTopComponent, NavbarMainComponent],
   templateUrl: './app.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
   private router = inject(Router);
 
-  showNavbar = false;
-  currentRoute = '';
+  readonly showNavbar = signal(false);
+  readonly currentRoute = signal('');
 
   // Pages sans navbar : connexion, inscription, liens reçus par e-mail, et pages légales (lisibles sans compte)
   private noNavbarRoutes = [
@@ -36,8 +36,8 @@ export class AppComponent implements OnInit {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: any) => {
-        this.currentRoute = event.url;
-        this.showNavbar = !this.noNavbarRoutes.includes(event.url.split(/[?#]/)[0]);
+        this.currentRoute.set(event.url);
+        this.showNavbar.set(!this.noNavbarRoutes.includes(event.url.split(/[?#]/)[0]));
       });
   }
 }

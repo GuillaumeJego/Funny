@@ -7,7 +7,7 @@ import { LEGAL } from './legal-info';
   standalone: true,
   imports: [LegalLayoutComponent],
   templateUrl: './aide.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AideComponent {
   legal = LEGAL;

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -9,30 +9,30 @@ import { MetanaCreditComponent } from '../../../core/components/metana-credit/me
   standalone: true,
   imports: [FormsModule, RouterLink, MetanaCreditComponent],
   templateUrl: './mot-de-passe-oublie.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: '../login/login.component.scss',
 })
 export class MotDePasseOublieComponent {
   private authService = inject(AuthService);
 
-  email = '';
-  sent = false;
-  loading = false;
-  errorMessage = '';
+  readonly email = signal('');
+  readonly sent = signal(false);
+  readonly loading = signal(false);
+  readonly errorMessage = signal('');
 
   async onSubmit() {
-    this.errorMessage = '';
-    if (!this.email.trim()) {
-      this.errorMessage = 'Indiquez votre adresse e-mail.';
+    this.errorMessage.set('');
+    if (!this.email().trim()) {
+      this.errorMessage.set('Indiquez votre adresse e-mail.');
       return;
     }
-    this.loading = true;
-    const { error } = await this.authService.sendPasswordRecovery(this.email.trim());
-    this.loading = false;
+    this.loading.set(true);
+    const { error } = await this.authService.sendPasswordRecovery(this.email().trim());
+    this.loading.set(false);
     if (error) {
-      this.errorMessage = error.message;
+      this.errorMessage.set(error.message);
     } else {
-      this.sent = true;
+      this.sent.set(true);
     }
   }
 }

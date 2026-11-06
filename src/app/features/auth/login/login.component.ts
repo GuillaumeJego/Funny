@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -10,7 +10,7 @@ import { MetanaCreditComponent } from '../../../core/components/metana-credit/me
   standalone: true,
   imports: [FormsModule, RouterLink, MetanaCreditComponent],
   templateUrl: './login.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './login.component.scss',
 })
 export class LoginComponent {
@@ -19,37 +19,37 @@ export class LoginComponent {
 
   email = '';
   password = '';
-  errorMessage = '';
-  loading = false;
+  readonly errorMessage = signal('');
+  readonly loading = signal(false);
   /** Affiché après la suppression du compte, un changement de mot de passe ou la confirmation de l'adresse. */
-  successMessage = '';
+  readonly successMessage = signal('');
 
   constructor() {
     const route = inject(ActivatedRoute);
 
     const params = route.snapshot.queryParamMap;
     if (params.get('compte') === 'supprime') {
-      this.successMessage = 'Votre compte et toutes vos données ont été supprimés.';
+      this.successMessage.set('Votre compte et toutes vos données ont été supprimés.');
     } else if (params.get('mot-de-passe') === 'modifie') {
-      this.successMessage = 'Votre mot de passe a été modifié. Vous pouvez vous connecter.';
+      this.successMessage.set('Votre mot de passe a été modifié. Vous pouvez vous connecter.');
     } else if (params.get('email') === 'confirme') {
-      this.successMessage = 'Votre adresse est confirmée. Vous pouvez vous connecter.';
+      this.successMessage.set('Votre adresse est confirmée. Vous pouvez vous connecter.');
     }
   }
 
   async onLogin() {
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
     const { error } = await this.authService.login(this.email, this.password);
 
     if (error) {
       // Le message distingue un compte suspendu ; sinon il ne dit pas si l'email existe.
-      this.errorMessage = error.message || 'Email ou mot de passe incorrect.';
+      this.errorMessage.set(error.message || 'Email ou mot de passe incorrect.');
     } else {
       this.router.navigate(['/dashboard']);
     }
 
-    this.loading = false;
+    this.loading.set(false);
   }
 }
