@@ -15,42 +15,42 @@
     </button>
     <div class="header-identity">
       <div class="header-avatar">
-        @if (friendAvatar) {
-          <img [src]="friendAvatar" class="h-avatar-img" alt="" />
+        @if (friendAvatar()) {
+          <img [src]="friendAvatar()" class="h-avatar-img" alt="" />
         }
-        @if (!friendAvatar) {
+        @if (!friendAvatar()) {
           <div class="h-avatar-placeholder">
-            {{ friendName.charAt(0).toUpperCase() || '?' }}
+            {{ friendName().charAt(0).toUpperCase() || '?' }}
           </div>
         }
       </div>
-      <span class="header-name">{{ friendName || 'Conversation' }}</span>
+      <span class="header-name">{{ friendName() || 'Conversation' }}</span>
     </div>
-    @if (friendId) {
+    @if (friendId()) {
       <div class="header-actions">
         <app-member-safety
-          [memberId]="friendId"
-          [username]="friendName"
-          [blocked]="blocked"
-          (blockedChange)="blocked = $event"
+          [memberId]="friendId()"
+          [username]="friendName()"
+          [blocked]="blocked()"
+          (blockedChange)="blocked.set($event)"
         />
       </div>
     }
   </div>
 
-  @if (unavailable) {
+  @if (unavailable()) {
     <div class="state-center chat-notice">Cette conversation n'est plus disponible.</div>
   }
 
   <!-- Spinner -->
-  @if (loading) {
+  @if (loading()) {
     <div class="state-center"><div class="spinner"></div></div>
   }
 
   <!-- Messages -->
-  @if (!loading && !unavailable) {
+  @if (!loading() && !unavailable()) {
     <div class="messages-area">
-      @for (msg of messages; track msg; let i = $index) {
+      @for (msg of messages(); track msg.id; let i = $index) {
         <div>
           <!-- Séparateur de jour -->
           @if (showDayDivider(i)) {
@@ -158,17 +158,17 @@
   }
 
   <!-- Picker de réactions -->
-  @if (reactionTarget) {
+  @if (reactionTarget(); as target) {
     <div
       class="reaction-picker"
-      [style.top.px]="reactionPickerPos.top"
-      [style.left.px]="reactionPickerPos.left"
+      [style.top.px]="reactionPickerPos().top"
+      [style.left.px]="reactionPickerPos().left"
       (click)="$event.stopPropagation()"
     >
       @for (e of emojis; track e) {
         <button class="emoji-btn" (click)="react(e)">{{ e }}</button>
       }
-      <button class="emoji-btn reply-btn" (click)="setReply(reactionTarget!)" title="Répondre">
+      <button class="emoji-btn reply-btn" (click)="setReply(target)" title="Répondre">
         <svg
           width="16"
           height="16"
@@ -185,29 +185,30 @@
   }
 
   <!-- Membre bloqué : plus d'envoi possible -->
-  @if (blocked) {
+  @if (blocked()) {
     <div class="blocked-bar">
-      🚫 Vous avez bloqué {{ friendName }}. Débloquez-le avec le bouton ⋯ pour lui écrire à nouveau.
+      🚫 Vous avez bloqué {{ friendName() }}. Débloquez-le avec le bouton ⋯ pour lui écrire à
+      nouveau.
     </div>
   }
 
   <!-- Barre d'input -->
-  @if (!blocked && !unavailable) {
+  @if (!blocked() && !unavailable()) {
     <div class="input-area">
       <!-- Réponse en cours -->
-      @if (replyTo) {
+      @if (replyTo(); as reply) {
         <div class="reply-bar">
           <div class="reply-bar-content">
-            <span class="reply-bar-author">{{ replyTo.sender?.username || 'Vous' }}</span>
+            <span class="reply-bar-author">{{ reply.sender?.username || 'Vous' }}</span>
             <span class="reply-bar-text">
-              @if (replyTo.type === 'image') {
+              @if (reply.type === 'image') {
                 📷 Photo
               }
-              @if (replyTo.type === 'video') {
+              @if (reply.type === 'video') {
                 🎥 Vidéo
               }
-              @if (replyTo.type === 'text') {
-                {{ replyTo.content }}
+              @if (reply.type === 'text') {
+                {{ reply.content }}
               }
             </span>
           </div>
@@ -257,13 +258,13 @@
           "
         ></textarea>
 
-        <button class="btn-send" [disabled]="!text.trim() || sending" (click)="send()">
-          @if (!sending) {
+        <button class="btn-send" [disabled]="!text().trim() || sending()" (click)="send()">
+          @if (!sending()) {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M2 21l21-9L2 3v7l15 2-15 2z" />
             </svg>
           }
-          @if (sending) {
+          @if (sending()) {
             <div class="spinner-sm"></div>
           }
         </button>
@@ -274,7 +275,7 @@
   }
 
   <!-- Indicateur upload -->
-  @if (uploading) {
+  @if (uploading()) {
     <div class="upload-indicator">
       <div class="spinner-sm"></div>
       <span>Envoi en cours…</span>

@@ -3,25 +3,25 @@
     <h1>Administration</h1>
   </div>
 
-  @if (loading) {
+  @if (loading()) {
     <div class="state-message">
       <div class="spinner"></div>
     </div>
   }
 
-  @if (!loading) {
+  @if (!loading()) {
     <!-- ── Signalements ── -->
     <section class="section">
       <h2 class="section-title">
         Signalements
-        @if (reports.length) {
-          <span class="count-badge">{{ reports.length }}</span>
+        @if (reports().length) {
+          <span class="count-badge">{{ reports().length }}</span>
         }
       </h2>
-      @if (reports.length === 0) {
+      @if (reports().length === 0) {
         <p class="section-desc">Aucun signalement en attente.</p>
       }
-      @for (r of reports; track r.id) {
+      @for (r of reports(); track r.id) {
         <div class="report-card">
           <div class="report-head">
             <a
@@ -53,7 +53,7 @@
     </section>
 
     <!-- ── Thèmes des sorties ── -->
-    <app-admin-themes [adminId]="currentUserId" />
+    <app-admin-themes [adminId]="currentUserId()" />
 
     <!-- ── Paramètres globaux ── -->
     <section class="section">
@@ -68,9 +68,9 @@
         </div>
         <button
           class="toggle"
-          [class.on]="profilePagePremiumOnly"
+          [class.on]="profilePagePremiumOnly()"
           (click)="togglePremiumOnly()"
-          [disabled]="saving"
+          [disabled]="saving()"
         >
           <span class="toggle-knob"></span>
         </button>
@@ -83,10 +83,10 @@
       <div class="radio-group">
         <label
           class="radio-option"
-          [class.active]="sortieCreationAccess === 'all'"
+          [class.active]="sortieCreationAccess() === 'all'"
           (click)="setSortieCreationAccess('all')"
         >
-          <span class="radio-dot" [class.checked]="sortieCreationAccess === 'all'"></span>
+          <span class="radio-dot" [class.checked]="sortieCreationAccess() === 'all'"></span>
           <div>
             <div class="radio-label">🌍 Tout le monde</div>
             <div class="radio-desc">Tout utilisateur connecté peut créer une sortie</div>
@@ -94,10 +94,10 @@
         </label>
         <label
           class="radio-option"
-          [class.active]="sortieCreationAccess === 'premium'"
+          [class.active]="sortieCreationAccess() === 'premium'"
           (click)="setSortieCreationAccess('premium')"
         >
-          <span class="radio-dot" [class.checked]="sortieCreationAccess === 'premium'"></span>
+          <span class="radio-dot" [class.checked]="sortieCreationAccess() === 'premium'"></span>
           <div>
             <div class="radio-label">⭐ Abonnés uniquement</div>
             <div class="radio-desc">Seuls les abonnés Premium (et admins) peuvent créer</div>
@@ -105,10 +105,10 @@
         </label>
         <label
           class="radio-option"
-          [class.active]="sortieCreationAccess === 'admin'"
+          [class.active]="sortieCreationAccess() === 'admin'"
           (click)="setSortieCreationAccess('admin')"
         >
-          <span class="radio-dot" [class.checked]="sortieCreationAccess === 'admin'"></span>
+          <span class="radio-dot" [class.checked]="sortieCreationAccess() === 'admin'"></span>
           <div>
             <div class="radio-label">🛡️ Admins uniquement</div>
             <div class="radio-desc">Seuls les admins peuvent créer</div>
@@ -131,7 +131,7 @@
         />
       </div>
       <div class="membres-table">
-        @for (m of filteredMembres; track m) {
+        @for (m of filteredMembres(); track m.id) {
           <div class="membre-row">
             <div
               appClickable
@@ -163,7 +163,7 @@
               <!-- Sélecteur de rôle -->
               <select
                 class="role-select"
-                [(ngModel)]="m.role"
+                [ngModel]="m.role"
                 (ngModelChange)="setRole(m, $event)"
                 [disabled]="!canEditRole(m)"
                 [title]="!canEditRole(m) ? 'Seul un développeur peut modifier ce rôle' : ''"
@@ -226,7 +226,7 @@
             </div>
           </div>
         }
-        @if (filteredMembres.length === 0) {
+        @if (filteredMembres().length === 0) {
           <div class="empty">Aucun membre trouvé.</div>
         }
       </div>
@@ -235,51 +235,35 @@
 </div>
 
 <!-- Modale Premium -->
-@if (premiumModal) {
-  <div class="modal-overlay" (click)="premiumModal = null">
+@if (premiumModal(); as modal) {
+  <div class="modal-overlay" (click)="premiumModal.set(null)">
     <div class="modal" (click)="$event.stopPropagation()">
       <h3 class="modal-title">⭐ Accorder le Premium</h3>
       <p class="modal-desc">
-        Durée de l'abonnement pour <strong>{{ premiumModal.membre.username }}</strong> :
+        Durée de l'abonnement pour <strong>{{ modal.membre.username }}</strong> :
       </p>
       <div class="modal-presets">
-        <button
-          class="preset-btn"
-          (click)="premiumModal.mois = 1"
-          [class.active]="premiumModal.mois === 1"
-        >
+        <button class="preset-btn" (click)="modal.mois = 1" [class.active]="modal.mois === 1">
           1 mois
         </button>
-        <button
-          class="preset-btn"
-          (click)="premiumModal.mois = 3"
-          [class.active]="premiumModal.mois === 3"
-        >
+        <button class="preset-btn" (click)="modal.mois = 3" [class.active]="modal.mois === 3">
           3 mois
         </button>
-        <button
-          class="preset-btn"
-          (click)="premiumModal.mois = 6"
-          [class.active]="premiumModal.mois === 6"
-        >
+        <button class="preset-btn" (click)="modal.mois = 6" [class.active]="modal.mois === 6">
           6 mois
         </button>
-        <button
-          class="preset-btn"
-          (click)="premiumModal.mois = 12"
-          [class.active]="premiumModal.mois === 12"
-        >
+        <button class="preset-btn" (click)="modal.mois = 12" [class.active]="modal.mois === 12">
           1 an
         </button>
       </div>
       <div class="modal-custom">
         <label>Ou saisir un nombre de mois :</label>
-        <input type="number" [(ngModel)]="premiumModal.mois" min="1" max="120" class="days-input" />
+        <input type="number" [(ngModel)]="modal.mois" min="1" max="120" class="days-input" />
       </div>
       <div class="modal-actions">
-        <button class="btn-cancel" (click)="premiumModal = null">Annuler</button>
-        <button class="btn-confirm" (click)="confirmPremium()" [disabled]="premiumModal.mois < 1">
-          Accorder {{ premiumModal.mois }} mois
+        <button class="btn-cancel" (click)="premiumModal.set(null)">Annuler</button>
+        <button class="btn-confirm" (click)="confirmPremium()" [disabled]="modal.mois < 1">
+          Accorder {{ modal.mois }} mois
         </button>
       </div>
     </div>
@@ -287,10 +271,10 @@
 }
 
 <!-- Modale Suspension -->
-@if (banModal) {
-  <div class="modal-overlay" (click)="banModal = null" (keydown.escape)="banModal = null">
+@if (banModal(); as modal) {
+  <div class="modal-overlay" (click)="banModal.set(null)" (keydown.escape)="banModal.set(null)">
     <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
-      <h3 class="modal-title">🚫 Suspendre {{ banModal.membre.username }}</h3>
+      <h3 class="modal-title">🚫 Suspendre {{ modal.membre.username }}</h3>
       <p class="modal-desc">
         Le membre ne pourra plus se connecter. Le compte se réactive tout seul à la fin de la durée.
       </p>
@@ -298,8 +282,8 @@
         @for (d of banPresets; track d.days) {
           <button
             class="preset-btn"
-            (click)="banModal.days = d.days"
-            [class.active]="banModal.days === d.days"
+            (click)="modal.days = d.days"
+            [class.active]="modal.days === d.days"
           >
             {{ d.label }}
           </button>
@@ -307,14 +291,14 @@
       </div>
       <div class="modal-custom">
         <label for="ban-reason">Motif (gardé pour l'historique) :</label>
-        <input id="ban-reason" type="text" [(ngModel)]="banModal.reason" class="days-input" />
+        <input id="ban-reason" type="text" [(ngModel)]="modal.reason" class="days-input" />
       </div>
-      @if (banError) {
-        <p class="modal-error">{{ banError }}</p>
+      @if (banError()) {
+        <p class="modal-error">{{ banError() }}</p>
       }
       <div class="modal-actions">
-        <button class="btn-cancel" (click)="banModal = null">Annuler</button>
-        <button class="btn-confirm danger" (click)="confirmBan()" [disabled]="banning">
+        <button class="btn-cancel" (click)="banModal.set(null)">Annuler</button>
+        <button class="btn-confirm danger" (click)="confirmBan()" [disabled]="banning()">
           Suspendre
         </button>
       </div>

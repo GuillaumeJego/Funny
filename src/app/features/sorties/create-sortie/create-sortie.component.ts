@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -21,7 +28,7 @@ import { ClickableDirective } from '../../../core/directives/clickable.directive
   standalone: true,
   imports: [ClickableDirective, CommonModule, FormsModule, SortieImageUploadComponent],
   templateUrl: './create-sortie.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './create-sortie.component.scss',
 })
 export class CreateSortieComponent implements OnInit, OnDestroy {
@@ -33,17 +40,18 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   private profileService = inject(ProfileService);
   private settingsService = inject(SettingsService);
 
-  themes: Theme[] = [];
-  themeImages: ThemeImage[] = [];
+  readonly themes = signal<Theme[]>([]);
+  readonly themeImages = signal<ThemeImage[]>([]);
   userId = '';
-  loading = false;
-  saving = false;
-  errorMessage = '';
-  successMessage = '';
+  readonly loading = signal(false);
+  readonly saving = signal(false);
+  readonly errorMessage = signal('');
+  readonly successMessage = signal('');
 
-  currentStep = 1;
+  readonly currentStep = signal(1);
   totalSteps = 4;
 
+  /** Formulaire lié par ngModel : ses champs changent sur place, à chaque saisie. */
   sortie: Partial<Sortie> = {
     title: '',
     description: '',
@@ -58,20 +66,20 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     status: 'published',
   };
 
-  selectedImageUrl = '';
+  readonly selectedImageUrl = signal('');
   customImageFile: File | null = null;
-  customImagePreview = '';
+  readonly customImagePreview = signal('');
 
   // Autocomplete lieu
-  locationQuery = '';
-  locationSuggestions: GeoFullPlace[] = [];
-  locationSearching = false;
+  readonly locationQuery = signal('');
+  readonly locationSuggestions = signal<GeoFullPlace[]>([]);
+  readonly locationSearching = signal(false);
   private locationSearch$ = new Subject<string>();
   private locationSub!: Subscription;
 
-  accessDenied = false;
+  readonly accessDenied = signal(false);
   /** Seuls les abonnés (et les admins) peuvent réserver une sortie aux abonnés. */
-  canCreatePremium = false;
+  readonly canCreatePremium = signal(false);
 
   async ngOnInit() {
     const {
@@ -84,30 +92,30 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     this.userId = user.id;
 
     const { data: profile } = await this.profileService.getMyProfile(user.id);
-    this.canCreatePremium = isPremiumMember(profile);
+    this.canCreatePremium.set(isPremiumMember(profile));
     if (profile) {
       const canCreate = await this.settingsService.canCreateSortie(profile);
       if (!canCreate) {
-        this.accessDenied = true;
+        this.accessDenied.set(true);
         return;
       }
     }
 
     const { data: themes } = await this.themeService.getAllThemes();
-    if (themes) this.themes = themes;
+    if (themes) this.themes.set(themes);
 
     this.locationSub = this.locationSearch$
       .pipe(
         debounceTime(300),
         distinctUntilChanged(),
         switchMap((q) => {
-          this.locationSearching = true;
+          this.locationSearching.set(true);
           return this.geo.searchPlaces(q);
         }),
       )
       .subscribe((places) => {
-        this.locationSuggestions = places;
-        this.locationSearching = false;
+        this.locationSuggestions.set(places);
+        this.locationSearching.set(false);
       });
   }
 
@@ -116,56 +124,56 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   }
 
   onLocationInput() {
-    this.locationSearch$.next(this.locationQuery);
+    this.locationSearch$.next(this.locationQuery());
   }
 
   selectLocation(place: GeoFullPlace) {
     // On stocke le nom court (ex: "Le Marais", "Paris") + adresse si disponible
     const label = place.address ? `${place.shortName}, ${place.address}` : place.shortName;
     this.sortie.location = label;
-    this.locationQuery = place.shortName;
-    this.locationSuggestions = [];
+    this.locationQuery.set(place.shortName);
+    this.locationSuggestions.set([]);
   }
 
   clearLocation() {
     this.sortie.location = '';
-    this.locationQuery = '';
-    this.locationSuggestions = [];
+    this.locationQuery.set('');
+    this.locationSuggestions.set([]);
   }
 
   async onThemeSelected() {
     if (!this.sortie.theme_id) return;
     const { data } = await this.themeService.getThemeImages(this.sortie.theme_id);
-    this.themeImages = data ?? [];
-    this.selectedImageUrl = '';
+    this.themeImages.set(data ?? []);
+    this.selectedImageUrl.set('');
     // La première image du thème est choisie d'office ; l'organisateur peut en changer.
-    if (this.themeImages.length && !this.customImageFile) {
-      this.selectDefaultImage(this.themeImages[0].image_url);
+    if (this.themeImages().length && !this.customImageFile) {
+      this.selectDefaultImage(this.themeImages()[0].image_url);
     }
   }
 
   selectDefaultImage(imageUrl: string) {
-    this.selectedImageUrl = imageUrl;
+    this.selectedImageUrl.set(imageUrl);
     this.sortie.image_url = imageUrl;
     this.sortie.image_source = 'default';
-    this.customImagePreview = '';
+    this.customImagePreview.set('');
   }
 
   nextStep() {
-    if (this.currentStep < this.totalSteps) this.currentStep++;
+    if (this.currentStep() < this.totalSteps) this.currentStep.set(this.currentStep() + 1);
   }
 
   prevStep() {
-    if (this.currentStep > 1) this.currentStep--;
+    if (this.currentStep() > 1) this.currentStep.set(this.currentStep() - 1);
   }
 
   async onSubmit() {
-    this.saving = true;
-    this.errorMessage = '';
+    this.saving.set(true);
+    this.errorMessage.set('');
 
     try {
       // Upload image personnalisée si besoin
-      if (!this.canCreatePremium) this.sortie.is_premium = false;
+      if (!this.canCreatePremium()) this.sortie.is_premium = false;
       if (this.customImageFile && this.sortie.image_source === 'custom') {
         const { data: imageUrl, error: uploadError } = await this.sortieService.uploadImage(
           this.userId,
@@ -173,8 +181,8 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
         );
 
         if (uploadError) {
-          this.errorMessage = `Erreur upload image : ${uploadError.message}`;
-          this.saving = false;
+          this.errorMessage.set(`Erreur upload image : ${uploadError.message}`);
+          this.saving.set(false);
           return;
         }
         this.sortie.image_url = imageUrl ?? undefined;
@@ -184,16 +192,16 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       const { data: newSortie, error } = await this.sortieService.createSortie(this.sortie);
 
       if (error || !newSortie) {
-        this.errorMessage = error?.message ?? 'Erreur lors de la création de la sortie.';
+        this.errorMessage.set(error?.message ?? 'Erreur lors de la création de la sortie.');
       } else {
-        this.successMessage = 'Sortie créée avec succès !';
+        this.successMessage.set('Sortie créée avec succès !');
         setTimeout(() => this.router.navigate(['/dashboard']), 1500);
       }
     } catch (e) {
-      this.errorMessage = 'Une erreur est survenue.';
+      this.errorMessage.set('Une erreur est survenue.');
     }
 
-    this.saving = false;
+    this.saving.set(false);
   }
 
   onImageReady(blob: Blob) {
@@ -202,9 +210,11 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     this.customImageFile = new File([blob], `sortie.${ext}`, { type: mimeType });
     this.sortie.image_source = 'custom';
     this.sortie.image_url = ''; // efface l'éventuelle image par défaut sélectionnée
-    this.selectedImageUrl = '';
+    this.selectedImageUrl.set('');
     const reader = new FileReader();
-    reader.onload = (e) => (this.customImagePreview = e.target?.result as string);
+    reader.onload = (e) => {
+      this.customImagePreview.set(e.target?.result as string);
+    };
     reader.readAsDataURL(blob);
   }
 
