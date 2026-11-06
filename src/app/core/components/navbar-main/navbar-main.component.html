@@ -30,3 +30,14 @@
     </div>
   }
 </nav>
+
+<!-- Notification arrivée pendant la visite -->
+@if (toast(); as n) {
+  <button type="button" class="notif-toast" role="status" (click)="openToast()">
+    <span class="toast-icon">🔔</span>
+    <span class="toast-text">
+      <strong>{{ n.title }}</strong>
+      <span>{{ n.message }}</span>
+    </span>
+  </button>
+}

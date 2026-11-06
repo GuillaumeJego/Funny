@@ -1,4 +1,4 @@
-import { RepositoryResult } from './repository.types';
+import { RepositoryResult, Unsubscribe } from './repository.types';
 
 export interface AppNotification {
   id: string;
@@ -16,4 +16,6 @@ export abstract class NotificationRepository {
   abstract getForUser(userId: string): Promise<RepositoryResult<AppNotification[]>>;
   abstract countUnread(userId: string): Promise<number>;
   abstract markAllRead(userId: string): Promise<RepositoryResult<null>>;
+  /** Prévient dès qu'une nouvelle notification arrive pour ce membre (en direct). */
+  abstract onNew(userId: string, callback: (n: AppNotification) => void): Unsubscribe;
 }

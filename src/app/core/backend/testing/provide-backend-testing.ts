@@ -90,6 +90,7 @@ const fakeNotifications: NotificationRepository = {
   getForUser: async () => empty,
   countUnread: async () => 0,
   markAllRead: async () => ok,
+  onNew: () => () => {},
 };
 
 const fakeSettings: SettingsRepository = {

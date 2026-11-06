@@ -1,6 +1,14 @@
-import { Component, OnInit, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+} from '@angular/core';
 
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { DrawerService } from '../../services/drawer.service';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
@@ -16,7 +24,7 @@ import { ClickableDirective } from '../../directives/clickable.directive';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './navbar-main.component.scss',
 })
-export class NavbarMainComponent implements OnInit {
+export class NavbarMainComponent implements OnInit, OnDestroy {
   router = inject(Router);
   private drawerService = inject(DrawerService);
   private auth = inject(AuthService);
@@ -34,24 +42,47 @@ export class NavbarMainComponent implements OnInit {
     { icon: '🔔', label: 'Notifs', route: '/notifications' },
   ];
 
-  readonly unreadCount = signal(0);
+  /** Badge des notifications : tenu à jour en direct par le service. */
+  readonly unreadCount = this.notifService.unreadCount;
+  /** Notification qui vient d'arriver, affichée quelques secondes en bas de l'écran. */
+  readonly toast = this.notifService.toast;
   readonly pendingFriendsCount = signal(0);
   readonly isAdmin = signal(false);
+  private userId = '';
+  private incomingSub?: Subscription;
 
   async ngOnInit() {
     const {
       data: { user },
     } = await this.auth.getUser();
     if (user) {
-      const [count, profile, pendingFriends] = await Promise.all([
-        this.notifService.countUnread(user.id),
+      this.userId = user.id;
+      const [, profile, pendingFriends] = await Promise.all([
+        this.notifService.startListening(user.id),
         this.profileService.getMyProfile(user.id),
         this.friendshipService.getPendingReceivedCount(user.id),
       ]);
-      this.unreadCount.set(count);
       this.pendingFriendsCount.set(pendingFriends);
+      // Une demande d'ami arrive avec sa notification : on recompte le badge Amis.
+      this.incomingSub = this.notifService.incoming$.subscribe(() => this.refreshFriendsCount());
       this.isAdmin.set(profile.data?.role === 'admin' || profile.data?.role === 'developer');
     }
+  }
+
+  ngOnDestroy() {
+    // La barre disparaît à la déconnexion : on arrête d'écouter.
+    this.incomingSub?.unsubscribe();
+    this.notifService.stop();
+  }
+
+  private async refreshFriendsCount() {
+    if (!this.userId) return;
+    this.pendingFriendsCount.set(await this.friendshipService.getPendingReceivedCount(this.userId));
+  }
+
+  openToast() {
+    this.notifService.hideToast();
+    this.navigate('/notifications');
   }
 
   navigate(route: string) {
