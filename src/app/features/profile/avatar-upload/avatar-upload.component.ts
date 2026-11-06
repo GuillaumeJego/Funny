@@ -1,11 +1,12 @@
 import {
   Component,
-  EventEmitter,
-  Input,
-  Output,
-  ViewChild,
   ElementRef,
   ChangeDetectionStrategy,
+  inject,
+  input,
+  output,
+  viewChild,
+  signal,
 } from '@angular/core';
 
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
@@ -17,21 +18,23 @@ import { ClickableDirective } from '../../../core/directives/clickable.directive
   standalone: true,
   imports: [ClickableDirective, ImageCropperComponent],
   templateUrl: './avatar-upload.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './avatar-upload.component.scss',
 })
 export class AvatarUploadComponent {
-  @Input() userId!: string;
-  @Input() currentAvatarUrl?: string;
-  @Output() avatarUpdated = new EventEmitter<string>();
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  private profileService = inject(ProfileService);
 
-  imageChangedEvent: Event | null = null;
+  readonly userId = input.required<string>();
+  readonly currentAvatarUrl = input<string>();
+  readonly avatarUpdated = output<string>();
+  readonly fileInput = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
+
+  readonly imageChangedEvent = signal<Event | null>(null);
   croppedBase64: string = '';
-  croppedImageUrl: string = '';
-  showCropper = false;
-  uploading = false;
-  errorMessage = '';
+  readonly croppedImageUrl = signal<string>('');
+  readonly showCropper = signal(false);
+  readonly uploading = signal(false);
+  readonly errorMessage = signal('');
 
   filters = [
     { name: 'Normal', value: 'none' },
@@ -40,57 +43,57 @@ export class AvatarUploadComponent {
     { name: 'Lumineux', value: 'brightness(1.3)' },
     { name: 'Contraste', value: 'contrast(1.5)' },
   ];
-  selectedFilter = 'none';
-
-  constructor(private profileService: ProfileService) {}
+  readonly selectedFilter = signal('none');
 
   onFileSelected(event: Event) {
-    this.imageChangedEvent = event;
-    this.showCropper = true;
-    this.errorMessage = '';
+    this.imageChangedEvent.set(event);
+    this.showCropper.set(true);
+    this.errorMessage.set('');
     this.croppedBase64 = '';
-    this.croppedImageUrl = '';
+    this.croppedImageUrl.set('');
   }
 
   imageCropped(event: ImageCroppedEvent) {
     this.croppedBase64 = event.base64 || '';
-    this.croppedImageUrl = event.base64 || '';
+    this.croppedImageUrl.set(event.base64 || '');
   }
 
   selectFilter(filter: string) {
-    this.selectedFilter = filter;
+    this.selectedFilter.set(filter);
   }
 
   async onUpload() {
-    if (!this.croppedBase64 || !this.userId) {
-      this.errorMessage = 'Aucune image sélectionnée.';
+    const userId = this.userId();
+    if (!this.croppedBase64 || !userId) {
+      this.errorMessage.set('Aucune image sélectionnée.');
       return;
     }
 
-    this.uploading = true;
-    this.errorMessage = '';
+    this.uploading.set(true);
+    this.errorMessage.set('');
 
     try {
       const blob = await this.applyFilterAndGetBlob(this.croppedBase64);
       const { data: urlWithCache, error: uploadError } = await this.profileService.uploadAvatar(
-        this.userId,
+        userId,
         blob,
       );
 
       if (uploadError || !urlWithCache) throw uploadError;
 
       this.avatarUpdated.emit(urlWithCache);
-      this.showCropper = false;
+      this.showCropper.set(false);
       this.croppedBase64 = '';
-      this.croppedImageUrl = '';
+      this.croppedImageUrl.set('');
       // Reset le file input pour permettre de re-sélectionner une photo
-      if (this.fileInput) this.fileInput.nativeElement.value = '';
+      const fileInput = this.fileInput();
+      if (fileInput) fileInput.nativeElement.value = '';
     } catch (err) {
       console.error('Upload error:', err);
-      this.errorMessage = "Erreur lors de l'upload.";
+      this.errorMessage.set("Erreur lors de l'upload.");
     }
 
-    this.uploading = false;
+    this.uploading.set(false);
   }
 
   private async applyFilterAndGetBlob(base64: string): Promise<Blob> {
@@ -101,7 +104,7 @@ export class AvatarUploadComponent {
         canvas.width = img.width;
         canvas.height = img.height;
         const ctx = canvas.getContext('2d')!;
-        if (this.selectedFilter !== 'none') ctx.filter = this.selectedFilter;
+        if (this.selectedFilter() !== 'none') ctx.filter = this.selectedFilter();
         ctx.drawImage(img, 0, 0);
         canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.85);
       };
@@ -110,11 +113,12 @@ export class AvatarUploadComponent {
   }
 
   cancel() {
-    this.showCropper = false;
-    this.imageChangedEvent = null;
+    this.showCropper.set(false);
+    this.imageChangedEvent.set(null);
     this.croppedBase64 = '';
-    this.croppedImageUrl = '';
-    this.selectedFilter = 'none';
-    if (this.fileInput) this.fileInput.nativeElement.value = '';
+    this.croppedImageUrl.set('');
+    this.selectedFilter.set('none');
+    const fileInput = this.fileInput();
+    if (fileInput) fileInput.nativeElement.value = '';
   }
 }

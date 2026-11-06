@@ -35,17 +35,17 @@ describe('MemberSafetyComponent', () => {
 
     fixture = TestBed.createComponent(MemberSafetyComponent);
     component = fixture.componentInstance;
-    component.memberId = 'bob';
-    component.username = 'Bob';
+    fixture.componentRef.setInput('memberId', 'bob');
+    fixture.componentRef.setInput('username', 'Bob');
     fixture.detectChanges();
   });
 
   it('sends a report with the chosen reason', async () => {
     component.open('report');
-    component.reason = 'harcelement';
+    component.reason.set('harcelement');
     await component.sendReport();
     expect(calls).toEqual(['report bob harcelement']);
-    expect(component.dialog).toBe('reported');
+    expect(component.dialog()).toBe('reported');
   });
 
   it('blocks the member and tells the parent', async () => {
@@ -55,6 +55,6 @@ describe('MemberSafetyComponent', () => {
     await component.confirmBlock();
     expect(calls).toEqual(['block bob']);
     expect(emitted).toEqual([true]);
-    expect(component.dialog).toBeNull();
+    expect(component.dialog()).toBeNull();
   });
 });

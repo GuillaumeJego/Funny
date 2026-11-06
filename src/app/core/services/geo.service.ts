@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
 import { Observable, of, timer } from 'rxjs';
@@ -25,12 +25,12 @@ export interface GeoFullPlace {
  */
 @Injectable({ providedIn: 'root' })
 export class GeoService {
+  private http = inject(HttpClient);
+
   private readonly API = 'https://nominatim.openstreetmap.org/search';
   private readonly MIN_INTERVAL_MS = 1000;
   private nextSlot = 0;
   private cache = new Map<string, any[]>();
-
-  constructor(private http: HttpClient) {}
 
   private search(query: string): Observable<any[]> {
     const key = query.trim().toLowerCase();

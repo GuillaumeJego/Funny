@@ -618,3 +618,37 @@
     min-width: 160px;
   }
 }
+
+// ── Sortie Premium vue par un non-abonné : image floutée, détails cachés ──
+.sortie-card.locked,
+.list-card.locked {
+  .card-image img,
+  .list-image img {
+    filter: blur(10px);
+    transform: scale(1.1); // évite le bord net autour du flou
+  }
+
+  .card-image,
+  .list-image {
+    overflow: hidden;
+  }
+
+  .lock-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+  }
+
+  .locked-hint {
+    color: $text-light;
+    font-style: italic;
+  }
+
+  .btn-unlock {
+    background: linear-gradient(135deg, #f5c518, $warning);
+    color: #3b2a00;
+  }
+}

@@ -1,4 +1,12 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 
 import { Router, RouterModule, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -28,37 +36,35 @@ export interface SortieGroup {
   standalone: true,
   imports: [ClickableDirective, RouterModule, NavbarFiltersComponent, SortieDrawerComponent],
   templateUrl: './dashboard.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit, OnDestroy {
+  private sortieService = inject(SortieService);
+  private favoriService = inject(FavoriService);
+  private authService = inject(AuthService);
+  private profileService = inject(ProfileService);
+  private drawerService = inject(DrawerService);
+  private inscriptionService = inject(InscriptionService);
+  private router = inject(Router);
+
   private routerSub!: Subscription;
   private drawerSub!: Subscription;
-  sorties: SortieWithRelations[] = [];
-  sortiesFiltrees: SortieWithRelations[] = [];
-  groupes: SortieGroup[] = [];
-  loading = true;
-  error = '';
-  viewMode: 'grid' | 'list' = 'grid';
-  favorisIds: Set<string> = new Set();
-  userId = '';
-  userRole = 'user';
-  userIsPremium = false;
-  selectedSortie: SortieWithRelations | null = null;
-  drawerOpen = false;
-  inscriptionStatus: InscriptionStatus = 'none';
-  availableThemes: ThemeOption[] = [];
-  availableLocations: string[] = [];
-
-  constructor(
-    private sortieService: SortieService,
-    private favoriService: FavoriService,
-    private authService: AuthService,
-    private profileService: ProfileService,
-    private drawerService: DrawerService,
-    private inscriptionService: InscriptionService,
-    private router: Router,
-  ) {}
+  readonly sorties = signal<SortieWithRelations[]>([]);
+  /** Filtres choisis dans la barre : la liste affichée en découle. */
+  readonly filters = signal<Filters>({ quickPeriod: 'upcoming' });
+  readonly loading = signal(true);
+  readonly error = signal('');
+  readonly viewMode = signal<'grid' | 'list'>('grid');
+  readonly favorisIds = signal<Set<string>>(new Set());
+  readonly userId = signal('');
+  readonly userRole = signal('user');
+  readonly userIsPremium = signal(false);
+  readonly selectedSortie = signal<SortieWithRelations | null>(null);
+  readonly drawerOpen = signal(false);
+  readonly inscriptionStatus = signal<InscriptionStatus>('none');
+  readonly availableThemes = signal<ThemeOption[]>([]);
+  readonly availableLocations = signal<string[]>([]);
 
   ngOnDestroy() {
     this.routerSub?.unsubscribe();
@@ -76,38 +82,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
       data: { user },
     } = await this.authService.getUser();
     if (user) {
-      this.userId = user.id;
+      this.userId.set(user.id);
       const [favoris, profile] = await Promise.all([
         this.favoriService.getFavoris(user.id),
         this.profileService.getMyProfile(user.id),
       ]);
-      this.favorisIds = new Set(favoris);
-      if (profile.data?.view_mode) this.viewMode = profile.data.view_mode;
-      if (profile.data?.role) this.userRole = profile.data.role;
-      this.userIsPremium = isPremiumMember(profile.data);
+      this.favorisIds.set(new Set(favoris));
+      if (profile.data?.view_mode) this.viewMode.set(profile.data.view_mode);
+      if (profile.data?.role) this.userRole.set(profile.data.role);
+      this.userIsPremium.set(isPremiumMember(profile.data));
     }
 
     const { data, error } = await this.sortieService.getAllSorties();
-    this.loading = false;
+    this.loading.set(false);
     if (error) {
-      this.error = `Erreur : ${error.message}`;
+      this.error.set(`Erreur : ${error.message}`);
       console.error('Erreur de chargement des sorties :', error);
       return;
     }
     const sorties = (data as SortieWithRelations[]) ?? [];
 
-    this.sorties = sorties;
-    // Filtre "À venir" par défaut
-    this.onFiltersChanged({
-      quickPeriod: 'upcoming',
-      themeIds: [],
-      ou: '',
-      dateDebut: '',
-      dateFin: '',
-      prix: '',
-      premium: false,
-    });
-    this.groupes = this.grouperParDate(this.sortiesFiltrees);
+    this.sorties.set(sorties);
 
     // Extraire thèmes et villes uniques pour les filtres
     const themesMap = new Map<string, ThemeOption>();
@@ -117,24 +112,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
         themesMap.set(s.theme_id, { id: s.theme_id, name: s.themes.name, icon: s.themes.icon });
       if (s.location) locationsSet.add(s.location);
     }
-    this.availableThemes = [...themesMap.values()];
-    this.availableLocations = [...locationsSet].sort();
+    this.availableThemes.set([...themesMap.values()]);
+    this.availableLocations.set([...locationsSet].sort());
   }
 
   async openDrawer(sortie: SortieWithRelations) {
-    this.selectedSortie = sortie;
-    this.drawerOpen = true;
-    if (this.userId) {
-      this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(
-        this.userId,
-        sortie.id,
+    this.selectedSortie.set(sortie);
+    this.drawerOpen.set(true);
+    if (this.userId()) {
+      this.inscriptionStatus.set(
+        await this.inscriptionService.getInscriptionStatus(this.userId(), sortie.id),
       );
     }
   }
 
   closeDrawer() {
-    this.drawerOpen = false;
-    this.selectedSortie = null;
+    this.drawerOpen.set(false);
+    this.selectedSortie.set(null);
   }
 
   async onFavoriFromDrawer(sortieId: string) {
@@ -142,38 +136,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   async onRejoindre(sortieId: string) {
-    if (!this.userId) return;
-    const { error, status } = await this.inscriptionService.rejoindre(this.userId, sortieId);
+    if (!this.userId()) return;
+    const { error, status } = await this.inscriptionService.rejoindre(this.userId(), sortieId);
     if (!error && status) {
-      this.inscriptionStatus = status;
+      this.inscriptionStatus.set(status);
       if (status === 'pending') {
-        const s = this.sorties.find((s) => s.id === sortieId);
-        if (s && s.inscriptionsCount !== undefined) s.inscriptionsCount++;
+        this.adjustInscriptions(sortieId, 1);
       }
     }
   }
 
   async onQuitter(sortieId: string) {
-    if (!this.userId) return;
-    const wasWaiting = this.inscriptionStatus === 'waiting';
-    const { error } = await this.inscriptionService.quitter(this.userId, sortieId);
+    if (!this.userId()) return;
+    const wasWaiting = this.inscriptionStatus() === 'waiting';
+    const { error } = await this.inscriptionService.quitter(this.userId(), sortieId);
     if (!error) {
-      this.inscriptionStatus = 'none';
+      this.inscriptionStatus.set('none');
       if (!wasWaiting) {
-        const s = this.sorties.find((s) => s.id === sortieId);
-        if (s && s.inscriptionsCount !== undefined) s.inscriptionsCount--;
+        this.adjustInscriptions(sortieId, -1);
       }
     }
   }
 
+  /** Met à jour le nombre d'inscrits d'une sortie, dans la liste et dans le tiroir. */
+  private adjustInscriptions(sortieId: string, delta: number) {
+    const bump = (s: SortieWithRelations) =>
+      s.id === sortieId && s.inscriptionsCount !== undefined
+        ? { ...s, inscriptionsCount: s.inscriptionsCount + delta }
+        : s;
+    this.sorties.set(this.sorties().map(bump));
+    this.selectedSortie.update((s) => (s ? bump(s) : s));
+  }
+
   async onSupprimer(sortieId: string) {
-    if (!this.userId || !this.selectedSortie) return;
+    if (!this.userId() || !this.selectedSortie()) return;
     // La confirmation est demandée dans le tiroir de la sortie.
 
     const { error } = await this.sortieService.deleteSortie(sortieId);
 
     if (!error) {
-      this.sorties = this.sorties.filter((s) => s.id !== sortieId);
+      this.sorties.set(this.sorties().filter((s) => s.id !== sortieId));
       this.onFiltersChanged({
         themeIds: [],
         ou: '',
@@ -189,26 +191,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   async toggleFavori(event: Event, sortieId: string) {
     event.stopPropagation();
-    if (!this.userId) return;
+    if (!this.userId()) return;
 
-    if (this.favorisIds.has(sortieId)) {
-      this.favorisIds.delete(sortieId);
-      await this.favoriService.removeFavori(this.userId, sortieId);
-    } else {
-      this.favorisIds.add(sortieId);
-      await this.favoriService.addFavori(this.userId, sortieId);
-    }
-    // Forcer la détection de changement
-    this.favorisIds = new Set(this.favorisIds);
+    const next = new Set(this.favorisIds());
+    const wasFavori = next.has(sortieId);
+    if (wasFavori) next.delete(sortieId);
+    else next.add(sortieId);
+    this.favorisIds.set(next);
+    if (wasFavori) await this.favoriService.removeFavori(this.userId(), sortieId);
+    else await this.favoriService.addFavori(this.userId(), sortieId);
   }
 
   isFavori(sortieId: string): boolean {
-    return this.favorisIds.has(sortieId);
+    return this.favorisIds().has(sortieId);
   }
 
   onFiltersChanged(filters: Filters) {
+    this.filters.set(filters);
+  }
+
+  readonly sortiesFiltrees = computed<SortieWithRelations[]>(() => {
+    const filters = this.filters();
     const now = new Date();
-    this.sortiesFiltrees = this.sorties.filter((s) => {
+    return this.sorties().filter((s) => {
       if (filters.themeIds?.length && !filters.themeIds.includes(s.theme_id ?? '')) return false;
       if (filters.ou && s.location !== filters.ou) return false;
       if (filters.quickPeriod === 'past' && new Date(s.date) >= now) return false;
@@ -222,13 +227,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
           if (d > fin) return false;
         }
       }
+      // Prix inconnu pour une sortie Premium vue en aperçu : elle sort du filtre de prix.
+      if (filters.prix && s.locked) return false;
       if (filters.prix === 'gratuit' && s.price > 0) return false;
       if (filters.prix === 'payant' && s.price === 0) return false;
       if (filters.premium && !s.is_premium) return false;
       return true;
     });
-    this.groupes = this.grouperParDate(this.sortiesFiltrees);
-  }
+  });
+
+  readonly groupes = computed<SortieGroup[]>(() => {
+    return this.grouperParDate(this.sortiesFiltrees());
+  });
 
   private grouperParDate(sorties: SortieWithRelations[]): SortieGroup[] {
     const map = new Map<string, SortieWithRelations[]>();
@@ -246,9 +256,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   async setViewMode(mode: 'grid' | 'list') {
-    this.viewMode = mode;
-    if (this.userId) {
-      await this.profileService.updateMyProfile(this.userId, { view_mode: mode });
+    this.viewMode.set(mode);
+    if (this.userId()) {
+      await this.profileService.updateMyProfile(this.userId(), { view_mode: mode });
     }
   }
 

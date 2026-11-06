@@ -1,6 +1,14 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+} from '@angular/core';
 
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { DrawerService } from '../../services/drawer.service';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
@@ -13,10 +21,17 @@ import { ClickableDirective } from '../../directives/clickable.directive';
   standalone: true,
   imports: [ClickableDirective],
   templateUrl: './navbar-main.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './navbar-main.component.scss',
 })
-export class NavbarMainComponent implements OnInit {
+export class NavbarMainComponent implements OnInit, OnDestroy {
+  router = inject(Router);
+  private drawerService = inject(DrawerService);
+  private auth = inject(AuthService);
+  private profileService = inject(ProfileService);
+  private notifService = inject(NotificationService);
+  private friendshipService = inject(FriendshipService);
+
   navItems = [
     { icon: '🏠', label: 'Sorties', route: '/dashboard' },
     { icon: '⭐', label: 'Mes sorties', route: '/mes-sorties' },
@@ -27,37 +42,51 @@ export class NavbarMainComponent implements OnInit {
     { icon: '🔔', label: 'Notifs', route: '/notifications' },
   ];
 
-  unreadCount = 0;
-  pendingFriendsCount = 0;
-  isAdmin = false;
-
-  constructor(
-    public router: Router,
-    private drawerService: DrawerService,
-    private auth: AuthService,
-    private profileService: ProfileService,
-    private notifService: NotificationService,
-    private friendshipService: FriendshipService,
-  ) {}
+  /** Badge des notifications : tenu à jour en direct par le service. */
+  readonly unreadCount = this.notifService.unreadCount;
+  /** Notification qui vient d'arriver, affichée quelques secondes en bas de l'écran. */
+  readonly toast = this.notifService.toast;
+  readonly pendingFriendsCount = signal(0);
+  readonly isAdmin = signal(false);
+  private userId = '';
+  private incomingSub?: Subscription;
 
   async ngOnInit() {
     const {
       data: { user },
     } = await this.auth.getUser();
     if (user) {
-      const [count, profile, pendingFriends] = await Promise.all([
-        this.notifService.countUnread(user.id),
+      this.userId = user.id;
+      const [, profile, pendingFriends] = await Promise.all([
+        this.notifService.startListening(user.id),
         this.profileService.getMyProfile(user.id),
         this.friendshipService.getPendingReceivedCount(user.id),
       ]);
-      this.unreadCount = count;
-      this.pendingFriendsCount = pendingFriends;
-      this.isAdmin = profile.data?.role === 'admin' || profile.data?.role === 'developer';
+      this.pendingFriendsCount.set(pendingFriends);
+      // Une demande d'ami arrive avec sa notification : on recompte le badge Amis.
+      this.incomingSub = this.notifService.incoming$.subscribe(() => this.refreshFriendsCount());
+      this.isAdmin.set(profile.data?.role === 'admin' || profile.data?.role === 'developer');
     }
   }
 
+  ngOnDestroy() {
+    // La barre disparaît à la déconnexion : on arrête d'écouter.
+    this.incomingSub?.unsubscribe();
+    this.notifService.stop();
+  }
+
+  private async refreshFriendsCount() {
+    if (!this.userId) return;
+    this.pendingFriendsCount.set(await this.friendshipService.getPendingReceivedCount(this.userId));
+  }
+
+  openToast() {
+    this.notifService.hideToast();
+    this.navigate('/notifications');
+  }
+
   navigate(route: string) {
-    if (route === '/notifications') this.unreadCount = 0;
+    if (route === '/notifications') this.unreadCount.set(0);
     this.drawerService.closeAll();
     this.router.navigate([route]);
   }

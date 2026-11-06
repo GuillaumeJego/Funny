@@ -1,4 +1,11 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -21,37 +28,35 @@ import { ClickableDirective } from '../../core/directives/clickable.directive';
   standalone: true,
   imports: [ClickableDirective, SortieDrawerComponent, NavbarFiltersComponent],
   templateUrl: './mes-sorties.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './mes-sorties.component.scss',
 })
 export class MesSortiesComponent implements OnInit {
-  activeTab: 'creees' | 'rejointes' | 'attente' | 'likees' = 'creees';
-  viewMode: 'grid' | 'list' = 'list';
-  sortiesCreees: SortieWithRelations[] = [];
-  sortiesRejointes: SortieWithRelations[] = [];
-  sortiesEnAttente: SortieWithRelations[] = [];
-  sortiesLikees: SortieWithRelations[] = [];
-  loading = true;
-  userId = '';
-  userRole = 'user';
-  userIsPremium = false;
-  favorisIds: Set<string> = new Set();
-  currentFilters: Filters = { quickPeriod: 'upcoming' };
-  availableThemes: ThemeOption[] = [];
-  availableLocations: string[] = [];
+  private auth = inject(AuthService);
+  private sortieService = inject(SortieService);
+  private profileService = inject(ProfileService);
+  private inscriptionService = inject(InscriptionService);
+  private favoriService = inject(FavoriService);
+  private router = inject(Router);
 
-  selectedSortie: SortieWithRelations | null = null;
-  drawerOpen = false;
-  inscriptionStatus: InscriptionStatus = 'none';
+  readonly activeTab = signal<'creees' | 'rejointes' | 'attente' | 'likees'>('creees');
+  readonly viewMode = signal<'grid' | 'list'>('list');
+  readonly sortiesCreees = signal<SortieWithRelations[]>([]);
+  readonly sortiesRejointes = signal<SortieWithRelations[]>([]);
+  readonly sortiesEnAttente = signal<SortieWithRelations[]>([]);
+  readonly sortiesLikees = signal<SortieWithRelations[]>([]);
+  readonly loading = signal(true);
+  readonly userId = signal('');
+  readonly userRole = signal('user');
+  readonly userIsPremium = signal(false);
+  readonly favorisIds = signal<Set<string>>(new Set());
+  readonly currentFilters = signal<Filters>({ quickPeriod: 'upcoming' });
+  readonly availableThemes = signal<ThemeOption[]>([]);
+  readonly availableLocations = signal<string[]>([]);
 
-  constructor(
-    private auth: AuthService,
-    private sortieService: SortieService,
-    private profileService: ProfileService,
-    private inscriptionService: InscriptionService,
-    private favoriService: FavoriService,
-    private router: Router,
-  ) {}
+  readonly selectedSortie = signal<SortieWithRelations | null>(null);
+  readonly drawerOpen = signal(false);
+  readonly inscriptionStatus = signal<InscriptionStatus>('none');
 
   async ngOnInit() {
     const {
@@ -61,36 +66,36 @@ export class MesSortiesComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
-    this.userId = user.id;
+    this.userId.set(user.id);
     const [profileRes, favoris] = await Promise.all([
       this.profileService.getMyProfile(user.id),
       this.favoriService.getFavoris(user.id),
     ]);
-    this.userRole = profileRes.data?.role ?? 'user';
-    this.userIsPremium = isPremiumMember(profileRes.data);
-    this.favorisIds = new Set(favoris);
+    this.userRole.set(profileRes.data?.role ?? 'user');
+    this.userIsPremium.set(isPremiumMember(profileRes.data));
+    this.favorisIds.set(new Set(favoris));
     await this.loadAll();
   }
 
   async loadAll() {
-    this.loading = true;
+    this.loading.set(true);
     const [creees, rejointes, attente, likees] = await Promise.all([
-      this.sortieService.getSortiesCreatedBy(this.userId),
-      this.sortieService.getSortiesRejointes(this.userId),
-      this.sortieService.getSortiesEnAttente(this.userId),
-      this.sortieService.getSortiesLikees(this.userId),
+      this.sortieService.getSortiesCreatedBy(this.userId()),
+      this.sortieService.getSortiesRejointes(this.userId()),
+      this.sortieService.getSortiesEnAttente(this.userId()),
+      this.sortieService.getSortiesLikees(this.userId()),
     ]);
 
-    this.sortiesCreees = (creees.data ?? []) as SortieWithRelations[];
-    this.sortiesRejointes = rejointes;
-    this.sortiesEnAttente = attente;
-    this.sortiesLikees = likees;
+    this.sortiesCreees.set((creees.data ?? []) as SortieWithRelations[]);
+    this.sortiesRejointes.set(rejointes);
+    this.sortiesEnAttente.set(attente);
+    this.sortiesLikees.set(likees);
 
     const all = [
-      ...this.sortiesCreees,
-      ...this.sortiesRejointes,
-      ...this.sortiesEnAttente,
-      ...this.sortiesLikees,
+      ...this.sortiesCreees(),
+      ...this.sortiesRejointes(),
+      ...this.sortiesEnAttente(),
+      ...this.sortiesLikees(),
     ];
     // Thèmes et villes disponibles
     const themesMap = new Map<string, ThemeOption>();
@@ -100,19 +105,19 @@ export class MesSortiesComponent implements OnInit {
         themesMap.set(s.theme_id, { id: s.theme_id, name: s.themes.name, icon: s.themes.icon });
       if (s.location) locationsSet.add(s.location);
     }
-    this.availableThemes = [...themesMap.values()];
-    this.availableLocations = [...locationsSet].sort();
+    this.availableThemes.set([...themesMap.values()]);
+    this.availableLocations.set([...locationsSet].sort());
 
-    this.loading = false;
+    this.loading.set(false);
   }
 
   onFiltersChanged(f: Filters) {
-    this.currentFilters = f;
+    this.currentFilters.set(f);
   }
 
   private applyFilters(list: SortieWithRelations[]): SortieWithRelations[] {
     const now = new Date();
-    const f = this.currentFilters;
+    const f = this.currentFilters();
     return list.filter((s) => {
       if (f.themeIds?.length && !f.themeIds.includes(s.theme_id ?? '')) return false;
       if (f.ou && s.location !== f.ou) return false;
@@ -134,80 +139,78 @@ export class MesSortiesComponent implements OnInit {
     });
   }
 
-  get currentList(): SortieWithRelations[] {
+  readonly currentList = computed<SortieWithRelations[]>(() => {
     const base =
-      this.activeTab === 'creees'
-        ? this.sortiesCreees
-        : this.activeTab === 'rejointes'
-          ? this.sortiesRejointes
-          : this.activeTab === 'attente'
-            ? this.sortiesEnAttente
-            : this.sortiesLikees;
+      this.activeTab() === 'creees'
+        ? this.sortiesCreees()
+        : this.activeTab() === 'rejointes'
+          ? this.sortiesRejointes()
+          : this.activeTab() === 'attente'
+            ? this.sortiesEnAttente()
+            : this.sortiesLikees();
     return this.applyFilters(base);
-  }
+  });
 
   tabCount(tab: 'creees' | 'rejointes' | 'attente' | 'likees'): number {
     const base =
       tab === 'creees'
-        ? this.sortiesCreees
+        ? this.sortiesCreees()
         : tab === 'rejointes'
-          ? this.sortiesRejointes
+          ? this.sortiesRejointes()
           : tab === 'attente'
-            ? this.sortiesEnAttente
-            : this.sortiesLikees;
+            ? this.sortiesEnAttente()
+            : this.sortiesLikees();
     return this.applyFilters(base).length;
   }
 
   async openDrawer(sortie: SortieWithRelations) {
-    this.selectedSortie = sortie;
-    this.drawerOpen = true;
-    this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(
-      this.userId,
-      sortie.id,
+    this.selectedSortie.set(sortie);
+    this.drawerOpen.set(true);
+    this.inscriptionStatus.set(
+      await this.inscriptionService.getInscriptionStatus(this.userId(), sortie.id),
     );
   }
 
   closeDrawer() {
-    this.drawerOpen = false;
-    this.selectedSortie = null;
+    this.drawerOpen.set(false);
+    this.selectedSortie.set(null);
   }
 
   isFavori(sortieId: string): boolean {
-    return this.favorisIds.has(sortieId);
+    return this.favorisIds().has(sortieId);
   }
 
   async toggleFavori(event: Event, sortieId: string) {
     event.stopPropagation();
-    if (!this.userId) return;
-    if (this.favorisIds.has(sortieId)) {
-      this.favorisIds.delete(sortieId);
-      await this.favoriService.removeFavori(this.userId, sortieId);
-    } else {
-      this.favorisIds.add(sortieId);
-      await this.favoriService.addFavori(this.userId, sortieId);
-    }
-    this.favorisIds = new Set(this.favorisIds);
+    if (!this.userId()) return;
+    const next = new Set(this.favorisIds());
+    const wasFavori = next.has(sortieId);
+    if (wasFavori) next.delete(sortieId);
+    else next.add(sortieId);
+    this.favorisIds.set(next);
+    if (wasFavori) await this.favoriService.removeFavori(this.userId(), sortieId);
+    else await this.favoriService.addFavori(this.userId(), sortieId);
   }
 
   async onSupprimer(sortieId: string) {
-    if (!this.selectedSortie) return;
+    if (!this.selectedSortie()) return;
     // La confirmation est demandée dans le tiroir de la sortie.
     const { error } = await this.sortieService.deleteSortie(sortieId);
     if (!error) {
-      this.sortiesCreees = this.sortiesCreees.filter((s) => s.id !== sortieId);
+      this.sortiesCreees.set(this.sortiesCreees().filter((s) => s.id !== sortieId));
       this.closeDrawer();
     }
   }
 
   async onQuitter(sortieId: string) {
-    if (!this.selectedSortie) return;
-    const wasWaiting = this.inscriptionStatus === 'waiting';
-    const { error } = await this.inscriptionService.quitter(this.userId, sortieId);
+    if (!this.selectedSortie()) return;
+    const wasWaiting = this.inscriptionStatus() === 'waiting';
+    const { error } = await this.inscriptionService.quitter(this.userId(), sortieId);
     if (!error) {
       if (wasWaiting)
-        this.sortiesEnAttente = this.sortiesEnAttente.filter((s) => s.id !== sortieId);
-      else this.sortiesRejointes = this.sortiesRejointes.filter((s) => s.id !== sortieId);
-      this.inscriptionStatus = 'none';
+        this.sortiesEnAttente.set(this.sortiesEnAttente().filter((s) => s.id !== sortieId));
+      else this.sortiesRejointes.set(this.sortiesRejointes().filter((s) => s.id !== sortieId));
+      this.inscriptionStatus.set('none');
       this.closeDrawer();
     }
   }

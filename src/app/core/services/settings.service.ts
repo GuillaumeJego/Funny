@@ -1,11 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { SettingsRepository } from '../repositories/settings.repository';
 import { Profile } from '../models/profile.model';
 import { isPremiumMember } from '../utils/premium';
 
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
-  constructor(private settings: SettingsRepository) {}
+  private settings = inject(SettingsRepository);
 
   async get(key: string): Promise<any> {
     return await this.settings.get(key);

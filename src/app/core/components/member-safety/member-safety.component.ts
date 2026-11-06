@@ -1,10 +1,11 @@
 import {
   Component,
-  EventEmitter,
   HostListener,
-  Input,
-  Output,
   ChangeDetectionStrategy,
+  inject,
+  input,
+  output,
+  signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ModerationService } from '../../services/moderation.service';
@@ -16,74 +17,75 @@ import { REPORT_REASONS, ReportReason } from '../../models/report.model';
   standalone: true,
   imports: [FormsModule],
   templateUrl: './member-safety.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './member-safety.component.scss',
 })
 export class MemberSafetyComponent {
-  @Input({ required: true }) memberId!: string;
-  @Input() username = '';
-  @Input() blocked = false;
+  private moderation = inject(ModerationService);
+
+  readonly memberId = input.required<string>();
+  readonly username = input('');
+  readonly blocked = input(false);
   /** Émis après un blocage (true) ou un déblocage (false). */
-  @Output() blockedChange = new EventEmitter<boolean>();
+  readonly blockedChange = output<boolean>();
 
   reasons = REPORT_REASONS;
-  menuOpen = false;
-  dialog: 'report' | 'block' | 'reported' | null = null;
-  reason: ReportReason | '' = '';
-  details = '';
-  busy = false;
-  errorMessage = '';
-
-  constructor(private moderation: ModerationService) {}
+  readonly menuOpen = signal(false);
+  readonly dialog = signal<'report' | 'block' | 'reported' | null>(null);
+  readonly reason = signal<ReportReason | ''>('');
+  readonly details = signal('');
+  readonly busy = signal(false);
+  readonly errorMessage = signal('');
 
   /** Un clic ailleurs ou Échap ferment le menu. */
   @HostListener('document:click')
   @HostListener('document:keydown.escape')
   closeMenu() {
-    this.menuOpen = false;
+    this.menuOpen.set(false);
   }
 
   open(dialog: 'report' | 'block') {
-    this.menuOpen = false;
-    this.errorMessage = '';
-    this.reason = '';
-    this.details = '';
-    this.dialog = dialog;
+    this.menuOpen.set(false);
+    this.errorMessage.set('');
+    this.reason.set('');
+    this.details.set('');
+    this.dialog.set(dialog);
   }
 
   close() {
-    this.dialog = null;
+    this.dialog.set(null);
   }
 
   async sendReport() {
-    if (!this.reason) return;
-    this.busy = true;
-    const { error } = await this.moderation.report(this.memberId, this.reason, this.details);
-    this.busy = false;
+    const reason = this.reason();
+    if (!reason) return;
+    this.busy.set(true);
+    const { error } = await this.moderation.report(this.memberId(), reason, this.details());
+    this.busy.set(false);
     if (error) {
-      this.errorMessage = error.message;
+      this.errorMessage.set(error.message);
       return;
     }
-    this.dialog = 'reported';
+    this.dialog.set('reported');
   }
 
   async confirmBlock() {
-    this.busy = true;
-    const { error } = await this.moderation.block(this.memberId);
-    this.busy = false;
+    this.busy.set(true);
+    const { error } = await this.moderation.block(this.memberId());
+    this.busy.set(false);
     if (error) {
-      this.errorMessage = error.message;
+      this.errorMessage.set(error.message);
       return;
     }
-    this.dialog = null;
+    this.dialog.set(null);
     this.blockedChange.emit(true);
   }
 
   async unblock() {
-    this.menuOpen = false;
-    this.busy = true;
-    const { error } = await this.moderation.unblock(this.memberId);
-    this.busy = false;
+    this.menuOpen.set(false);
+    this.busy.set(true);
+    const { error } = await this.moderation.unblock(this.memberId());
+    this.busy.set(false);
     if (!error) this.blockedChange.emit(false);
   }
 }

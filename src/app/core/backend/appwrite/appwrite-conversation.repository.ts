@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Channel, ID, Models, Permission, Query, Role } from 'appwrite';
 import { Conversation, Message, MessageReaction } from '../../models/message.model';
 import { ConversationRepository, NewMessage } from '../../repositories/conversation.repository';
@@ -29,12 +29,10 @@ function writtenBy(row: Models.Row, authorId: string): boolean {
  */
 @Injectable()
 export class AppwriteConversationRepository extends ConversationRepository {
+  private appwrite = inject(AppwriteClientService);
+
   /** Fichiers privés déjà chargés, pour ne pas les retélécharger à chaque nouveau message. */
   private mediaUrls = new Map<string, Promise<string | null>>();
-
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
 
   async open(otherUserId: string): Promise<string> {
     const { data, error } = await this.appwrite.run<{ conversationId: string }>(
@@ -174,6 +172,34 @@ export class AppwriteConversationRepository extends ConversationRepository {
           : null;
         const [message] = await this.enrich([row], [], replied ? [replied] : []);
         callback(message);
+      },
+    );
+  }
+
+  onAnyNewMessage(callback: () => void): Unsubscribe {
+    // Appwrite n'envoie que les messages des conversations du membre.
+    return this.appwrite.client.subscribe(
+      Channel.tablesdb(DB).table('messages').row().create(),
+      () => callback(),
+    );
+  }
+
+  async getReactions(messageId: string): Promise<MessageReaction[]> {
+    const rows = await this.appwrite.listAll<ReactionRow>('message_reactions', [
+      Query.equal('message_id', messageId),
+    ]);
+    return rows
+      .filter((r) => writtenBy(r, r.user_id))
+      .map((r) => ({ message_id: r.message_id, user_id: r.user_id, emoji: r.emoji }));
+  }
+
+  onReactionChange(conversationId: string, callback: (messageId: string) => void): Unsubscribe {
+    // Ajout, changement et retrait : tous les événements des réactions de la conversation.
+    return this.appwrite.client.subscribe<ReactionRow>(
+      Channel.tablesdb(DB).table('message_reactions').row(),
+      (event) => {
+        if (event.payload.conversation_id !== conversationId) return;
+        callback(event.payload.message_id);
       },
     );
   }

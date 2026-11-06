@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Models, Query } from 'appwrite';
 import { Sortie, SortieWithRelations } from '../../models/sortie.model';
 import { Theme } from '../../models/theme.model';
@@ -7,14 +7,50 @@ import { SortieRepository } from '../../repositories/sortie.repository';
 import { AppwriteClientService, attempt } from './appwrite-client';
 import { fromRow } from './rows';
 
+/** Ligne de sortie ou d'aperçu : toutes deux ont une date, qui sert au tri. */
+type DatedRow = Models.Row & { date: string };
+
 @Injectable()
 export class AppwriteSortieRepository extends SortieRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   getPublished(): Promise<RepositoryResult<SortieWithRelations[]>> {
-    return attempt(() => this.list([]));
+    return attempt(async () => {
+      const [rows, previews] = await Promise.all([
+        this.appwrite.listAll<DatedRow>('sorties', [
+          Query.equal('status', 'published'),
+          Query.orderAsc('date'),
+        ]),
+        this.premiumPreviews(),
+      ]);
+      // Un abonné lit déjà la sortie complète : son aperçu ne sert qu'aux autres.
+      const readable = new Set(rows.map((row) => row.$id));
+      const locked = previews.filter((row) => !readable.has(row.$id));
+      const all = [...rows, ...locked].sort((a, b) => a.date.localeCompare(b.date));
+      const lockedIds = new Set(locked.map((row) => row.$id));
+      const sorties = await this.withRelations(all);
+      return sorties.map((s) => (lockedIds.has(s.id) ? { ...s, locked: true } : s));
+    });
+  }
+
+  /** Aperçus des sorties Premium, présentés comme des sorties sans détails. */
+  private async premiumPreviews(): Promise<DatedRow[]> {
+    try {
+      const rows = await this.appwrite.listAll<DatedRow>('sorties_apercus', [
+        Query.orderAsc('date'),
+      ]);
+      return rows.map((row) => ({
+        ...row,
+        location: '',
+        price: 0,
+        is_premium: true,
+        image_source: 'default',
+        status: 'published',
+      }));
+    } catch {
+      // Table pas encore créée (npm run appwrite:setup) : on affiche les sorties sans aperçus.
+      return [];
+    }
   }
 
   getPublishedCreatedBy(userId: string): Promise<RepositoryResult<SortieWithRelations[]>> {
@@ -32,6 +68,14 @@ export class AppwriteSortieRepository extends SortieRepository {
 
   async create(sortie: Partial<Sortie>): Promise<RepositoryResult<Sortie>> {
     const { data, error } = await this.appwrite.run<{ sortie: Models.Row }>('sorties', 'create', {
+      sortie,
+    });
+    return { data: data ? fromRow<Sortie>(data.sortie) : null, error };
+  }
+
+  async update(id: string, sortie: Partial<Sortie>): Promise<RepositoryResult<Sortie>> {
+    const { data, error } = await this.appwrite.run<{ sortie: Models.Row }>('sorties', 'update', {
+      sortieId: id,
       sortie,
     });
     return { data: data ? fromRow<Sortie>(data.sortie) : null, error };

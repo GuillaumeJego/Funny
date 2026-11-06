@@ -4,6 +4,7 @@ import {
   Permission,
   Query,
   Role,
+  deleteFile,
   fail,
   handler,
   isAdmin,
@@ -11,7 +12,12 @@ import {
   uniqueId,
   usernameOf,
 } from './shared/appwrite.js';
-import { confirmPlace, deleteSortie, promoteFromWaitingList } from './shared/sorties.js';
+import {
+  confirmPlace,
+  deleteSortie,
+  promoteFromWaitingList,
+  syncPremiumPreview,
+} from './shared/sorties.js';
 import { cleanSortie, isSafeDefaultImage, sortieImageFileId } from './shared/sortie-rules.js';
 
 /**
@@ -83,6 +89,8 @@ async function create({ api, userId, input }) {
   data.created_by = userId;
   data.status = 'published';
   const sortie = await api.createRow('sorties', uniqueId(), data, sortiePermissions(data, userId));
+  // Les non-abonnés voient la sortie Premium floutée, grâce à son aperçu.
+  await syncPremiumPreview(api, sortie);
   // L'organisateur est inscrit d'office (statut « confirmed »).
   await api.createRow('inscriptions', uniqueId(), {
     sortie_id: sortie.$id,
@@ -90,6 +98,71 @@ async function create({ api, userId, input }) {
     status: 'confirmed',
   });
   return { sortie };
+}
+
+/**
+ * L'organisateur (ou un admin) modifie sa sortie. Mêmes vérifications qu'à la création ;
+ * les droits de lecture et l'aperçu Premium suivent, et les inscrits sont prévenus si la
+ * date ou le lieu changent.
+ */
+async function update({ api, userId, input }) {
+  const sortie = await getSortie(api, input.sortieId);
+  const admin = await isAdmin(api, userId);
+  if (sortie.created_by !== userId && !admin) {
+    fail(403, "Seul l'organisateur peut modifier cette sortie.");
+  }
+  const data = cleanSortie(input.sortie);
+  if (!(await api.getRow('themes', data.theme_id))) fail(400, 'Ce thème n’existe pas.');
+  if (data.is_premium && !sortie.is_premium && !admin) {
+    if (!(await api.isTeamMember('abonnes', userId)))
+      fail(403, 'Seuls les abonnés peuvent créer une sortie Premium.');
+  }
+  await checkImage(api, data);
+
+  const taken = await api.countRows('inscriptions', [
+    Query.equal('sortie_id', sortie.$id),
+    Query.equal('status', 'pending'),
+  ]);
+  if (data.max_participants != null && data.max_participants < taken) {
+    fail(400, `${taken} membres sont déjà inscrits : garde au moins ${taken} places.`);
+  }
+
+  const updated = await api.updateRow(
+    'sorties',
+    sortie.$id,
+    data,
+    sortiePermissions(data, sortie.created_by),
+  );
+  await syncPremiumPreview(api, updated);
+  // Une photo remplacée n'a plus de raison de rester dans le stockage.
+  if (sortie.image_source === 'custom' && sortie.image_url && sortie.image_url !== data.image_url) {
+    await deleteFile(api, 'sorties-images', sortie.image_url);
+  }
+  // Des places en plus : la liste d'attente avance d'autant.
+  const free = data.max_participants == null ? Infinity : data.max_participants - taken;
+  const waiting = await api.countRows('inscriptions', [
+    Query.equal('sortie_id', sortie.$id),
+    Query.equal('status', 'waiting'),
+  ]);
+  for (let i = 0; i < Math.min(free, waiting); i++) await promoteFromWaitingList(api, updated);
+
+  const moved = new Date(sortie.date).getTime() !== new Date(data.date).getTime();
+  if (moved || sortie.location !== data.location) {
+    const inscrits = await api.listAllRows('inscriptions', [
+      Query.equal('sortie_id', sortie.$id),
+      Query.equal('status', ['pending', 'waiting']),
+    ]);
+    await notify(
+      api,
+      inscrits.map((i) => ({
+        user_id: i.user_id,
+        actor_id: userId,
+        title: '📝 Sortie modifiée',
+        message: `La ${moved ? 'date' : 'adresse'} de la sortie « ${data.title} » a changé : pensez à vérifier.`,
+      })),
+    );
+  }
+  return { sortie: updated };
 }
 
 async function join({ api, userId, input }) {
@@ -198,4 +271,4 @@ async function remove({ api, userId, input }) {
   return {};
 }
 
-export default handler({ create, join, leave, like, delete: remove });
+export default handler({ create, update, join, leave, like, delete: remove });

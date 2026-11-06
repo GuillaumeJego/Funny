@@ -21,12 +21,12 @@ describe('MotDePasseOublieComponent', () => {
 
   it('asks for an email before sending', async () => {
     await component.onSubmit();
-    expect(component.errorMessage).toContain('adresse');
-    expect(component.sent).toBe(false);
+    expect(component.errorMessage()).toContain('adresse');
+    expect(component.sent()).toBe(false);
   });
 
   it('shows the same neutral message once the link is requested', async () => {
-    component.email = 'quelquun@exemple.fr';
+    component.email.set('quelquun@exemple.fr');
     await component.onSubmit();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.success').textContent).toContain(

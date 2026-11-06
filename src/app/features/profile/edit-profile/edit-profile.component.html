@@ -3,38 +3,42 @@
     <h1>Mon profil</h1>
 
     <!-- Avatar Upload -->
-    @if (!loading && userId) {
+    @if (!loading() && userId()) {
       <app-avatar-upload
-        [userId]="userId"
-        [currentAvatarUrl]="profile.avatar_url"
+        [userId]="userId()"
+        [currentAvatarUrl]="profile().avatar_url"
         (avatarUpdated)="onAvatarUpdated($event)"
       />
     }
 
-    @if (loading) {
+    @if (loading()) {
       <div class="loading">Chargement...</div>
     }
 
-    @if (!loading) {
+    @if (!loading()) {
       <div>
         <!-- Informations de base -->
         <section>
           <h2>Informations générales</h2>
           <div class="form-group">
             <label>Nom d'utilisateur</label>
-            <input type="text" [(ngModel)]="profile.username" placeholder="Votre pseudo" />
+            <input type="text" [(ngModel)]="profile().username" placeholder="Votre pseudo" />
           </div>
           <div class="form-group">
             <label>Bio</label>
-            <textarea [(ngModel)]="profile.bio" placeholder="Parlez de vous..." rows="4"></textarea>
+            <textarea
+              [(ngModel)]="profile().bio"
+              placeholder="Parlez de vous..."
+              rows="4"
+            ></textarea>
           </div>
           <div class="form-group">
             <label>Ville</label>
-            <input type="text" [(ngModel)]="profile.city" placeholder="Votre ville" />
+            <input type="text" [(ngModel)]="profile().city" placeholder="Votre ville" />
           </div>
           <div class="form-group">
             <label>Date de naissance</label>
-            <input type="date" [(ngModel)]="profile.birthdate" />
+            <input type="date" [(ngModel)]="profile().birthdate" />
           </div>
         </section>
         <!-- Informations personnelles -->
@@ -42,7 +46,7 @@
           <h2>Informations personnelles</h2>
           <div class="form-group">
             <label>Genre</label>
-            <select [(ngModel)]="profile.gender">
+            <select [(ngModel)]="profile().gender">
               @for (opt of genderOptions; track opt) {
                 <option [value]="opt">
                   {{ opt === 'secret' ? "C'est secret" : opt }}
@@ -52,7 +56,7 @@
           </div>
           <div class="form-group">
             <label>Statut conjugal</label>
-            <select [(ngModel)]="profile.relationship">
+            <select [(ngModel)]="profile().relationship">
               @for (opt of relationshipOptions; track opt) {
                 <option [value]="opt">
                   {{ opt === 'secret' ? "C'est secret" : opt }}
@@ -62,7 +66,7 @@
           </div>
           <div class="form-group">
             <label>Enfants</label>
-            <select [(ngModel)]="profile.children">
+            <select [(ngModel)]="profile().children">
               @for (opt of childrenOptions; track opt) {
                 <option [value]="opt">
                   {{ opt === 'secret' ? "C'est secret" : opt }}
@@ -76,7 +80,7 @@
           <h2>Habitudes de vie</h2>
           <div class="form-group">
             <label>Tabac</label>
-            <select [(ngModel)]="profile.smoking">
+            <select [(ngModel)]="profile().smoking">
               @for (opt of habitOptions; track opt) {
                 <option [value]="opt">
                   {{ opt === 'secret' ? "C'est secret" : opt }}
@@ -86,7 +90,7 @@
           </div>
           <div class="form-group">
             <label>Vapotage</label>
-            <select [(ngModel)]="profile.vaping">
+            <select [(ngModel)]="profile().vaping">
               @for (opt of habitOptions; track opt) {
                 <option [value]="opt">
                   {{ opt === 'secret' ? "C'est secret" : opt }}
@@ -96,7 +100,7 @@
           </div>
           <div class="form-group">
             <label>Alcool</label>
-            <select [(ngModel)]="profile.alcohol">
+            <select [(ngModel)]="profile().alcohol">
               @for (opt of habitOptions; track opt) {
                 <option [value]="opt">
                   {{ opt === 'secret' ? "C'est secret" : opt }}
@@ -108,59 +112,61 @@
         <!-- Abonnement -->
         <section class="subscription-section">
           <h2>Mon abonnement</h2>
-          <div class="subscription-card" [class.is-premium]="isPremium">
+          <div class="subscription-card" [class.is-premium]="isPremium()">
             <div class="subscription-status">
-              <span class="sub-icon">{{ isPremium ? '⭐' : '🔓' }}</span>
+              <span class="sub-icon">{{ isPremium() ? '⭐' : '🔓' }}</span>
               <div>
-                <div class="sub-label">{{ isPremium ? 'Abonné Premium' : 'Non abonné' }}</div>
-                @if (hasPaidSubscription && subscription?.current_period_end) {
+                <div class="sub-label">{{ isPremium() ? 'Abonné Premium' : 'Non abonné' }}</div>
+                @if (hasPaidSubscription() && subscription()?.current_period_end) {
                   <div class="sub-detail">
                     {{
-                      subscription?.cancel_at_period_end ? 'Résilié, se termine le' : 'Renouvelé le'
+                      subscription()?.cancel_at_period_end
+                        ? 'Résilié, se termine le'
+                        : 'Renouvelé le'
                     }}
-                    {{ subscription?.current_period_end | date: 'dd/MM/yyyy' }}
+                    {{ subscription()?.current_period_end | date: 'dd/MM/yyyy' }}
                   </div>
-                } @else if (isPremium && subscriptionEndDate) {
+                } @else if (isPremium() && subscriptionEndDate()) {
                   <div class="sub-detail">
-                    Expire le {{ subscriptionEndDate | date: 'dd/MM/yyyy' }}
+                    Expire le {{ subscriptionEndDate() | date: 'dd/MM/yyyy' }}
                   </div>
                 }
-                @if (!isPremium) {
+                @if (!isPremium()) {
                   <div class="sub-detail">Accédez aux sorties exclusives et plus encore</div>
                 }
               </div>
             </div>
-            @if (hasPaidSubscription) {
+            @if (hasPaidSubscription()) {
               <button
                 type="button"
                 class="btn-premium"
                 (click)="openPortal()"
-                [disabled]="openingPortal"
+                [disabled]="openingPortal()"
               >
-                {{ openingPortal ? 'Ouverture…' : 'Gérer ou résilier mon abonnement' }}
+                {{ openingPortal() ? 'Ouverture…' : 'Gérer ou résilier mon abonnement' }}
               </button>
-            } @else if (!isPremium) {
+            } @else if (!isPremium()) {
               <button type="button" class="btn-premium" (click)="goToPremium()">
                 ⭐ Passer Premium
               </button>
             }
           </div>
-          @if (portalError) {
-            <div class="error">{{ portalError }}</div>
+          @if (portalError()) {
+            <div class="error">{{ portalError() }}</div>
           }
         </section>
         <!-- Messages -->
-        @if (successMessage) {
-          <div class="success">{{ successMessage }}</div>
+        @if (successMessage()) {
+          <div class="success">{{ successMessage() }}</div>
         }
-        @if (errorMessage) {
-          <div class="error">{{ errorMessage }}</div>
+        @if (errorMessage()) {
+          <div class="error">{{ errorMessage() }}</div>
         }
         <!-- Boutons -->
         <div class="actions">
           <button class="btn-secondary" (click)="cancel()">Annuler</button>
-          <button class="btn-primary" (click)="onSave()" [disabled]="saving">
-            {{ saving ? 'Sauvegarde...' : 'Sauvegarder' }}
+          <button class="btn-primary" (click)="onSave()" [disabled]="saving()">
+            {{ saving() ? 'Sauvegarde...' : 'Sauvegarder' }}
           </button>
         </div>
         <!-- Supprimer mon compte -->
@@ -180,7 +186,7 @@
   </div>
 </div>
 
-@if (deleteDialogOpen) {
+@if (deleteDialogOpen()) {
   <div class="modal-overlay" (click)="closeDeleteDialog()" (keydown.escape)="closeDeleteDialog()">
     <div
       class="modal"
@@ -193,7 +199,7 @@
       <p>
         C'est définitif. Les sorties que vous organisez seront annulées et leurs inscrits prévenus.
       </p>
-      @if (hasPaidSubscription) {
+      @if (hasPaidSubscription()) {
         <p>Votre abonnement Premium sera arrêté tout de suite et ne sera plus prélevé.</p>
       }
       <label for="delete-password">Pour confirmer, entrez votre mot de passe :</label>
@@ -201,23 +207,23 @@
         id="delete-password"
         type="password"
         [(ngModel)]="deletePassword"
-        (ngModelChange)="deleteError = ''"
+        (ngModelChange)="deleteError.set('')"
         autocomplete="current-password"
         (keydown.enter)="deleteAccount()"
       />
-      @if (deleteError) {
-        <div class="error">{{ deleteError }}</div>
+      @if (deleteError()) {
+        <div class="error">{{ deleteError() }}</div>
       }
       <div class="modal-actions">
-        <button class="btn-cancel" (click)="closeDeleteDialog()" [disabled]="deleting">
+        <button class="btn-cancel" (click)="closeDeleteDialog()" [disabled]="deleting()">
           Annuler
         </button>
         <button
           class="btn-delete-account"
           (click)="deleteAccount()"
-          [disabled]="!deletePassword || deleting"
+          [disabled]="!deletePassword() || deleting()"
         >
-          {{ deleting ? 'Suppression…' : 'Supprimer définitivement' }}
+          {{ deleting() ? 'Suppression…' : 'Supprimer définitivement' }}
         </button>
       </div>
     </div>

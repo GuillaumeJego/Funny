@@ -1,4 +1,11 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
@@ -17,37 +24,35 @@ import { ClickableDirective } from '../../core/directives/clickable.directive';
   standalone: true,
   imports: [ClickableDirective, FormsModule, DatePipe, AdminThemesComponent],
   templateUrl: './admin.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './admin.component.scss',
 })
 export class AdminComponent implements OnInit {
-  loading = true;
-  saving = false;
-  profilePagePremiumOnly = false;
-  sortieCreationAccess: 'all' | 'premium' | 'admin' = 'all';
-  membres: Profile[] = [];
-  searchQuery = '';
-  currentUserRole = '';
-  currentUserId = '';
-  reports: Report[] = [];
+  private auth = inject(AuthService);
+  private profileService = inject(ProfileService);
+  private settingsService = inject(SettingsService);
+  private moderationService = inject(ModerationService);
+  router = inject(Router);
 
-  banModal: { membre: Profile; days: number; reason: string } | null = null;
-  banning = false;
-  banError = '';
+  readonly loading = signal(true);
+  readonly saving = signal(false);
+  readonly profilePagePremiumOnly = signal(false);
+  readonly sortieCreationAccess = signal<'all' | 'premium' | 'admin'>('all');
+  readonly membres = signal<Profile[]>([]);
+  readonly searchQuery = signal('');
+  readonly currentUserRole = signal('');
+  readonly currentUserId = signal('');
+  readonly reports = signal<Report[]>([]);
+
+  readonly banModal = signal<{ membre: Profile; days: number; reason: string } | null>(null);
+  readonly banning = signal(false);
+  readonly banError = signal('');
   banPresets = [
     { days: 1, label: '1 jour' },
     { days: 7, label: '7 jours' },
     { days: 30, label: '30 jours' },
     { days: 3650, label: 'Définitif' },
   ];
-
-  constructor(
-    private auth: AuthService,
-    private profileService: ProfileService,
-    private settingsService: SettingsService,
-    private moderationService: ModerationService,
-    public router: Router,
-  ) {}
 
   async ngOnInit() {
     const {
@@ -63,8 +68,8 @@ export class AdminComponent implements OnInit {
       this.router.navigate(['/dashboard']);
       return;
     }
-    this.currentUserRole = profile.role ?? '';
-    this.currentUserId = user.id;
+    this.currentUserRole.set(profile.role ?? '');
+    this.currentUserId.set(user.id);
 
     const [setting, creationSetting, membres, reports] = await Promise.all([
       this.settingsService.get('profile_page_premium_only'),
@@ -72,38 +77,38 @@ export class AdminComponent implements OnInit {
       this.profileService.getAllProfiles(),
       this.moderationService.getOpenReports(),
     ]);
-    this.reports = reports.data ?? [];
+    this.reports.set(reports.data ?? []);
 
-    this.profilePagePremiumOnly = setting === true;
-    this.sortieCreationAccess = creationSetting ?? 'all';
-    this.membres = (membres.data ?? []) as Profile[];
-    this.loading = false;
+    this.profilePagePremiumOnly.set(setting === true);
+    this.sortieCreationAccess.set(creationSetting ?? 'all');
+    this.membres.set((membres.data ?? []) as Profile[]);
+    this.loading.set(false);
   }
 
   async setSortieCreationAccess(value: 'all' | 'premium' | 'admin') {
-    this.sortieCreationAccess = value;
+    this.sortieCreationAccess.set(value);
     await this.settingsService.set('sortie_creation_access', value);
   }
 
   async togglePremiumOnly() {
-    this.saving = true;
-    this.profilePagePremiumOnly = !this.profilePagePremiumOnly;
-    await this.settingsService.set('profile_page_premium_only', this.profilePagePremiumOnly);
-    this.saving = false;
+    this.saving.set(true);
+    this.profilePagePremiumOnly.set(!this.profilePagePremiumOnly());
+    await this.settingsService.set('profile_page_premium_only', this.profilePagePremiumOnly());
+    this.saving.set(false);
   }
 
   async setCanViewProfiles(membre: Profile, value: boolean | null) {
     await this.profileService.adminUpdateProfile(membre.id, { can_view_profiles: value });
-    membre.can_view_profiles = value;
+    this.patchMembre(membre.id, { can_view_profiles: value });
   }
 
   canEditRole(membre: Profile): boolean {
-    if (membre.role === 'developer' && this.currentUserRole !== 'developer') return false;
+    if (membre.role === 'developer' && this.currentUserRole() !== 'developer') return false;
     return true;
   }
 
   availableRoles(): { value: string; label: string }[] {
-    if (this.currentUserRole === 'developer') {
+    if (this.currentUserRole() === 'developer') {
       return [
         { value: 'user', label: '👤 Membre' },
         { value: 'admin', label: '🛡️ Admin' },
@@ -119,13 +124,17 @@ export class AdminComponent implements OnInit {
   async setRole(membre: Profile, role: string) {
     if (!this.canEditRole(membre)) return;
     const previousRole = membre.role;
+    this.patchMembre(membre.id, { role });
     const { error } = await this.profileService.adminUpdateProfile(membre.id, { role });
-    if (error) {
-      membre.role = previousRole; // revert si erreur DB
-    }
+    if (error) this.patchMembre(membre.id, { role: previousRole }); // revert si erreur DB
   }
 
-  premiumModal: { membre: Profile; mois: number } | null = null;
+  /** Met à jour un membre de la liste par copie, pour que l'affichage suive. */
+  private patchMembre(id: string, change: Partial<Profile>) {
+    this.membres.set(this.membres().map((m) => (m.id === id ? { ...m, ...change } : m)));
+  }
+
+  readonly premiumModal = signal<{ membre: Profile; mois: number } | null>(null);
 
   isPremium(m: Profile): boolean {
     if (!m.subscription_end_date) return false;
@@ -142,25 +151,26 @@ export class AdminComponent implements OnInit {
     if (this.isPremium(m)) {
       this.revokePremium(m);
     } else {
-      this.premiumModal = { membre: m, mois: 1 };
+      this.premiumModal.set({ membre: m, mois: 1 });
     }
   }
 
   async confirmPremium() {
-    if (!this.premiumModal) return;
-    const { membre, mois } = this.premiumModal;
+    const modal = this.premiumModal();
+    if (!modal) return;
+    const { membre, mois } = modal;
     const end = new Date();
     end.setMonth(end.getMonth() + mois);
     await this.profileService.adminUpdateProfile(membre.id, {
       subscription_end_date: end.toISOString(),
     });
-    membre.subscription_end_date = end.toISOString();
-    this.premiumModal = null;
+    this.patchMembre(membre.id, { subscription_end_date: end.toISOString() });
+    this.premiumModal.set(null);
   }
 
   async revokePremium(m: Profile) {
     await this.profileService.adminUpdateProfile(m.id, { subscription_end_date: null as any });
-    m.subscription_end_date = undefined;
+    this.patchMembre(m.id, { subscription_end_date: undefined });
   }
 
   reasonLabel(reason: string): string {
@@ -168,12 +178,12 @@ export class AdminComponent implements OnInit {
   }
 
   memberById(id: string): Profile | undefined {
-    return this.membres.find((m) => m.id === id);
+    return this.membres().find((m) => m.id === id);
   }
 
   async markHandled(report: Report) {
     const { error } = await this.moderationService.markReportHandled(report.id);
-    if (!error) this.reports = this.reports.filter((r) => r.id !== report.id);
+    if (!error) this.reports.set(this.reports().filter((r) => r.id !== report.id));
   }
 
   isBanned(m: Profile): boolean {
@@ -181,38 +191,40 @@ export class AdminComponent implements OnInit {
   }
 
   openBanModal(m: Profile) {
-    this.banError = '';
-    this.banModal = { membre: m, days: 7, reason: '' };
+    this.banError.set('');
+    this.banModal.set({ membre: m, days: 7, reason: '' });
   }
 
   async confirmBan() {
-    if (!this.banModal) return;
-    const { membre, days, reason } = this.banModal;
-    this.banning = true;
+    const modal = this.banModal();
+    if (!modal) return;
+    const { membre, days, reason } = modal;
+    this.banning.set(true);
     const { error } = await this.moderationService.banMember(membre.id, days, reason);
-    this.banning = false;
+    this.banning.set(false);
     if (error) {
-      this.banError = error.message;
+      this.banError.set(error.message);
       return;
     }
-    membre.is_banned = true;
-    membre.banned_until = new Date(Date.now() + days * 86400000).toISOString();
-    this.banModal = null;
+    this.patchMembre(membre.id, {
+      is_banned: true,
+      banned_until: new Date(Date.now() + days * 86400000).toISOString(),
+    });
+    this.banModal.set(null);
   }
 
   async unban(m: Profile) {
     const { error } = await this.moderationService.unbanMember(m.id);
     if (!error) {
-      m.is_banned = false;
-      m.banned_until = undefined;
+      this.patchMembre(m.id, { is_banned: false, banned_until: undefined });
     }
   }
 
-  get filteredMembres(): Profile[] {
-    if (!this.searchQuery.trim()) return this.membres;
-    const q = this.searchQuery.toLowerCase();
-    return this.membres.filter((m) => m.username.toLowerCase().includes(q));
-  }
+  readonly filteredMembres = computed<Profile[]>(() => {
+    if (!this.searchQuery().trim()) return this.membres();
+    const q = this.searchQuery().toLowerCase();
+    return this.membres().filter((m) => m.username.toLowerCase().includes(q));
+  });
 
   getRoleLabel(m: Profile): string {
     if (m.role === 'admin') return '🛡️ Admin';

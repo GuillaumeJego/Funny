@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { PremiumPlan } from '../models/subscription.model';
 import { BillingRepository } from '../repositories/billing.repository';
 
 @Injectable({ providedIn: 'root' })
 export class BillingService {
-  constructor(private billing: BillingRepository) {}
+  private billing = inject(BillingRepository);
 
   /** Ouvre la page de paiement Stripe. Renvoie un message d'erreur si elle n'a pas pu s'ouvrir. */
   async subscribe(plan: PremiumPlan, waiver: boolean): Promise<string | null> {

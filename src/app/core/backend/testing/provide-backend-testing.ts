@@ -44,6 +44,7 @@ const fakeSorties: SortieRepository = {
   getPublishedCreatedBy: async () => empty,
   getPublishedByIds: async () => [],
   create: async () => ok,
+  update: async () => ok,
   delete: async () => ok,
 };
 
@@ -84,12 +85,16 @@ const fakeConversations: ConversationRepository = {
   setReaction: async () => {},
   removeReaction: async () => {},
   onNewMessage: () => () => {},
+  getReactions: async () => [],
+  onAnyNewMessage: () => () => {},
+  onReactionChange: () => () => {},
 };
 
 const fakeNotifications: NotificationRepository = {
   getForUser: async () => empty,
   countUnread: async () => 0,
   markAllRead: async () => ok,
+  onNew: () => () => {},
 };
 
 const fakeSettings: SettingsRepository = {

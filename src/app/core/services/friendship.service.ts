@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { FriendshipRepository } from '../repositories/friendship.repository';
 import { Friendship } from '../models/friendship.model';
 
 @Injectable({ providedIn: 'root' })
 export class FriendshipService {
-  constructor(private friendships: FriendshipRepository) {}
+  private friendships = inject(FriendshipRepository);
 
   async getPendingReceivedCount(userId: string): Promise<number> {
     return await this.friendships.countPendingReceived(userId);

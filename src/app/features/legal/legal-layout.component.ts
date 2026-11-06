@@ -1,4 +1,4 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { LEGAL } from './legal-info';
 
@@ -11,7 +11,7 @@ import { LEGAL } from './legal-info';
     <div class="legal-page">
       <button type="button" class="btn-back" (click)="back()">← Retour</button>
       <article class="legal-card">
-        <h1>{{ title }}</h1>
+        <h1>{{ title() }}</h1>
         <p class="updated">Mise à jour : {{ legal.miseAJour }}</p>
         <ng-content />
       </article>
@@ -23,11 +23,11 @@ import { LEGAL } from './legal-info';
       </nav>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './legal.scss',
 })
 export class LegalLayoutComponent {
-  @Input({ required: true }) title!: string;
+  readonly title = input.required<string>();
   legal = LEGAL;
 
   back() {

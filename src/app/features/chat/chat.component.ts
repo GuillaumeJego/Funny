@@ -2,11 +2,13 @@ import {
   Component,
   OnInit,
   OnDestroy,
-  ViewChild,
   ElementRef,
   AfterViewChecked,
   NgZone,
   ChangeDetectionStrategy,
+  inject,
+  viewChild,
+  signal,
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
@@ -26,46 +28,49 @@ const EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
   standalone: true,
   imports: [ClickableDirective, FormsModule, MemberSafetyComponent],
   templateUrl: './chat.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './chat.component.scss',
 })
 export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
-  @ViewChild('messagesEnd') messagesEnd!: ElementRef;
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private auth = inject(AuthService);
+  private conversationService = inject(ConversationService);
+  private profileService = inject(ProfileService);
+  private moderationService = inject(ModerationService);
+  private zone = inject(NgZone);
 
-  messages: Message[] = [];
-  loading = true;
+  readonly messagesEnd = viewChild.required<ElementRef>('messagesEnd');
+  readonly fileInput = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
+
+  readonly messages = signal<Message[]>([]);
+  readonly loading = signal(true);
   myId = '';
   conversationId = '';
-  friendName = '';
-  friendAvatar: string | null = null;
-  friendId = '';
+  readonly friendName = signal('');
+  readonly friendAvatar = signal<string | null>(null);
+  readonly friendId = signal('');
   /** Le membre connecté a bloqué son interlocuteur. */
-  blocked = false;
+  readonly blocked = signal(false);
   /** La conversation n'est plus lisible (l'autre membre a bloqué le membre connecté). */
-  unavailable = false;
+  readonly unavailable = signal(false);
 
-  text = '';
-  sending = false;
-  uploading = false;
+  readonly text = signal('');
+  readonly sending = signal(false);
+  readonly uploading = signal(false);
 
-  replyTo: Message | null = null;
-  reactionTarget: Message | null = null;
-  reactionPickerPos = { top: 0, left: 0 };
+  readonly replyTo = signal<Message | null>(null);
+  readonly reactionTarget = signal<Message | null>(null);
+  readonly reactionPickerPos = signal({ top: 0, left: 0 });
   emojis = EMOJIS;
 
-  private stopListening: (() => void) | null = null;
-  private shouldScroll = false;
+  /** Message qui n'a pas pu partir : affiché sous la zone de saisie. */
+  readonly sendError = signal('');
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private auth: AuthService,
-    private conversationService: ConversationService,
-    private profileService: ProfileService,
-    private moderationService: ModerationService,
-    private zone: NgZone,
-  ) {}
+  private stopListening: (() => void) | null = null;
+  private stopReactions: (() => void) | null = null;
+  private destroyed = false;
+  private shouldScroll = false;
 
   async ngOnInit() {
     const {
@@ -87,44 +92,66 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     const nav = this.router.getCurrentNavigation();
     const state = nav?.extras?.state ?? history.state;
     if (state?.friendName) {
-      this.friendName = state.friendName;
-      this.friendAvatar = state.friendAvatar ?? null;
+      this.friendName.set(state.friendName);
+      this.friendAvatar.set(state.friendAvatar ?? null);
     } else if (state?.friendId) {
       // Sinon : charge le profil de l'ami
       const { data } = await this.profileService.getProfileById(state.friendId);
-      this.friendName = data?.username ?? '';
-      this.friendAvatar = data?.avatar_url ?? null;
+      this.friendName.set(data?.username ?? '');
+      this.friendAvatar.set(data?.avatar_url ?? null);
     }
 
-    this.friendId =
-      (await this.conversationService.getOtherParticipant(this.conversationId, this.myId)) ?? '';
-    if (!this.friendId) {
-      this.unavailable = true;
-      this.loading = false;
+    this.friendId.set(
+      (await this.conversationService.getOtherParticipant(this.conversationId, this.myId)) ?? '',
+    );
+    if (!this.friendId()) {
+      this.unavailable.set(true);
+      this.loading.set(false);
       return;
     }
-    if (!this.friendName) {
-      const { data } = await this.profileService.getProfileById(this.friendId);
-      this.friendName = data?.username ?? '';
-      this.friendAvatar = data?.avatar_url ?? null;
+    if (!this.friendName()) {
+      const { data } = await this.profileService.getProfileById(this.friendId());
+      this.friendName.set(data?.username ?? '');
+      this.friendAvatar.set(data?.avatar_url ?? null);
     }
-    this.blocked = await this.moderationService.isBlocked(this.friendId);
+    this.blocked.set(await this.moderationService.isBlocked(this.friendId()));
 
-    await this.loadMessages();
-    this.loading = false;
-    this.shouldScroll = true;
+    if (this.destroyed) return;
 
+    // On écoute avant de charger : un message envoyé pendant le chargement n'est pas perdu.
     this.stopListening = this.conversationService.subscribeToMessages(
       this.conversationId,
-      (message) => {
-        // Ajoute seulement le nouveau message, sans recharger toute la conversation.
-        this.zone.run(() => {
-          if (this.messages.some((m) => m.id === message.id)) return;
-          this.messages = [...this.messages, message];
-          this.shouldScroll = true;
-        });
-      },
+      (message) => this.zone.run(() => this.addMessages([message])),
     );
+    this.stopReactions = this.conversationService.subscribeToReactions(
+      this.conversationId,
+      (messageId) => this.zone.run(() => this.refreshReactions(messageId)),
+    );
+
+    await this.loadMessages();
+    this.loading.set(false);
+    this.shouldScroll = true;
+  }
+
+  /**
+   * Ajoute des messages sans doublon, dans l'ordre d'envoi. Un même message peut arriver
+   * deux fois : par la réponse du serveur à l'envoi, et par le temps réel.
+   */
+  private addMessages(messages: Message[]) {
+    const known = new Set(this.messages().map((m) => m.id));
+    const fresh = messages.filter((m) => !known.has(m.id));
+    if (!fresh.length) return;
+    this.messages.set(
+      [...this.messages(), ...fresh].sort((a, b) => a.created_at.localeCompare(b.created_at)),
+    );
+    this.shouldScroll = true;
+  }
+
+  /** Relit les réactions d'un seul message (après un ajout ou un retrait, chez soi ou chez l'autre). */
+  private async refreshReactions(messageId: string) {
+    if (!this.messages().some((m) => m.id === messageId)) return;
+    const reactions = await this.conversationService.getReactions(messageId);
+    this.messages.update((list) => list.map((m) => (m.id === messageId ? { ...m, reactions } : m)));
   }
 
   ngAfterViewChecked() {
@@ -135,16 +162,22 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   ngOnDestroy() {
+    this.destroyed = true;
     this.stopListening?.();
+    this.stopReactions?.();
   }
 
   async loadMessages() {
-    this.messages = await this.conversationService.getMessages(this.conversationId);
+    const loaded = await this.conversationService.getMessages(this.conversationId);
+    // Garde les messages arrivés en direct pendant le chargement.
+    const live = this.messages();
+    this.messages.set(loaded);
+    this.addMessages(live);
   }
 
   scrollToBottom() {
     try {
-      this.messagesEnd?.nativeElement?.scrollIntoView({ behavior: 'smooth' });
+      this.messagesEnd()?.nativeElement?.scrollIntoView({ behavior: 'smooth' });
     } catch {}
   }
 
@@ -153,25 +186,30 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   async send() {
-    const content = this.text.trim();
-    if (!content || this.sending) return;
-    this.sending = true;
-    this.text = '';
-    const replyId = this.replyTo?.id;
-    this.replyTo = null;
+    const content = this.text().trim();
+    if (!content || this.sending()) return;
+    this.sending.set(true);
+    this.sendError.set('');
+    const replyTo = this.replyTo();
+    this.text.set('');
+    this.replyTo.set(null);
 
     const msg = await this.conversationService.sendMessage(
       this.conversationId,
       this.myId,
       content,
       'text',
-      replyId,
+      replyTo?.id,
     );
     if (msg) {
-      this.messages = [...this.messages, msg];
-      this.shouldScroll = true;
+      this.addMessages([msg]);
+    } else {
+      // Rien n'est perdu : le texte revient dans la zone de saisie pour réessayer.
+      if (!this.text()) this.text.set(content);
+      this.replyTo.set(replyTo);
+      this.sendError.set("Le message n'est pas parti. Vérifie ta connexion et réessaie.");
     }
-    this.sending = false;
+    this.sending.set(false);
   }
 
   onKeydown(e: KeyboardEvent) {
@@ -182,7 +220,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   triggerFileInput(type: 'image' | 'video') {
-    const input = this.fileInput.nativeElement;
+    const input = this.fileInput().nativeElement;
     input.accept = type === 'image' ? 'image/*' : 'video/*';
     input.click();
   }
@@ -190,7 +228,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   async onFileSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
-    this.uploading = true;
+    this.uploading.set(true);
+    this.sendError.set('');
     const type: 'image' | 'video' = file.type.startsWith('video') ? 'video' : 'image';
     const fileId = await this.conversationService.uploadMedia(file, this.myId, this.conversationId);
     if (fileId) {
@@ -199,42 +238,42 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.myId,
         '',
         type,
-        this.replyTo?.id,
+        this.replyTo()?.id,
         fileId,
       );
       if (msg) {
-        this.messages = [...this.messages, msg];
-        this.shouldScroll = true;
+        this.addMessages([msg]);
+        this.replyTo.set(null);
       }
-      this.replyTo = null;
     }
-    this.uploading = false;
+    if (!fileId) this.sendError.set("La photo ou la vidéo n'a pas pu être envoyée. Réessaie.");
+    this.uploading.set(false);
     (event.target as HTMLInputElement).value = '';
   }
 
   openReactionPicker(event: MouseEvent, msg: Message) {
     event.preventDefault();
     event.stopPropagation();
-    this.reactionTarget = msg;
+    this.reactionTarget.set(msg);
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    this.reactionPickerPos = {
+    this.reactionPickerPos.set({
       top: rect.top - 60,
       left: Math.min(rect.left, window.innerWidth - 220),
-    };
+    });
   }
 
   closeReactionPicker() {
-    this.reactionTarget = null;
+    this.reactionTarget.set(null);
   }
 
-  async react(emoji: string) {
-    if (!this.reactionTarget) return;
-    const msg = this.reactionTarget;
+  /** Ajoute, change ou retire sa réaction : depuis le sélecteur, ou en touchant une réaction. */
+  async react(emoji: string, target?: Message) {
+    const msg = target ?? this.reactionTarget();
+    if (!msg) return;
+    this.reactionTarget.set(null);
     const existing = msg.reactions?.find((r) => r.user_id === this.myId);
     await this.conversationService.toggleReaction(msg.id, this.myId, emoji, existing?.emoji);
-    const msgs = await this.conversationService.getMessages(this.conversationId);
-    this.messages = msgs;
-    this.reactionTarget = null;
+    await this.refreshReactions(msg.id);
   }
 
   myReaction(msg: Message): string | undefined {
@@ -250,12 +289,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   setReply(msg: Message) {
-    this.replyTo = msg;
-    this.reactionTarget = null;
+    this.replyTo.set(msg);
+    this.reactionTarget.set(null);
   }
 
   cancelReply() {
-    this.replyTo = null;
+    this.replyTo.set(null);
   }
 
   formatTime(dateStr: string): string {
@@ -273,8 +312,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   showDayDivider(index: number): boolean {
     if (index === 0) return true;
-    const prev = new Date(this.messages[index - 1].created_at).toDateString();
-    const curr = new Date(this.messages[index].created_at).toDateString();
+    const prev = new Date(this.messages()[index - 1].created_at).toDateString();
+    const curr = new Date(this.messages()[index].created_at).toDateString();
     return prev !== curr;
   }
 

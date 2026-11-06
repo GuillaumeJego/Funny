@@ -5,14 +5,14 @@
     d'illustration quand la sortie n'a pas sa propre photo.
   </p>
 
-  @if (error) {
-    <p class="themes-error" role="alert">{{ error }}</p>
+  @if (error()) {
+    <p class="themes-error" role="alert">{{ error() }}</p>
   }
 
-  @if (loading) {
+  @if (loading()) {
     <p class="section-desc">Chargement…</p>
   } @else {
-    @if (themes.length === 0) {
+    @if (themes().length === 0) {
       <p class="section-desc">
         Aucun thème pour l'instant : les membres ne peuvent pas créer de sortie. Ajoute-en un
         ci-dessous, ou lance <code>npm run appwrite:themes</code> pour les thèmes de départ.
@@ -20,13 +20,13 @@
     }
 
     <ul class="theme-list">
-      @for (theme of themes; track theme.id) {
+      @for (theme of themes(); track theme.id) {
         <li class="theme-item">
           <button
             type="button"
             class="theme-head"
             [attr.aria-expanded]="theme.open"
-            (click)="theme.open = !theme.open"
+            (click)="toggle(theme)"
           >
             <span class="theme-icon" aria-hidden="true">{{ theme.icon }}</span>
             <span class="theme-name">{{ theme.name }}</span>
@@ -46,7 +46,7 @@
                   Nom
                   <input [(ngModel)]="theme.editName" maxlength="60" />
                 </label>
-                <button type="button" class="btn-small" [disabled]="busy" (click)="save(theme)">
+                <button type="button" class="btn-small" [disabled]="busy()" (click)="save(theme)">
                   Enregistrer
                 </button>
               </div>
@@ -62,7 +62,7 @@
                     <button
                       type="button"
                       class="image-remove"
-                      [disabled]="busy"
+                      [disabled]="busy()"
                       [attr.aria-label]="'Retirer cette image du thème ' + theme.name"
                       (click)="removeImage(theme, image)"
                     >
@@ -74,14 +74,14 @@
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
-                    [disabled]="busy"
+                    [disabled]="busy()"
                     (change)="addImage(theme, $event)"
                   />
                   + Ajouter une image
                 </label>
               </div>
 
-              <button type="button" class="btn-delete" [disabled]="busy" (click)="remove(theme)">
+              <button type="button" class="btn-delete" [disabled]="busy()" (click)="remove(theme)">
                 Supprimer ce thème
               </button>
             </div>
@@ -105,7 +105,9 @@
         Nouveau thème
         <input name="newName" [(ngModel)]="newName" placeholder="Ex. : Karaoké" maxlength="60" />
       </label>
-      <button type="submit" class="btn-small" [disabled]="busy || !newName.trim()">Ajouter</button>
+      <button type="submit" class="btn-small" [disabled]="busy() || !newName().trim()">
+        Ajouter
+      </button>
     </form>
   }
 </section>

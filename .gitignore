@@ -45,3 +45,4 @@ Thumbs.db
 !.vscode/launch.json
 !.vscode/extensions.json
 .history/*
+/functions/node_modules

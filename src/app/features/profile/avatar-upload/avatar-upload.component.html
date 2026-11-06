@@ -1,8 +1,8 @@
 <div class="avatar-upload">
   <!-- Affichage avatar actuel -->
   <div class="current-avatar">
-    @if (currentAvatarUrl) {
-      <img [src]="currentAvatarUrl" alt="Avatar" class="avatar-img" />
+    @if (currentAvatarUrl()) {
+      <img [src]="currentAvatarUrl()" alt="Avatar" class="avatar-img" />
     } @else {
       <div class="avatar-placeholder">👤</div>
     }
@@ -19,11 +19,11 @@
   </div>
 
   <!-- Éditeur de recadrage -->
-  @if (showCropper) {
+  @if (showCropper()) {
     <div class="cropper-container">
       <h3>Recadrer votre photo</h3>
       <image-cropper
-        [imageChangedEvent]="imageChangedEvent"
+        [imageChangedEvent]="imageChangedEvent()"
         [maintainAspectRatio]="true"
         [aspectRatio]="1"
         [resizeToWidth]="400"
@@ -33,12 +33,12 @@
         (imageCropped)="imageCropped($event)"
       />
       <!-- Prévisualisation avec filtre -->
-      @if (croppedImageUrl) {
+      @if (croppedImageUrl()) {
         <div class="preview-section">
           <h4>Prévisualisation</h4>
           <img
-            [src]="croppedImageUrl"
-            [style.filter]="selectedFilter"
+            [src]="croppedImageUrl()"
+            [style.filter]="selectedFilter()"
             class="preview-img"
             alt="Prévisualisation"
           />
@@ -49,11 +49,11 @@
               <div
                 appClickable
                 class="filter-option"
-                [class.active]="selectedFilter === filter.value"
+                [class.active]="selectedFilter() === filter.value"
                 (click)="selectFilter(filter.value)"
               >
                 <img
-                  [src]="croppedImageUrl"
+                  [src]="croppedImageUrl()"
                   [style.filter]="filter.value"
                   class="filter-thumb"
                   alt="{{ filter.name }}"
@@ -65,14 +65,18 @@
         </div>
       }
       <!-- Messages -->
-      @if (errorMessage) {
-        <div class="error">{{ errorMessage }}</div>
+      @if (errorMessage()) {
+        <div class="error">{{ errorMessage() }}</div>
       }
       <!-- Boutons -->
       <div class="actions">
         <button class="btn-secondary" (click)="cancel()">Annuler</button>
-        <button class="btn-primary" (click)="onUpload()" [disabled]="uploading || !croppedImageUrl">
-          {{ uploading ? 'Upload...' : 'Valider la photo' }}
+        <button
+          class="btn-primary"
+          (click)="onUpload()"
+          [disabled]="uploading() || !croppedImageUrl()"
+        >
+          {{ uploading() ? 'Upload...' : 'Valider la photo' }}
         </button>
       </div>
     </div>

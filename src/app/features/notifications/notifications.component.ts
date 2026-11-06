@@ -1,6 +1,14 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+} from '@angular/core';
 
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService, Notification } from '../../core/services/notification.service';
 
@@ -9,19 +17,18 @@ import { NotificationService, Notification } from '../../core/services/notificat
   standalone: true,
   imports: [],
   templateUrl: './notifications.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './notifications.component.scss',
 })
-export class NotificationsComponent implements OnInit {
-  notifications: Notification[] = [];
-  loading = true;
-  userId = '';
+export class NotificationsComponent implements OnInit, OnDestroy {
+  private auth = inject(AuthService);
+  private notifService = inject(NotificationService);
+  private router = inject(Router);
 
-  constructor(
-    private auth: AuthService,
-    private notifService: NotificationService,
-    private router: Router,
-  ) {}
+  readonly notifications = signal<Notification[]>([]);
+  readonly loading = signal(true);
+  userId = '';
+  private incomingSub?: Subscription;
 
   async ngOnInit() {
     const {
@@ -34,11 +41,22 @@ export class NotificationsComponent implements OnInit {
     this.userId = user.id;
 
     const { data } = await this.notifService.getMyNotifications(user.id);
-    this.notifications = (data ?? []) as Notification[];
-    this.loading = false;
+    this.notifications.set((data ?? []) as Notification[]);
+    this.loading.set(false);
+
+    // Une notification qui arrive pendant qu'on regarde la page s'ajoute en haut de la liste.
+    this.incomingSub = this.notifService.incoming$.subscribe((n) => {
+      this.notifService.hideToast();
+      this.notifications.update((list) => (list.some((x) => x.id === n.id) ? list : [n, ...list]));
+      this.notifService.markAllRead(user.id);
+    });
 
     // Marquer toutes comme lues après affichage
     await this.notifService.markAllRead(user.id);
+  }
+
+  ngOnDestroy() {
+    this.incomingSub?.unsubscribe();
   }
 
   formatDate(dateStr: string): string {

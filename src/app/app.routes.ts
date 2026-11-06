@@ -82,6 +82,15 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    // Même formulaire que la création, rempli avec la sortie à modifier.
+    path: 'sorties/:id/modifier',
+    loadComponent: () =>
+      import('./features/sorties/create-sortie/create-sortie.component').then(
+        (m) => m.CreateSortieComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'premium',
     loadComponent: () =>
       import('./features/premium/premium.component').then((m) => m.PremiumComponent),

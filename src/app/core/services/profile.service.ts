@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ProfileRepository } from '../repositories/profile.repository';
 import { StorageRepository } from '../repositories/storage.repository';
 import { AdminRepository } from '../repositories/admin.repository';
@@ -27,11 +27,9 @@ export type AdminProfileUpdate = Partial<
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
-  constructor(
-    private profiles: ProfileRepository,
-    private storage: StorageRepository,
-    private admin: AdminRepository,
-  ) {}
+  private profiles = inject(ProfileRepository);
+  private storage = inject(StorageRepository);
+  private admin = inject(AdminRepository);
 
   // Récupérer son propre profil
   async getMyProfile(userId: string) {

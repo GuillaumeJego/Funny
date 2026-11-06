@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Models, Query } from 'appwrite';
 import { Friendship } from '../../models/friendship.model';
 import { FriendshipRepository } from '../../repositories/friendship.repository';
@@ -8,9 +8,7 @@ import { fromRow } from './rows';
 
 @Injectable()
 export class AppwriteFriendshipRepository extends FriendshipRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   countPendingReceived(userId: string): Promise<number> {
     return this.appwrite.count('friendships', [

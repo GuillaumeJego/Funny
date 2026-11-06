@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostListener } from '@angular/core';
+import { Directive, ElementRef, HostListener, inject } from '@angular/core';
 
 /**
  * Rend utilisable au clavier un élément cliquable qui n'est pas un vrai bouton
@@ -11,7 +11,7 @@ import { Directive, ElementRef, HostListener } from '@angular/core';
   host: { role: 'button', tabindex: '0', class: 'clickable' },
 })
 export class ClickableDirective {
-  constructor(private element: ElementRef<HTMLElement>) {}
+  private element = inject<ElementRef<HTMLElement>>(ElementRef);
 
   @HostListener('keydown', ['$event'])
   onKeydown(event: KeyboardEvent) {

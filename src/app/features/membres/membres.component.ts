@@ -1,4 +1,11 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -25,62 +32,60 @@ interface MembreProfile {
   standalone: true,
   imports: [ClickableDirective, FormsModule],
   templateUrl: './membres.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './membres.component.scss',
 })
 export class MembresComponent implements OnInit {
-  membres: MembreProfile[] = [];
-  loading = true;
-  filtersOpen = false;
+  private profileService = inject(ProfileService);
+  private router = inject(Router);
 
-  searchQuery = '';
-  filterGender = '';
-  filterRelationship = '';
-  filterSmoking = '';
-  filterVaping = '';
-  filterAlcohol = '';
+  readonly membres = signal<MembreProfile[]>([]);
+  readonly loading = signal(true);
+  readonly filtersOpen = signal(false);
 
-  constructor(
-    private profileService: ProfileService,
-    private router: Router,
-  ) {}
+  readonly searchQuery = signal('');
+  readonly filterGender = signal('');
+  readonly filterRelationship = signal('');
+  readonly filterSmoking = signal('');
+  readonly filterVaping = signal('');
+  readonly filterAlcohol = signal('');
 
   async ngOnInit() {
     const { data } = await this.profileService.getAllProfiles();
-    this.membres = (data ?? []) as MembreProfile[];
-    this.loading = false;
+    this.membres.set((data ?? []) as MembreProfile[]);
+    this.loading.set(false);
   }
 
-  get filteredMembres(): MembreProfile[] {
-    const q = this.searchQuery.toLowerCase().trim();
-    return this.membres.filter((m) => {
+  readonly filteredMembres = computed<MembreProfile[]>(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    return this.membres().filter((m) => {
       if (q && !m.username.toLowerCase().includes(q) && !(m.bio ?? '').toLowerCase().includes(q))
         return false;
-      if (this.filterGender && m.gender !== this.filterGender) return false;
-      if (this.filterRelationship && m.relationship !== this.filterRelationship) return false;
-      if (this.filterSmoking && m.smoking !== this.filterSmoking) return false;
-      if (this.filterVaping && m.vaping !== this.filterVaping) return false;
-      if (this.filterAlcohol && m.alcohol !== this.filterAlcohol) return false;
+      if (this.filterGender() && m.gender !== this.filterGender()) return false;
+      if (this.filterRelationship() && m.relationship !== this.filterRelationship()) return false;
+      if (this.filterSmoking() && m.smoking !== this.filterSmoking()) return false;
+      if (this.filterVaping() && m.vaping !== this.filterVaping()) return false;
+      if (this.filterAlcohol() && m.alcohol !== this.filterAlcohol()) return false;
       return true;
     });
-  }
+  });
 
-  get activeFilterCount(): number {
+  readonly activeFilterCount = computed<number>(() => {
     return [
-      this.filterGender,
-      this.filterRelationship,
-      this.filterSmoking,
-      this.filterVaping,
-      this.filterAlcohol,
+      this.filterGender(),
+      this.filterRelationship(),
+      this.filterSmoking(),
+      this.filterVaping(),
+      this.filterAlcohol(),
     ].filter((v) => !!v).length;
-  }
+  });
 
   resetFilters() {
-    this.filterGender = '';
-    this.filterRelationship = '';
-    this.filterSmoking = '';
-    this.filterVaping = '';
-    this.filterAlcohol = '';
+    this.filterGender.set('');
+    this.filterRelationship.set('');
+    this.filterSmoking.set('');
+    this.filterVaping.set('');
+    this.filterAlcohol.set('');
   }
 
   goToProfile(id: string) {

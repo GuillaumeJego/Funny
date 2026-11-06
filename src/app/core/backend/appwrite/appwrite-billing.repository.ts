@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Models } from 'appwrite';
 import { PremiumPlan, Subscription } from '../../models/subscription.model';
 import { BillingRepository } from '../../repositories/billing.repository';
@@ -9,9 +9,7 @@ type SubscriptionRow = Models.Row & Subscription;
 
 @Injectable()
 export class AppwriteBillingRepository extends BillingRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   checkout(plan: PremiumPlan, waiver: boolean, origin: string): Promise<RepositoryResult<string>> {
     return this.url('checkout', { plan, waiver, origin });

@@ -2,8 +2,8 @@
   <div class="page-header">
     <h1>
       Membres
-      @if (!loading) {
-        <span class="total">({{ filteredMembres.length }})</span>
+      @if (!loading()) {
+        <span class="total">({{ filteredMembres().length }})</span>
       }
     </h1>
   </div>
@@ -18,24 +18,24 @@
         placeholder="Rechercher un membre…"
         class="search-input"
       />
-      @if (searchQuery) {
-        <button class="clear-btn" (click)="searchQuery = ''">✕</button>
+      @if (searchQuery()) {
+        <button class="clear-btn" (click)="searchQuery.set('')">✕</button>
       }
     </div>
     <button
       class="filter-btn"
-      [class.active]="activeFilterCount > 0"
-      (click)="filtersOpen = !filtersOpen"
+      [class.active]="activeFilterCount() > 0"
+      (click)="filtersOpen.set(!filtersOpen())"
     >
       ⚙️ Filtres
-      @if (activeFilterCount > 0) {
-        <span class="filter-badge">{{ activeFilterCount }}</span>
+      @if (activeFilterCount() > 0) {
+        <span class="filter-badge">{{ activeFilterCount() }}</span>
       }
     </button>
   </div>
 
   <!-- Panneau filtres -->
-  @if (filtersOpen) {
+  @if (filtersOpen()) {
     <div class="filters-panel">
       <div class="filters-grid">
         <div class="filter-group">
@@ -87,23 +87,23 @@
           </select>
         </div>
       </div>
-      @if (activeFilterCount > 0) {
+      @if (activeFilterCount() > 0) {
         <button class="reset-btn" (click)="resetFilters()">✕ Effacer les filtres</button>
       }
     </div>
   }
 
-  @if (loading) {
+  @if (loading()) {
     <div class="loading">Chargement…</div>
   }
 
-  @if (!loading && filteredMembres.length === 0) {
+  @if (!loading() && filteredMembres().length === 0) {
     <div class="empty">Aucun membre trouvé.</div>
   }
 
-  @if (!loading) {
+  @if (!loading()) {
     <div class="membres-grid">
-      @for (m of filteredMembres; track m) {
+      @for (m of filteredMembres(); track m) {
         <div appClickable class="membre-card" (click)="goToProfile(m.id)">
           <div class="avatar-wrap">
             @if (m.avatar_url) {

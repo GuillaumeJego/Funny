@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Models, Query } from 'appwrite';
 import { FavoriRepository } from '../../repositories/favori.repository';
 import { RepositoryResult } from '../../repositories/repository.types';
@@ -8,9 +8,7 @@ type FavoriRow = Models.Row & { user_id: string; sortie_id: string };
 
 @Injectable()
 export class AppwriteFavoriRepository extends FavoriRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   async getSortieIds(userId: string): Promise<string[]> {
     const rows = await this.appwrite.listAll<FavoriRow>('favoris', [

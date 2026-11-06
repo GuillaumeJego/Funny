@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, output, signal } from '@angular/core';
 
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 
@@ -7,24 +7,24 @@ import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
   standalone: true,
   imports: [ImageCropperComponent],
   templateUrl: './sortie-image-upload.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './sortie-image-upload.component.scss',
 })
 export class SortieImageUploadComponent {
-  @Output() imageReady = new EventEmitter<Blob>();
+  readonly imageReady = output<Blob>();
 
-  imageChangedEvent: Event | null = null;
+  readonly imageChangedEvent = signal<Event | null>(null);
   croppedImageBlob: Blob | null = null;
-  croppedImageUrl: string = '';
-  showCropper = false;
+  readonly croppedImageUrl = signal<string>('');
+  readonly showCropper = signal(false);
 
   onFileSelected(event: Event) {
-    this.imageChangedEvent = event;
-    this.showCropper = true;
+    this.imageChangedEvent.set(event);
+    this.showCropper.set(true);
   }
 
   async imageCropped(event: ImageCroppedEvent) {
-    this.croppedImageUrl = event.objectUrl || '';
+    this.croppedImageUrl.set(event.objectUrl || '');
     if (event.blob) {
       this.croppedImageBlob = event.blob;
     } else if (event.objectUrl) {
@@ -36,13 +36,13 @@ export class SortieImageUploadComponent {
   validate() {
     if (this.croppedImageBlob) {
       this.imageReady.emit(this.croppedImageBlob);
-      this.showCropper = false;
+      this.showCropper.set(false);
     }
   }
 
   cancel() {
-    this.showCropper = false;
-    this.imageChangedEvent = null;
-    this.croppedImageUrl = '';
+    this.showCropper.set(false);
+    this.imageChangedEvent.set(null);
+    this.croppedImageUrl.set('');
   }
 }

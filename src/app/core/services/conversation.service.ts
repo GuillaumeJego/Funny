@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { StorageRepository } from '../repositories/storage.repository';
 import { Unsubscribe } from '../repositories/repository.types';
@@ -6,10 +6,8 @@ import { Message, Conversation } from '../models/message.model';
 
 @Injectable({ providedIn: 'root' })
 export class ConversationService {
-  constructor(
-    private conversations: ConversationRepository,
-    private storage: StorageRepository,
-  ) {}
+  private conversations = inject(ConversationRepository);
+  private storage = inject(StorageRepository);
 
   // Ouvre (ou retrouve) la conversation avec un ami : le serveur vérifie l'amitié
   async getOrCreateConversation(_myId: string, friendId: string): Promise<string> {
@@ -76,6 +74,20 @@ export class ConversationService {
   async uploadMedia(file: File, userId: string, conversationId: string): Promise<string | null> {
     const { data } = await this.storage.uploadChatMedia(userId, conversationId, file);
     return data;
+  }
+
+  // Écoute les nouveaux messages de toutes ses conversations (liste des conversations)
+  subscribeToAllMessages(callback: () => void): Unsubscribe {
+    return this.conversations.onAnyNewMessage(callback);
+  }
+
+  async getReactions(messageId: string) {
+    return await this.conversations.getReactions(messageId);
+  }
+
+  // Écoute les réactions (ajoutées, changées, retirées) ; donne le message concerné
+  subscribeToReactions(conversationId: string, callback: (messageId: string) => void): Unsubscribe {
+    return this.conversations.onReactionChange(conversationId, callback);
   }
 
   // Écoute les nouveaux messages ; appeler la fonction renvoyée pour arrêter

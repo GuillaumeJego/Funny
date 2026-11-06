@@ -8,7 +8,7 @@ import { LEGAL } from './legal-info';
   standalone: true,
   imports: [LegalLayoutComponent, RouterLink],
   templateUrl: './mentions-legales.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MentionsLegalesComponent {
   legal = LEGAL;

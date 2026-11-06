@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Sortie, SortieWithRelations } from '../models/sortie.model';
 import { SortieRepository } from '../repositories/sortie.repository';
 import { StorageRepository } from '../repositories/storage.repository';
@@ -9,13 +9,11 @@ import { MiniProfile } from '../repositories/repository.types';
 
 @Injectable({ providedIn: 'root' })
 export class SortieService {
-  constructor(
-    private sorties: SortieRepository,
-    private inscriptions: InscriptionRepository,
-    private favoris: FavoriRepository,
-    private profiles: ProfileRepository,
-    private storage: StorageRepository,
-  ) {}
+  private sorties = inject(SortieRepository);
+  private inscriptions = inject(InscriptionRepository);
+  private favoris = inject(FavoriRepository);
+  private profiles = inject(ProfileRepository);
+  private storage = inject(StorageRepository);
 
   // Récupérer toutes les sorties publiées (avec image et nombre d'inscrits)
   async getAllSorties() {
@@ -30,6 +28,17 @@ export class SortieService {
   // Créer une sortie : le serveur y inscrit aussi son organisateur
   async createSortie(sortie: Partial<Sortie>) {
     return await this.sorties.create(sortie);
+  }
+
+  // Modifier une sortie : le serveur vérifie les champs et prévient les inscrits si besoin
+  async updateSortie(id: string, sortie: Partial<Sortie>) {
+    return await this.sorties.update(id, sortie);
+  }
+
+  // Une sortie publiée, avec son thème et son image (null si introuvable ou illisible)
+  async getSortie(id: string): Promise<SortieWithRelations | null> {
+    const [sortie] = await this.sorties.getPublishedByIds([id]);
+    return sortie ?? null;
   }
 
   // Envoyer l'image personnalisée d'une sortie ; renvoie son adresse

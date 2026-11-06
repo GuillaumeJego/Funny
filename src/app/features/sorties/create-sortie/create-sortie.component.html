@@ -1,4 +1,4 @@
-@if (accessDenied) {
+@if (accessDenied()) {
   <div class="access-denied-wrap">
     <div class="access-denied-card">
       <div class="access-denied-icon">🔒</div>
@@ -10,21 +10,21 @@
   </div>
 }
 
-@if (!accessDenied) {
+@if (!accessDenied()) {
   <div class="create-sortie-container">
     <div class="create-sortie-card">
       <!-- Header -->
       <div class="header">
         <button class="btn-back" (click)="goToDashboard()">← Retour</button>
-        <h1>Créer une sortie</h1>
-        <div class="steps">Étape {{ currentStep }}/{{ totalSteps }}</div>
+        <h1>{{ editId() ? 'Modifier la sortie' : 'Créer une sortie' }}</h1>
+        <div class="steps">Étape {{ currentStep() }}/{{ totalSteps }}</div>
       </div>
       <!-- Barre de progression -->
       <div class="progress-bar">
-        <div class="progress" [style.width.%]="(currentStep / totalSteps) * 100"></div>
+        <div class="progress" [style.width.%]="(currentStep() / totalSteps) * 100"></div>
       </div>
       <!-- ÉTAPE 1 : Informations générales -->
-      @if (currentStep === 1) {
+      @if (currentStep() === 1) {
         <div class="step">
           <h2>📝 Informations générales</h2>
           <div class="form-group">
@@ -45,7 +45,7 @@
           </div>
           <div class="form-group">
             <label>Thème *</label>
-            @if (themes.length === 0) {
+            @if (themes().length === 0) {
               <p class="no-images" role="alert">
                 Aucun thème n'est encore disponible : un administrateur doit en ajouter avant qu'on
                 puisse créer une sortie.
@@ -53,12 +53,12 @@
             }
             <select [(ngModel)]="sortie.theme_id" (change)="onThemeSelected()">
               <option value="">Choisir un thème</option>
-              @for (theme of themes; track theme.id) {
+              @for (theme of themes(); track theme.id) {
                 <option [value]="theme.id">{{ theme.icon }} {{ theme.name }}</option>
               }
             </select>
           </div>
-          @if (canCreatePremium) {
+          @if (canCreatePremium()) {
             <div class="form-group">
               <label>Réservé aux abonnés ?</label>
               <div class="toggle-group">
@@ -73,7 +73,7 @@
         </div>
       }
       <!-- ÉTAPE 2 : Date, lieu et participants -->
-      @if (currentStep === 2) {
+      @if (currentStep() === 2) {
         <div class="step">
           <h2>📍 Lieu et date</h2>
           <div class="form-group">
@@ -99,9 +99,9 @@
               @if (sortie.location) {
                 <div class="location-selected">📍 {{ sortie.location }}</div>
               }
-              @if (locationSuggestions.length) {
+              @if (locationSuggestions().length) {
                 <div class="location-suggestions">
-                  @for (place of locationSuggestions; track place) {
+                  @for (place of locationSuggestions(); track place) {
                     <div appClickable class="suggestion-item" (click)="selectLocation(place)">
                       <span>📍</span>
                       <div class="sug-details">
@@ -116,7 +116,7 @@
                   <p class="osm-credit">Adresses : © les contributeurs OpenStreetMap</p>
                 </div>
               }
-              @if (locationSearching) {
+              @if (locationSearching()) {
                 <div class="location-searching">⏳ Recherche…</div>
               }
             </div>
@@ -137,20 +137,20 @@
         </div>
       }
       <!-- ÉTAPE 3 : Image -->
-      @if (currentStep === 3) {
+      @if (currentStep() === 3) {
         <div class="step">
           <h2>🖼️ Image de la sortie</h2>
           <!-- Images par défaut -->
-          @if (themeImages.length > 0) {
+          @if (themeImages().length > 0) {
             <div>
               <h3>Images par défaut</h3>
               <div class="images-grid">
-                @for (img of themeImages; track img.id) {
+                @for (img of themeImages(); track img.id) {
                   <button
                     type="button"
                     class="image-option"
-                    [class.selected]="selectedImageUrl === img.image_url"
-                    [attr.aria-pressed]="selectedImageUrl === img.image_url"
+                    [class.selected]="selectedImageUrl() === img.image_url"
+                    [attr.aria-pressed]="selectedImageUrl() === img.image_url"
                     (click)="selectDefaultImage(img.image_url)"
                   >
                     <img [src]="img.image_url" alt="Image par défaut du thème" loading="lazy" />
@@ -159,7 +159,7 @@
               </div>
             </div>
           }
-          @if (themeImages.length === 0) {
+          @if (themeImages().length === 0) {
             <div class="no-images">
               <p>Aucune image par défaut pour ce thème.</p>
             </div>
@@ -169,13 +169,13 @@
             <h3>Ou uploader votre image</h3>
             <app-sortie-image-upload (imageReady)="onImageReady($event)" />
           </div>
-          @if (!selectedImageUrl && !customImagePreview) {
+          @if (!selectedImageUrl() && !customImagePreview()) {
             <div class="warning">⚠️ Veuillez choisir une image</div>
           }
         </div>
       }
       <!-- ÉTAPE 4 : Récapitulatif -->
-      @if (currentStep === 4) {
+      @if (currentStep() === 4) {
         <div class="step">
           <h2>✅ Récapitulatif</h2>
           <div class="recap">
@@ -204,31 +204,35 @@
               <span>{{ sortie.is_premium ? '⭐ Abonnés' : '🌍 Tout le monde' }}</span>
             </div>
           </div>
-          @if (selectedImageUrl || customImagePreview) {
+          @if (selectedImageUrl() || customImagePreview()) {
             <div class="recap-image">
-              <img [src]="selectedImageUrl || customImagePreview" alt="Image de la sortie" />
+              <img [src]="selectedImageUrl() || customImagePreview()" alt="Image de la sortie" />
             </div>
           }
         </div>
       }
       <!-- Messages -->
-      @if (successMessage) {
-        <div class="success">{{ successMessage }}</div>
+      @if (successMessage()) {
+        <div class="success">{{ successMessage() }}</div>
       }
-      @if (errorMessage) {
-        <div class="error">{{ errorMessage }}</div>
+      @if (errorMessage()) {
+        <div class="error">{{ errorMessage() }}</div>
       }
       <!-- Navigation -->
       <div class="navigation">
-        @if (currentStep > 1) {
+        @if (currentStep() > 1) {
           <button class="btn-secondary" (click)="prevStep()">← Précédent</button>
         }
-        @if (currentStep < totalSteps) {
+        @if (currentStep() < totalSteps) {
           <button class="btn-primary" (click)="nextStep()">Suivant →</button>
         }
-        @if (currentStep === totalSteps) {
-          <button class="btn-primary" (click)="onSubmit()" [disabled]="saving">
-            {{ saving ? 'Création...' : '🎉 Créer la sortie' }}
+        @if (currentStep() === totalSteps) {
+          <button class="btn-primary" (click)="onSubmit()" [disabled]="saving()">
+            @if (editId()) {
+              {{ saving() ? 'Enregistrement...' : '💾 Enregistrer les modifications' }}
+            } @else {
+              {{ saving() ? 'Création...' : '🎉 Créer la sortie' }}
+            }
           </button>
         }
       </div>

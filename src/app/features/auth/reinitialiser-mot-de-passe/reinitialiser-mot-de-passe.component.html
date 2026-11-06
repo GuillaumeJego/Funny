@@ -19,12 +19,12 @@
         />
       </div>
 
-      @if (errorMessage) {
-        <div class="error">{{ errorMessage }}</div>
+      @if (errorMessage()) {
+        <div class="error">{{ errorMessage() }}</div>
       }
 
-      <button (click)="onSubmit()" [disabled]="loading || !password">
-        {{ loading ? 'Enregistrement...' : 'Enregistrer' }}
+      <button (click)="onSubmit()" [disabled]="loading() || !password">
+        {{ loading() ? 'Enregistrement...' : 'Enregistrer' }}
       </button>
     } @else {
       <div class="error">Ce lien est incomplet. Demandez-en un nouveau.</div>

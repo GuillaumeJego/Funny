@@ -2,8 +2,8 @@
   <div class="login-card">
     <h1>Connexion</h1>
 
-    @if (successMessage) {
-      <div class="success">{{ successMessage }}</div>
+    @if (successMessage()) {
+      <div class="success">{{ successMessage() }}</div>
     }
 
     <div class="form-group">
@@ -20,14 +20,14 @@
       <a routerLink="/mot-de-passe-oublie">Mot de passe oublié ?</a>
     </p>
 
-    @if (errorMessage) {
+    @if (errorMessage()) {
       <div class="error">
-        {{ errorMessage }}
+        {{ errorMessage() }}
       </div>
     }
 
-    <button (click)="onLogin()" [disabled]="loading">
-      {{ loading ? 'Connexion...' : 'Se connecter' }}
+    <button (click)="onLogin()" [disabled]="loading()">
+      {{ loading() ? 'Connexion...' : 'Se connecter' }}
     </button>
 
     <p class="register-link">

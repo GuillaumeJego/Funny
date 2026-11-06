@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AppwriteException, ID } from 'appwrite';
 import { AuthRepository } from '../../repositories/auth.repository';
 import { AuthUser, RepositoryError } from '../../repositories/repository.types';
@@ -43,9 +43,7 @@ function linkError(error: unknown): RepositoryError {
 
 @Injectable()
 export class AppwriteAuthRepository extends AuthRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   async register(
     email: string,

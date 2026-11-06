@@ -20,6 +20,11 @@ export interface SortieWithRelations extends Sortie {
   profiles: { username: string; avatar_url?: string } | null;
   resolvedImageUrl?: string;
   inscriptionsCount?: number;
+  /**
+   * Sortie Premium vue par un non-abonné : on n'en connaît que l'aperçu (titre, thème, date,
+   * image). Elle s'affiche floutée, avec une invitation à s'abonner.
+   */
+  locked?: boolean;
 }
 
 export interface Favori {

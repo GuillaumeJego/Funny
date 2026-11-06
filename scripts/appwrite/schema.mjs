@@ -119,6 +119,22 @@ export const TABLES = [
     ],
   },
   {
+    // Aperçu des sorties Premium, pour les membres non abonnés : titre, thème, date et image
+    // (affichée floutée), rien d'autre. L'identifiant de la ligne est celui de la sortie.
+    // Écrit et supprimé par le serveur (Function « sorties »), en même temps que la sortie.
+    id: 'sorties_apercus',
+    name: 'Aperçus des sorties Premium',
+    permissions: [MEMBRES],
+    rowSecurity: false,
+    columns: [
+      str('title', 120, { required: true }),
+      str('theme_id', ID, { required: true }),
+      datetime('date', { required: true }),
+      str('image_url', 500),
+    ],
+    indexes: [{ key: 'date', type: 'key', columns: ['date'] }],
+  },
+  {
     // Inscriptions : visibles par les membres (liste des inscrits), écrites par le serveur.
     id: 'inscriptions',
     name: 'Inscriptions',

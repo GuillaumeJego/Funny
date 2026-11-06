@@ -1,11 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { InscriptionRepository } from '../repositories/inscription.repository';
 
 export type { InscriptionStatus } from '../repositories/inscription.repository';
 
 @Injectable({ providedIn: 'root' })
 export class InscriptionService {
-  constructor(private inscriptions: InscriptionRepository) {}
+  private inscriptions = inject(InscriptionRepository);
 
   async getInscriptionStatus(userId: string, sortieId: string) {
     return await this.inscriptions.getStatus(userId, sortieId);

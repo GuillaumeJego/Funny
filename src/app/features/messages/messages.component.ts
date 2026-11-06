@@ -1,4 +1,12 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -14,23 +22,24 @@ import { ClickableDirective } from '../../core/directives/clickable.directive';
   standalone: true,
   imports: [ClickableDirective, FormsModule],
   templateUrl: './messages.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './messages.component.scss',
 })
-export class MessagesComponent implements OnInit {
-  conversations: Conversation[] = [];
-  friends: Friendship[] = [];
-  loading = true;
-  myId = '';
-  search = '';
-  openingChat = false;
+export class MessagesComponent implements OnInit, OnDestroy {
+  private auth = inject(AuthService);
+  private conversationService = inject(ConversationService);
+  private friendshipService = inject(FriendshipService);
+  router = inject(Router);
 
-  constructor(
-    private auth: AuthService,
-    private conversationService: ConversationService,
-    private friendshipService: FriendshipService,
-    public router: Router,
-  ) {}
+  readonly conversations = signal<Conversation[]>([]);
+  readonly friends = signal<Friendship[]>([]);
+  readonly loading = signal(true);
+  myId = '';
+  readonly search = signal('');
+  readonly openingChat = signal(false);
+  private stopListening: (() => void) | null = null;
+  private destroyed = false;
+  private refreshTimer: ReturnType<typeof setTimeout> | undefined;
 
   async ngOnInit() {
     const {
@@ -41,21 +50,38 @@ export class MessagesComponent implements OnInit {
       return;
     }
     this.myId = user.id;
-    [this.conversations, this.friends] = await Promise.all([
+    const [conversations, friends] = await Promise.all([
       this.conversationService.getConversations(user.id),
       this.friendshipService.getFriends(user.id),
     ]);
-    this.loading = false;
+    this.conversations.set(conversations);
+    this.friends.set(friends);
+    this.loading.set(false);
+    if (this.destroyed) return;
+
+    // Un nouveau message remonte sa conversation en haut de la liste, sans recharger la page.
+    this.stopListening = this.conversationService.subscribeToAllMessages(() => {
+      clearTimeout(this.refreshTimer);
+      this.refreshTimer = setTimeout(async () => {
+        this.conversations.set(await this.conversationService.getConversations(this.myId));
+      }, 500);
+    });
   }
 
-  get filteredFriends(): Friendship[] {
-    const q = this.search.trim().toLowerCase();
+  ngOnDestroy() {
+    this.destroyed = true;
+    clearTimeout(this.refreshTimer);
+    this.stopListening?.();
+  }
+
+  readonly filteredFriends = computed<Friendship[]>(() => {
+    const q = this.search().trim().toLowerCase();
     if (!q) return [];
-    return this.friends.filter((f) => {
+    return this.friends().filter((f) => {
       const p = this.friendshipService.getFriendProfile(f, this.myId);
       return p?.username?.toLowerCase().includes(q);
     });
-  }
+  });
 
   getFriendProfile(f: Friendship) {
     return this.friendshipService.getFriendProfile(f, this.myId);
@@ -67,8 +93,8 @@ export class MessagesComponent implements OnInit {
 
   async openChatWithFriend(f: Friendship) {
     const p = this.friendshipService.getFriendProfile(f, this.myId);
-    if (!p?.id || this.openingChat) return;
-    this.openingChat = true;
+    if (!p?.id || this.openingChat()) return;
+    this.openingChat.set(true);
     const convId = await this.conversationService.getOrCreateConversation(this.myId, p.id);
     this.router.navigate(['/messages', convId], {
       state: { friendName: p.username, friendAvatar: p.avatar_url, friendId: p.id },

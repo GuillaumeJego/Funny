@@ -1,11 +1,13 @@
 import {
   Component,
-  Input,
-  Output,
-  EventEmitter,
   OnChanges,
   SimpleChanges,
   ChangeDetectionStrategy,
+  inject,
+  input,
+  output,
+  signal,
+  computed,
 } from '@angular/core';
 
 import { Router } from '@angular/router';
@@ -26,49 +28,56 @@ interface MiniProfile {
   standalone: true,
   imports: [ClickableDirective],
   templateUrl: './sortie-drawer.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './sortie-drawer.component.scss',
 })
 export class SortieDrawerComponent implements OnChanges {
-  @Input() sortie: SortieWithRelations | null = null;
-  @Input() isOpen = false;
-  @Input() userRole = 'user';
-  @Input() isFavori = false;
-  @Input() inscriptionStatus: InscriptionStatus = 'none';
-  @Input() currentUserId = '';
-  @Input() userIsPremium = false;
-  @Output() closed = new EventEmitter<void>();
-  @Output() favoriToggled = new EventEmitter<string>();
-  @Output() rejoindreClicked = new EventEmitter<string>();
-  @Output() quitterClicked = new EventEmitter<string>();
-  @Output() supprimerClicked = new EventEmitter<string>();
+  private router = inject(Router);
+  private sortieService = inject(SortieService);
+
+  readonly sortie = input<SortieWithRelations | null>(null);
+  readonly isOpen = input(false);
+  readonly userRole = input('user');
+  readonly isFavori = input(false);
+  readonly inscriptionStatus = input<InscriptionStatus>('none');
+  readonly currentUserId = input('');
+  readonly userIsPremium = input(false);
+  readonly closed = output<void>();
+  readonly favoriToggled = output<string>();
+  readonly rejoindreClicked = output<string>();
+  readonly quitterClicked = output<string>();
+  readonly supprimerClicked = output<string>();
   /** Le bouton Supprimer demande une confirmation dans le tiroir lui-même. */
-  confirmingDelete = false;
+  readonly confirmingDelete = signal(false);
 
-  activeTab: 'details' | 'membres' = 'details';
-  membresInscrits: MiniProfile[] = [];
-  membresLikes: MiniProfile[] = [];
-  membresWaiting: MiniProfile[] = [];
-  membresLoaded = false;
-  membresLoading = false;
+  readonly activeTab = signal<'details' | 'membres'>('details');
+  readonly membresInscrits = signal<MiniProfile[]>([]);
+  readonly membresLikes = signal<MiniProfile[]>([]);
+  readonly membresWaiting = signal<MiniProfile[]>([]);
+  readonly membresLoaded = signal(false);
+  readonly membresLoading = signal(false);
 
-  constructor(
-    private router: Router,
-    private sortieService: SortieService,
-  ) {}
+  readonly isOrganizer = computed<boolean>(() => {
+    const currentUserId = this.currentUserId();
+    return !!currentUserId && currentUserId === this.sortie()?.created_by;
+  });
 
-  get isOrganizer(): boolean {
-    return !!this.currentUserId && this.currentUserId === this.sortie?.created_by;
-  }
+  readonly isPremiumLocked = computed<boolean>(() => {
+    const sortie = this.sortie();
+    // Aperçu seulement : le serveur n'a pas donné les détails, on reste verrouillé.
+    if (sortie?.locked) return true;
+    if (!sortie?.is_premium) return false;
+    if (this.userIsPremium()) return false;
+    return !['admin', 'developer', 'user_premium'].includes(this.userRole());
+  });
 
-  get isPremiumLocked(): boolean {
-    if (!this.sortie?.is_premium) return false;
-    if (this.userIsPremium) return false;
-    return !['admin', 'developer', 'user_premium'].includes(this.userRole);
-  }
+  readonly membresTabCount = computed<number>(() => {
+    return this.membresInscrits().length + this.membresWaiting().length;
+  });
 
-  get membresTabCount(): number {
-    return this.membresInscrits.length + this.membresWaiting.length;
+  goToEdit(sortieId: string) {
+    this.close();
+    this.router.navigate(['/sorties', sortieId, 'modifier']);
   }
 
   goToPremium() {
@@ -89,25 +98,26 @@ export class SortieDrawerComponent implements OnChanges {
   }
 
   async switchTab(tab: 'details' | 'membres') {
-    this.activeTab = tab;
-    if (tab === 'membres' && !this.membresLoaded && !this.membresLoading) {
+    this.activeTab.set(tab);
+    if (tab === 'membres' && !this.membresLoaded() && !this.membresLoading()) {
       await this.loadMembres();
     }
   }
 
   async loadMembres() {
-    if (!this.sortie) return;
-    this.membresLoading = true;
+    const sortie = this.sortie();
+    if (!sortie) return;
+    this.membresLoading.set(true);
     const [inscrits, likes, waiting] = await Promise.all([
-      this.sortieService.getMembresInscrits(this.sortie.id),
-      this.sortieService.getMembresLikes(this.sortie.id),
-      this.sortieService.getMembresWaiting(this.sortie.id),
+      this.sortieService.getMembresInscrits(sortie.id),
+      this.sortieService.getMembresLikes(sortie.id),
+      this.sortieService.getMembresWaiting(sortie.id),
     ]);
-    this.membresInscrits = inscrits;
-    this.membresLikes = likes;
-    this.membresWaiting = waiting;
-    this.membresLoaded = true;
-    this.membresLoading = false;
+    this.membresInscrits.set(inscrits);
+    this.membresLikes.set(likes);
+    this.membresWaiting.set(waiting);
+    this.membresLoaded.set(true);
+    this.membresLoading.set(false);
   }
 
   formatDate(dateStr: string): string {
@@ -127,12 +137,15 @@ export class SortieDrawerComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['sortie'] && this.sortie) {
-      this.activeTab = 'details';
-      this.membresInscrits = [];
-      this.membresLikes = [];
-      this.membresWaiting = [];
-      this.membresLoaded = false;
+    // Une autre sortie s'ouvre : on revient au premier onglet. Une simple mise à jour
+    // de la même sortie (nombre d'inscrits) garde l'onglet affiché.
+    const change = changes['sortie'];
+    if (change && this.sortie() && change.previousValue?.id !== change.currentValue?.id) {
+      this.activeTab.set('details');
+      this.membresInscrits.set([]);
+      this.membresLikes.set([]);
+      this.membresWaiting.set([]);
+      this.membresLoaded.set(false);
     }
   }
 }

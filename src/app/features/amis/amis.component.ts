@@ -1,4 +1,11 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,36 +22,34 @@ type Tab = 'amis' | 'recues' | 'envoyees';
   standalone: true,
   imports: [ClickableDirective, FormsModule],
   templateUrl: './amis.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './amis.component.scss',
 })
 export class AmisComponent implements OnInit {
+  private auth = inject(AuthService);
+  private friendshipService = inject(FriendshipService);
+  private conversationService = inject(ConversationService);
+  router = inject(Router);
+
   myId = '';
-  activeTab: Tab = 'amis';
-  loading = true;
-  search = '';
+  readonly activeTab = signal<Tab>('amis');
+  readonly loading = signal(true);
+  readonly search = signal('');
 
-  friends: Friendship[] = [];
-  received: Friendship[] = [];
-  sent: Friendship[] = [];
+  readonly friends = signal<Friendship[]>([]);
+  readonly received = signal<Friendship[]>([]);
+  readonly sent = signal<Friendship[]>([]);
 
-  actionLoading: string | null = null;
+  readonly actionLoading = signal<string | null>(null);
 
-  get filteredFriends(): Friendship[] {
-    const q = this.search.trim().toLowerCase();
-    if (!q) return this.friends;
-    return this.friends.filter((f) => {
+  readonly filteredFriends = computed<Friendship[]>(() => {
+    const q = this.search().trim().toLowerCase();
+    if (!q) return this.friends();
+    return this.friends().filter((f) => {
       const p = this.friendshipService.getFriendProfile(f, this.myId);
       return p?.username?.toLowerCase().includes(q);
     });
-  }
-
-  constructor(
-    private auth: AuthService,
-    private friendshipService: FriendshipService,
-    private conversationService: ConversationService,
-    public router: Router,
-  ) {}
+  });
 
   async ngOnInit() {
     const {
@@ -56,15 +61,18 @@ export class AmisComponent implements OnInit {
     }
     this.myId = user.id;
     await this.loadAll();
-    this.loading = false;
+    this.loading.set(false);
   }
 
   async loadAll() {
-    [this.friends, this.received, this.sent] = await Promise.all([
+    const [friends, received, sent] = await Promise.all([
       this.friendshipService.getFriends(this.myId),
       this.friendshipService.getPendingReceived(this.myId),
       this.friendshipService.getPendingSent(this.myId),
     ]);
+    this.friends.set(friends);
+    this.received.set(received);
+    this.sent.set(sent);
   }
 
   getProfile(f: Friendship, role: 'friend' | 'requester' | 'receiver') {
@@ -92,30 +100,30 @@ export class AmisComponent implements OnInit {
   }
 
   async acceptRequest(f: Friendship) {
-    this.actionLoading = f.id;
+    this.actionLoading.set(f.id);
     await this.friendshipService.acceptRequest(f.id);
     await this.loadAll();
-    this.actionLoading = null;
+    this.actionLoading.set(null);
   }
 
   async declineRequest(f: Friendship) {
-    this.actionLoading = f.id;
+    this.actionLoading.set(f.id);
     await this.friendshipService.declineRequest(f.id);
     await this.loadAll();
-    this.actionLoading = null;
+    this.actionLoading.set(null);
   }
 
   async cancelRequest(f: Friendship) {
-    this.actionLoading = f.id;
+    this.actionLoading.set(f.id);
     await this.friendshipService.removeFriend(f.id);
     await this.loadAll();
-    this.actionLoading = null;
+    this.actionLoading.set(null);
   }
 
   async removeFriend(f: Friendship) {
-    this.actionLoading = f.id;
+    this.actionLoading.set(f.id);
     await this.friendshipService.removeFriend(f.id);
     await this.loadAll();
-    this.actionLoading = null;
+    this.actionLoading.set(null);
   }
 }
