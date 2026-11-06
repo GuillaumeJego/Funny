@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { GeoService, GeoFullPlace } from '../../../core/services/geo.service';
@@ -36,6 +36,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   private sortieService = inject(SortieService);
   private themeService = inject(ThemeService);
   router = inject(Router);
+  private route = inject(ActivatedRoute);
   private geo = inject(GeoService);
   private profileService = inject(ProfileService);
   private settingsService = inject(SettingsService);
@@ -47,6 +48,9 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   readonly saving = signal(false);
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
+
+  /** Identifiant de la sortie en cours de modification (vide pour une création). */
+  readonly editId = signal('');
 
   readonly currentStep = signal(1);
   totalSteps = 4;
@@ -93,7 +97,11 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
 
     const { data: profile } = await this.profileService.getMyProfile(user.id);
     this.canCreatePremium.set(isPremiumMember(profile));
-    if (profile) {
+    this.editId.set(this.route.snapshot.paramMap.get('id') ?? '');
+    if (this.editId()) {
+      const isAdmin = profile?.role === 'admin' || profile?.role === 'developer';
+      if (!(await this.loadSortieToEdit(this.editId(), isAdmin))) return;
+    } else if (profile) {
       const canCreate = await this.settingsService.canCreateSortie(profile);
       if (!canCreate) {
         this.accessDenied.set(true);
@@ -121,6 +129,36 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.locationSub?.unsubscribe();
+  }
+
+  /** Remplit le formulaire avec la sortie à modifier ; false si elle n'est pas modifiable. */
+  private async loadSortieToEdit(id: string, isAdmin: boolean): Promise<boolean> {
+    const sortie = await this.sortieService.getSortie(id);
+    if (!sortie || (sortie.created_by !== this.userId && !isAdmin)) {
+      this.router.navigate(['/mes-sorties']);
+      return false;
+    }
+    this.sortie = {
+      title: sortie.title,
+      description: sortie.description ?? '',
+      theme_id: sortie.theme_id,
+      // Le champ « date et heure » attend 2026-11-20T19:30 : la date telle qu'elle a été saisie.
+      date: sortie.date.slice(0, 16),
+      location: sortie.location,
+      price: sortie.price,
+      max_participants: sortie.max_participants ?? undefined,
+      is_premium: sortie.is_premium,
+      image_url: sortie.image_url ?? '',
+      image_source: sortie.image_source,
+    };
+    // Une sortie déjà Premium peut le rester, même si l'abonnement de l'organisateur a pris fin.
+    if (sortie.is_premium) this.canCreatePremium.set(true);
+    this.locationQuery.set(sortie.location);
+    const { data } = await this.themeService.getThemeImages(sortie.theme_id);
+    this.themeImages.set(data ?? []);
+    if (sortie.image_source === 'custom') this.customImagePreview.set(sortie.image_url ?? '');
+    else this.selectedImageUrl.set(sortie.resolvedImageUrl ?? '');
+    return true;
   }
 
   onLocationInput() {
@@ -188,14 +226,26 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
         this.sortie.image_url = imageUrl ?? undefined;
       }
 
-      this.sortie.created_by = this.userId;
-      const { data: newSortie, error } = await this.sortieService.createSortie(this.sortie);
-
-      if (error || !newSortie) {
-        this.errorMessage.set(error?.message ?? 'Erreur lors de la création de la sortie.');
+      if (this.editId()) {
+        const { data: saved, error } = await this.sortieService.updateSortie(
+          this.editId(),
+          this.sortie,
+        );
+        if (error || !saved) {
+          this.errorMessage.set(error?.message ?? 'Erreur lors de la modification de la sortie.');
+        } else {
+          this.successMessage.set('Sortie modifiée !');
+          setTimeout(() => this.router.navigate(['/mes-sorties']), 1500);
+        }
       } else {
-        this.successMessage.set('Sortie créée avec succès !');
-        setTimeout(() => this.router.navigate(['/dashboard']), 1500);
+        this.sortie.created_by = this.userId;
+        const { data: newSortie, error } = await this.sortieService.createSortie(this.sortie);
+        if (error || !newSortie) {
+          this.errorMessage.set(error?.message ?? 'Erreur lors de la création de la sortie.');
+        } else {
+          this.successMessage.set('Sortie créée avec succès !');
+          setTimeout(() => this.router.navigate(['/dashboard']), 1500);
+        }
       }
     } catch (e) {
       this.errorMessage.set('Une erreur est survenue.');

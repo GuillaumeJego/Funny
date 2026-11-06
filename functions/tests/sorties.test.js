@@ -5,7 +5,7 @@ import {
   deleteSortie,
   premiumPreview,
   promoteFromWaitingList,
-  savePremiumPreview,
+  syncPremiumPreview,
 } from '../shared/sorties.js';
 import { cleanSortie, isSafeDefaultImage, sortieImageFileId } from '../shared/sortie-rules.js';
 import { isPremium } from '../shared/premium.js';
@@ -186,11 +186,20 @@ describe('aperçu des sorties Premium', () => {
 
   it('est créé pour une sortie Premium seulement, et supprimé avec elle', async () => {
     const api = createFakeApi({ sorties: [premium, { $id: 's2', ...valid, is_premium: false }] });
-    await savePremiumPreview(api, premium);
-    await savePremiumPreview(api, await api.getRow('sorties', 's2'));
+    await syncPremiumPreview(api, premium);
+    await syncPremiumPreview(api, await api.getRow('sorties', 's2'));
     expect((await api.listAllRows('sorties_apercus')).map((r) => r.$id)).toEqual(['p1']);
     await deleteSortie(api, premium, { notifyMembers: false });
     expect(await api.listAllRows('sorties_apercus')).toHaveLength(0);
+  });
+
+  it("suit les changements de la sortie, et disparaît quand elle n'est plus Premium", async () => {
+    const api = createFakeApi({ sorties: [premium] });
+    await syncPremiumPreview(api, premium);
+    await syncPremiumPreview(api, { ...premium, title: 'Nouveau titre' });
+    expect((await api.getRow('sorties_apercus', 'p1')).title).toBe('Nouveau titre');
+    await syncPremiumPreview(api, { ...premium, is_premium: false });
+    expect(await api.getRow('sorties_apercus', 'p1')).toBeNull();
   });
 });
 

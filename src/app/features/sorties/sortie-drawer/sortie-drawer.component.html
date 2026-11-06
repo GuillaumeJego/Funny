@@ -155,6 +155,9 @@
                 }
                 <!-- Bouton supprimer (organisateur uniquement) -->
                 @if (isOrganizer()) {
+                  <button class="btn-modifier" (click)="goToEdit(s.id)">
+                    ✏️ Modifier la sortie
+                  </button>
                   @if (!confirmingDelete()) {
                     <button class="btn-supprimer" (click)="confirmingDelete.set(true)">
                       🗑️ Supprimer la sortie

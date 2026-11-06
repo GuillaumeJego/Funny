@@ -75,6 +75,11 @@ export class SortieDrawerComponent implements OnChanges {
     return this.membresInscrits().length + this.membresWaiting().length;
   });
 
+  goToEdit(sortieId: string) {
+    this.close();
+    this.router.navigate(['/sorties', sortieId, 'modifier']);
+  }
+
   goToPremium() {
     this.router.navigate(['/premium']);
   }

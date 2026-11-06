@@ -11,5 +11,7 @@ export abstract class SortieRepository {
   /** Sorties publiées parmi `ids`, triées par date. Image et nombre d'inscrits déjà calculés. */
   abstract getPublishedByIds(ids: string[]): Promise<SortieWithRelations[]>;
   abstract create(sortie: Partial<Sortie>): Promise<RepositoryResult<Sortie>>;
+  /** Modifie une sortie (organisateur ou admin) ; le serveur vérifie tout comme à la création. */
+  abstract update(id: string, sortie: Partial<Sortie>): Promise<RepositoryResult<Sortie>>;
   abstract delete(id: string): Promise<RepositoryResult<null>>;
 }

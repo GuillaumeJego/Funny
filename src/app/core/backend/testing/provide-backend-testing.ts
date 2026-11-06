@@ -44,6 +44,7 @@ const fakeSorties: SortieRepository = {
   getPublishedCreatedBy: async () => empty,
   getPublishedByIds: async () => [],
   create: async () => ok,
+  update: async () => ok,
   delete: async () => ok,
 };
 

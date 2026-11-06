@@ -62,10 +62,21 @@ export function premiumPreview(sortie) {
   };
 }
 
-/** Crée l'aperçu d'une sortie Premium (ne fait rien pour une sortie ouverte à tous). */
-export async function savePremiumPreview(api, sortie) {
-  if (!sortie.is_premium) return;
-  await api.createRow('sorties_apercus', sortie.$id, premiumPreview(sortie));
+/**
+ * Tient l'aperçu à jour : créé ou mis à jour pour une sortie Premium, supprimé pour une
+ * sortie ouverte à tous (par exemple quand l'organisateur retire la case Premium).
+ */
+export async function syncPremiumPreview(api, sortie) {
+  if (!sortie.is_premium) {
+    await api.deleteRow('sorties_apercus', sortie.$id);
+    return;
+  }
+  const preview = premiumPreview(sortie);
+  if (await api.getRow('sorties_apercus', sortie.$id)) {
+    await api.updateRow('sorties_apercus', sortie.$id, preview);
+  } else {
+    await api.createRow('sorties_apercus', sortie.$id, preview);
+  }
 }
 
 /** Supprime une sortie et tout ce qui la concerne, en prévenant inscrits et likeurs. */

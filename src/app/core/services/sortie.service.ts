@@ -30,6 +30,17 @@ export class SortieService {
     return await this.sorties.create(sortie);
   }
 
+  // Modifier une sortie : le serveur vérifie les champs et prévient les inscrits si besoin
+  async updateSortie(id: string, sortie: Partial<Sortie>) {
+    return await this.sorties.update(id, sortie);
+  }
+
+  // Une sortie publiée, avec son thème et son image (null si introuvable ou illisible)
+  async getSortie(id: string): Promise<SortieWithRelations | null> {
+    const [sortie] = await this.sorties.getPublishedByIds([id]);
+    return sortie ?? null;
+  }
+
   // Envoyer l'image personnalisée d'une sortie ; renvoie son adresse
   async uploadImage(userId: string, image: File) {
     return await this.storage.uploadSortieImage(userId, image);

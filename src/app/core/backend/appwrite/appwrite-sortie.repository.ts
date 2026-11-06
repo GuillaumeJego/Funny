@@ -73,6 +73,14 @@ export class AppwriteSortieRepository extends SortieRepository {
     return { data: data ? fromRow<Sortie>(data.sortie) : null, error };
   }
 
+  async update(id: string, sortie: Partial<Sortie>): Promise<RepositoryResult<Sortie>> {
+    const { data, error } = await this.appwrite.run<{ sortie: Models.Row }>('sorties', 'update', {
+      sortieId: id,
+      sortie,
+    });
+    return { data: data ? fromRow<Sortie>(data.sortie) : null, error };
+  }
+
   async delete(id: string): Promise<RepositoryResult<null>> {
     const { error } = await this.appwrite.run('sorties', 'delete', { sortieId: id });
     return { data: null, error };

@@ -16,7 +16,7 @@
       <!-- Header -->
       <div class="header">
         <button class="btn-back" (click)="goToDashboard()">← Retour</button>
-        <h1>Créer une sortie</h1>
+        <h1>{{ editId() ? 'Modifier la sortie' : 'Créer une sortie' }}</h1>
         <div class="steps">Étape {{ currentStep() }}/{{ totalSteps }}</div>
       </div>
       <!-- Barre de progression -->
@@ -228,7 +228,11 @@
         }
         @if (currentStep() === totalSteps) {
           <button class="btn-primary" (click)="onSubmit()" [disabled]="saving()">
-            {{ saving() ? 'Création...' : '🎉 Créer la sortie' }}
+            @if (editId()) {
+              {{ saving() ? 'Enregistrement...' : '💾 Enregistrer les modifications' }}
+            } @else {
+              {{ saving() ? 'Création...' : '🎉 Créer la sortie' }}
+            }
           </button>
         }
       </div>
