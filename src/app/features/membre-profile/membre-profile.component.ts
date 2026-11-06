@@ -20,6 +20,7 @@ import { ConversationService } from '../../core/services/conversation.service';
 import { Friendship } from '../../core/models/friendship.model';
 import { ModerationService } from '../../core/services/moderation.service';
 import { MemberSafetyComponent } from '../../core/components/member-safety/member-safety.component';
+import { isPremiumMember } from '../../core/utils/premium';
 
 type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees';
 
@@ -106,10 +107,7 @@ export class MembreProfileComponent implements OnInit {
     const { data: viewerProfile } = await this.profileService.getMyProfile(user.id);
     if (viewerProfile) {
       this.viewerRole = viewerProfile.role ?? 'user';
-      this.viewerIsPremium =
-        ['admin', 'developer', 'user_premium'].includes(viewerProfile.role ?? '') ||
-        (!!viewerProfile.subscription_end_date &&
-          new Date(viewerProfile.subscription_end_date) > new Date());
+      this.viewerIsPremium = isPremiumMember(viewerProfile);
       if (!this.isOwnProfile) {
         const canView = await this.settingsService.canViewProfiles(viewerProfile);
         if (!canView) {
@@ -137,23 +135,13 @@ export class MembreProfileComponent implements OnInit {
     this.sortiesAttente = attente;
     this.sortiesLikees = likees;
 
-    // Résoudre images + inscriptionsCount
+    // Les images et le nombre d’inscrits sont déjà calculés par le service.
     const all = [
       ...this.sortiesOrganisees,
       ...this.sortiesRejointes,
       ...this.sortiesAttente,
       ...this.sortiesLikees,
     ];
-    await Promise.all(
-      all.map(async (s) => {
-        if (s.image_url) s.resolvedImageUrl = s.image_url;
-        else if (s.theme_id)
-          s.resolvedImageUrl =
-            (await this.sortieService.getFirstThemeImage(s.theme_id)) ?? undefined;
-        s.inscriptionsCount = await this.sortieService.getInscriptionsCount(s.id);
-      }),
-    );
-
     // Thèmes et villes disponibles
     const themesMap = new Map<string, ThemeOption>();
     const locationsSet = new Set<string>();

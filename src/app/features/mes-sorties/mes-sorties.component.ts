@@ -13,6 +13,7 @@ import {
 } from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
+import { isPremiumMember } from '../../core/utils/premium';
 
 @Component({
   selector: 'app-mes-sorties',
@@ -65,10 +66,7 @@ export class MesSortiesComponent implements OnInit {
       this.favoriService.getFavoris(user.id),
     ]);
     this.userRole = profileRes.data?.role ?? 'user';
-    this.userIsPremium =
-      ['admin', 'developer', 'user_premium'].includes(profileRes.data?.role || '') ||
-      (!!profileRes.data?.subscription_end_date &&
-        new Date(profileRes.data.subscription_end_date) > new Date());
+    this.userIsPremium = isPremiumMember(profileRes.data);
     this.favorisIds = new Set(favoris);
     await this.loadAll();
   }
@@ -93,16 +91,6 @@ export class MesSortiesComponent implements OnInit {
       ...this.sortiesEnAttente,
       ...this.sortiesLikees,
     ];
-    await Promise.all(
-      all.map(async (s) => {
-        if (s.image_url) s.resolvedImageUrl = s.image_url;
-        else if (s.theme_id)
-          s.resolvedImageUrl =
-            (await this.sortieService.getFirstThemeImage(s.theme_id)) ?? undefined;
-        s.inscriptionsCount = await this.sortieService.getInscriptionsCount(s.id);
-      }),
-    );
-
     // Thèmes et villes disponibles
     const themesMap = new Map<string, ThemeOption>();
     const locationsSet = new Set<string>();

@@ -3,6 +3,7 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProfileService } from '../../core/services/profile.service';
+import { isPremiumMember } from '../../core/utils/premium';
 
 interface MembreProfile {
   id: string;
@@ -90,8 +91,6 @@ export class MembresComponent implements OnInit {
   }
 
   isPremium(m: MembreProfile): boolean {
-    if (m.role === 'user_premium' || m.role === 'admin' || m.role === 'developer') return true;
-    if (m.subscription_end_date) return new Date(m.subscription_end_date) > new Date();
-    return false;
+    return isPremiumMember(m);
   }
 }

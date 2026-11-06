@@ -9,6 +9,7 @@ import { Subscription } from '../../../core/models/subscription.model';
 import { Profile } from '../../../core/models/profile.model';
 import { AvatarUploadComponent } from '../avatar-upload/avatar-upload.component';
 import { MetanaCreditComponent } from '../../../core/components/metana-credit/metana-credit.component';
+import { isPremiumMember } from '../../../core/utils/premium';
 
 @Component({
   selector: 'app-edit-profile',
@@ -68,9 +69,7 @@ export class EditProfileComponent implements OnInit {
       if (data.subscription_end_date) {
         this.subscriptionEndDate = new Date(data.subscription_end_date);
       }
-      this.isPremium =
-        ['user_premium', 'admin', 'developer'].includes(data.role || '') ||
-        (!!this.subscriptionEndDate && this.subscriptionEndDate > new Date());
+      this.isPremium = isPremiumMember(data);
     }
     this.subscription = (await this.billing.getSubscription(user.id)).data;
 

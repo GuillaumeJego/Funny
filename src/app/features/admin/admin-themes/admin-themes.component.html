@@ -1,0 +1,111 @@
+<section class="section">
+  <h2 class="section-title">Thèmes des sorties</h2>
+  <p class="section-desc">
+    Chaque sortie a un thème. Ses images sont proposées à l'organisateur, et la première sert
+    d'illustration quand la sortie n'a pas sa propre photo.
+  </p>
+
+  @if (error) {
+    <p class="themes-error" role="alert">{{ error }}</p>
+  }
+
+  @if (loading) {
+    <p class="section-desc">Chargement…</p>
+  } @else {
+    @if (themes.length === 0) {
+      <p class="section-desc">
+        Aucun thème pour l'instant : les membres ne peuvent pas créer de sortie. Ajoute-en un
+        ci-dessous, ou lance <code>npm run appwrite:themes</code> pour les thèmes de départ.
+      </p>
+    }
+
+    <ul class="theme-list">
+      @for (theme of themes; track theme.id) {
+        <li class="theme-item">
+          <button
+            type="button"
+            class="theme-head"
+            [attr.aria-expanded]="theme.open"
+            (click)="theme.open = !theme.open"
+          >
+            <span class="theme-icon" aria-hidden="true">{{ theme.icon }}</span>
+            <span class="theme-name">{{ theme.name }}</span>
+            <span class="theme-count">
+              {{ theme.images.length }} image{{ theme.images.length > 1 ? 's' : '' }}
+            </span>
+          </button>
+
+          @if (theme.open) {
+            <div class="theme-body">
+              <div class="theme-edit">
+                <label>
+                  Icône
+                  <input class="input-icon" [(ngModel)]="theme.editIcon" maxlength="16" />
+                </label>
+                <label class="grow">
+                  Nom
+                  <input [(ngModel)]="theme.editName" maxlength="60" />
+                </label>
+                <button type="button" class="btn-small" [disabled]="busy" (click)="save(theme)">
+                  Enregistrer
+                </button>
+              </div>
+
+              <div class="theme-images">
+                @for (image of theme.images; track image.id) {
+                  <figure class="theme-image">
+                    <img
+                      [src]="image.image_url"
+                      [alt]="'Image du thème ' + theme.name"
+                      loading="lazy"
+                    />
+                    <button
+                      type="button"
+                      class="image-remove"
+                      [disabled]="busy"
+                      [attr.aria-label]="'Retirer cette image du thème ' + theme.name"
+                      (click)="removeImage(theme, image)"
+                    >
+                      ✕
+                    </button>
+                  </figure>
+                }
+                <label class="image-add">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    [disabled]="busy"
+                    (change)="addImage(theme, $event)"
+                  />
+                  + Ajouter une image
+                </label>
+              </div>
+
+              <button type="button" class="btn-delete" [disabled]="busy" (click)="remove(theme)">
+                Supprimer ce thème
+              </button>
+            </div>
+          }
+        </li>
+      }
+    </ul>
+
+    <form class="theme-new" (ngSubmit)="create()">
+      <label>
+        Icône
+        <input
+          class="input-icon"
+          name="newIcon"
+          [(ngModel)]="newIcon"
+          placeholder="🎯"
+          maxlength="16"
+        />
+      </label>
+      <label class="grow">
+        Nouveau thème
+        <input name="newName" [(ngModel)]="newName" placeholder="Ex. : Karaoké" maxlength="60" />
+      </label>
+      <button type="submit" class="btn-small" [disabled]="busy || !newName.trim()">Ajouter</button>
+    </form>
+  }
+</section>

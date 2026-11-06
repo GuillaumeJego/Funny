@@ -16,7 +16,9 @@
     "appwrite:setup": "node scripts/appwrite/setup.mjs",
     "appwrite:functions": "node scripts/appwrite/functions.mjs",
     "appwrite:admin": "node scripts/appwrite/make-admin.mjs",
-    "stripe:setup": "node scripts/stripe/setup.mjs"
+    "stripe:setup": "node scripts/stripe/setup.mjs",
+    "appwrite:themes": "node scripts/appwrite/themes.mjs",
+    "test:functions": "vitest run --root functions"
   },
   "private": true,
   "dependencies": {

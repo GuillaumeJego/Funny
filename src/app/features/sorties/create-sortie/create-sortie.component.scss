@@ -230,6 +230,10 @@
       margin-bottom: 1.5rem;
 
       .image-option {
+        padding: 0;
+        background: none;
+        display: block;
+        width: 100%;
         border: 3px solid transparent;
         border-radius: $border-radius;
         overflow: hidden;

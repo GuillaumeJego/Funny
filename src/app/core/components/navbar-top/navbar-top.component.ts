@@ -3,6 +3,7 @@ import { Component, OnInit, HostListener, ChangeDetectionStrategy } from '@angul
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
+import { isPremiumMember } from '../../utils/premium';
 
 @Component({
   selector: 'app-navbar-top',
@@ -35,9 +36,7 @@ export class NavbarTopComponent implements OnInit {
         if (data.subscription_end_date) {
           this.subscriptionEndDate = new Date(data.subscription_end_date);
         }
-        this.isPremium =
-          ['user_premium', 'admin', 'developer'].includes(data.role || '') ||
-          (!!this.subscriptionEndDate && this.subscriptionEndDate > new Date());
+        this.isPremium = isPremiumMember(data);
       }
     }
   }
