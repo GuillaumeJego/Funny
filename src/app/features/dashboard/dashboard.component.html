@@ -1,13 +1,13 @@
 <div class="dashboard">
   <app-navbar-filters
-    [availableThemes]="availableThemes"
-    [availableLocations]="availableLocations"
+    [availableThemes]="availableThemes()"
+    [availableLocations]="availableLocations()"
     (filtersChanged)="onFiltersChanged($event)"
   />
 
   <div class="dashboard-content">
     <!-- Chargement -->
-    @if (loading) {
+    @if (loading()) {
       <div class="state-message">
         <div class="spinner"></div>
         <p>Chargement des sorties…</p>
@@ -15,14 +15,14 @@
     }
 
     <!-- Erreur -->
-    @if (!loading && error) {
+    @if (!loading() && error()) {
       <div class="state-message error">
-        <p>{{ error }}</p>
+        <p>{{ error() }}</p>
       </div>
     }
 
     <!-- Aucune sortie -->
-    @if (!loading && !error && sortiesFiltrees.length === 0) {
+    @if (!loading() && !error() && sortiesFiltrees().length === 0) {
       <div class="state-message empty">
         <span class="empty-icon">🎉</span>
         <p>Aucune sortie pour le moment.<br />Sois le premier à en créer une !</p>
@@ -31,15 +31,15 @@
     }
 
     <!-- Toolbar -->
-    @if (!loading && !error && sortiesFiltrees.length > 0) {
+    @if (!loading() && !error() && sortiesFiltrees().length > 0) {
       <div class="toolbar">
         <span class="results-count"
-          >{{ sortiesFiltrees.length }} sortie{{ sortiesFiltrees.length > 1 ? 's' : '' }}</span
+          >{{ sortiesFiltrees().length }} sortie{{ sortiesFiltrees().length > 1 ? 's' : '' }}</span
         >
         <div class="view-toggle">
           <button
             class="toggle-btn"
-            [class.active]="viewMode === 'grid'"
+            [class.active]="viewMode() === 'grid'"
             (click)="setViewMode('grid')"
             title="Vue grille"
           >
@@ -52,7 +52,7 @@
           </button>
           <button
             class="toggle-btn"
-            [class.active]="viewMode === 'list'"
+            [class.active]="viewMode() === 'list'"
             (click)="setViewMode('list')"
             title="Vue liste"
           >
@@ -67,9 +67,9 @@
     }
 
     <!-- ══ VUE GRILLE ══ -->
-    @if (!loading && !error && sortiesFiltrees.length > 0 && viewMode === 'grid') {
+    @if (!loading() && !error() && sortiesFiltrees().length > 0 && viewMode() === 'grid') {
       <div class="sorties-grid">
-        @for (sortie of sortiesFiltrees; track sortie) {
+        @for (sortie of sortiesFiltrees(); track sortie.id) {
           <div
             appClickable
             class="sortie-card"
@@ -165,14 +165,14 @@
     }
 
     <!-- ══ VUE LISTE ══ -->
-    @if (!loading && !error && sortiesFiltrees.length > 0 && viewMode === 'list') {
+    @if (!loading() && !error() && sortiesFiltrees().length > 0 && viewMode() === 'list') {
       <div class="sorties-list">
-        @for (groupe of groupes; track groupe) {
+        @for (groupe of groupes(); track groupe) {
           <div class="date-group">
             <!-- En-tête de date -->
             <h2 class="date-header">{{ groupe.dateLabel }}</h2>
             <!-- Cards liste -->
-            @for (sortie of groupe.sorties; track sortie) {
+            @for (sortie of groupe.sorties; track sortie.id) {
               <div
                 appClickable
                 class="list-card"
@@ -294,13 +294,13 @@
 
 <!-- Drawer détail sortie -->
 <app-sortie-drawer
-  [sortie]="selectedSortie"
-  [isOpen]="drawerOpen"
-  [userRole]="userRole"
-  [isFavori]="selectedSortie ? isFavori(selectedSortie.id) : false"
-  [inscriptionStatus]="inscriptionStatus"
-  [currentUserId]="userId"
-  [userIsPremium]="userIsPremium"
+  [sortie]="selectedSortie()"
+  [isOpen]="drawerOpen()"
+  [userRole]="userRole()"
+  [isFavori]="isFavori(selectedSortie()?.id ?? '')"
+  [inscriptionStatus]="inscriptionStatus()"
+  [currentUserId]="userId()"
+  [userIsPremium]="userIsPremium()"
   (closed)="closeDrawer()"
   (favoriToggled)="onFavoriFromDrawer($event)"
   (rejoindreClicked)="onRejoindre($event)"

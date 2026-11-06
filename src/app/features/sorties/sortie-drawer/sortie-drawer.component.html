@@ -1,6 +1,6 @@
-@if (isOpen) {
+@if (isOpen()) {
   <div class="drawer-backdrop" (click)="onBackdropClick($event)">
-    <div class="drawer" [class.open]="isOpen">
+    <div class="drawer" [class.open]="isOpen()">
       <!-- Poignée mobile -->
       <div class="drawer-handle">
         <div class="handle-bar"></div>
@@ -19,13 +19,13 @@
           <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
-      @if (sortie) {
+      @if (sortie(); as s) {
         <!-- ══ CAS PREMIUM VERROUILLÉ ══ -->
-        @if (isPremiumLocked) {
+        @if (isPremiumLocked()) {
           <div class="locked">
             <div class="locked-image">
-              @if (sortie.resolvedImageUrl) {
-                <img [src]="sortie.resolvedImageUrl" alt="" class="blurred" />
+              @if (s.resolvedImageUrl) {
+                <img [src]="s.resolvedImageUrl" alt="" class="blurred" />
               }
               <div class="lock-overlay">
                 <div class="lock-icon">🔒</div>
@@ -38,61 +38,59 @@
               </div>
             </div>
             <div class="locked-info">
-              <h2 class="sortie-title">{{ sortie.title }}</h2>
+              <h2 class="sortie-title">{{ s.title }}</h2>
               <span class="badge-premium">⭐ Réservé aux abonnés</span>
             </div>
           </div>
         }
         <!-- ══ CAS NORMAL ══ -->
-        @if (!isPremiumLocked) {
+        @if (!isPremiumLocked()) {
           <div class="drawer-content">
             <!-- Image -->
             <div class="drawer-image">
-              @if (sortie.resolvedImageUrl) {
-                <img [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
+              @if (s.resolvedImageUrl) {
+                <img [src]="s.resolvedImageUrl" [alt]="s.title" />
               }
-              @if (!sortie.resolvedImageUrl) {
+              @if (!s.resolvedImageUrl) {
                 <div class="image-placeholder">
-                  {{ sortie.themes?.icon || '🎯' }}
+                  {{ s.themes?.icon || '🎯' }}
                 </div>
               }
-              @if (sortie.is_premium) {
+              @if (s.is_premium) {
                 <span class="badge-premium-img">⭐ Premium</span>
               }
-              <span class="badge-theme-img"
-                >{{ sortie.themes?.icon }} {{ sortie.themes?.name }}</span
-              >
+              <span class="badge-theme-img">{{ s.themes?.icon }} {{ s.themes?.name }}</span>
             </div>
             <!-- Onglets -->
             <div class="drawer-tabs">
               <button
                 class="dtab"
-                [class.active]="activeTab === 'details'"
+                [class.active]="activeTab() === 'details'"
                 (click)="switchTab('details')"
               >
                 Détails
               </button>
               <button
                 class="dtab"
-                [class.active]="activeTab === 'membres'"
+                [class.active]="activeTab() === 'membres'"
                 (click)="switchTab('membres')"
               >
                 Membres
-                @if (sortie.inscriptionsCount) {
-                  <span class="dtab-count">{{ sortie.inscriptionsCount }}</span>
+                @if (s.inscriptionsCount) {
+                  <span class="dtab-count">{{ s.inscriptionsCount }}</span>
                 }
               </button>
             </div>
             <!-- Corps — Détails -->
-            @if (activeTab === 'details') {
+            @if (activeTab() === 'details') {
               <div class="drawer-body">
                 <!-- Titre + actions -->
                 <div class="title-row">
-                  <h2 class="sortie-title">{{ sortie.title }}</h2>
+                  <h2 class="sortie-title">{{ s.title }}</h2>
                   <button
                     class="btn-heart"
                     [class.active]="isFavori()"
-                    (click)="favoriToggled.emit(sortie.id)"
+                    (click)="favoriToggled.emit(s.id)"
                     title="Favoris"
                   >
                     <svg
@@ -111,54 +109,51 @@
                   </button>
                 </div>
                 <!-- Description -->
-                @if (sortie.description) {
-                  <p class="sortie-desc">{{ sortie.description }}</p>
+                @if (s.description) {
+                  <p class="sortie-desc">{{ s.description }}</p>
                 }
                 <!-- Infos -->
                 <div class="info-list">
                   <div class="info-item">
                     <span class="info-icon">📅</span>
-                    <span>{{ formatDate(sortie.date) }}</span>
+                    <span>{{ formatDate(s.date) }}</span>
                   </div>
                   <div class="info-item">
                     <span class="info-icon">📍</span>
-                    <span>{{ sortie.location }}</span>
+                    <span>{{ s.location }}</span>
                   </div>
                   <div class="info-item">
                     <span class="info-icon">💶</span>
-                    <span>{{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}</span>
+                    <span>{{ s.price === 0 ? 'Gratuit' : s.price + ' €' }}</span>
                   </div>
-                  @if (sortie.max_participants) {
+                  @if (s.max_participants) {
                     <div class="info-item">
                       <span class="info-icon">👥</span>
-                      <span
-                        >{{ sortie.inscriptionsCount }} /
-                        {{ sortie.max_participants }} participants</span
-                      >
+                      <span>{{ s.inscriptionsCount }} / {{ s.max_participants }} participants</span>
                     </div>
                   }
                 </div>
                 <!-- Organisateur -->
-                @if (sortie.profiles) {
+                @if (s.profiles) {
                   <div class="organizer">
-                    @if (sortie.profiles.avatar_url) {
-                      <img [src]="sortie.profiles.avatar_url" class="avatar" alt="" />
+                    @if (s.profiles.avatar_url) {
+                      <img [src]="s.profiles.avatar_url" class="avatar" alt="" />
                     }
-                    @if (!sortie.profiles.avatar_url) {
+                    @if (!s.profiles.avatar_url) {
                       <div class="avatar-placeholder">
-                        {{ sortie.profiles.username.charAt(0).toUpperCase() }}
+                        {{ s.profiles.username.charAt(0).toUpperCase() }}
                       </div>
                     }
                     <div>
                       <div class="organizer-label">Organisé par</div>
-                      <div class="organizer-name">{{ sortie.profiles.username }}</div>
+                      <div class="organizer-name">{{ s.profiles.username }}</div>
                     </div>
                   </div>
                 }
                 <!-- Bouton supprimer (organisateur uniquement) -->
-                @if (isOrganizer) {
-                  @if (!confirmingDelete) {
-                    <button class="btn-supprimer" (click)="confirmingDelete = true">
+                @if (isOrganizer()) {
+                  @if (!confirmingDelete()) {
+                    <button class="btn-supprimer" (click)="confirmingDelete.set(true)">
                       🗑️ Supprimer la sortie
                     </button>
                   } @else {
@@ -168,15 +163,15 @@
                       aria-labelledby="confirm-delete-text"
                     >
                       <p id="confirm-delete-text">
-                        Supprimer « {{ sortie.title }} » ? Les membres inscrits seront prévenus.
+                        Supprimer « {{ s.title }} » ? Les membres inscrits seront prévenus.
                       </p>
                       <div class="confirm-delete-actions">
-                        <button class="btn-annuler" (click)="confirmingDelete = false">
+                        <button class="btn-annuler" (click)="confirmingDelete.set(false)">
                           Annuler
                         </button>
                         <button
                           class="btn-supprimer"
-                          (click)="confirmingDelete = false; supprimerClicked.emit(sortie.id)"
+                          (click)="confirmingDelete.set(false); supprimerClicked.emit(s.id)"
                         >
                           Oui, supprimer
                         </button>
@@ -185,21 +180,21 @@
                   }
                 }
                 <!-- Boutons rejoindre / quitter / liste d'attente (non-organisateur) -->
-                @if (!isOrganizer) {
+                @if (!isOrganizer()) {
                   @if (inscriptionStatus() === 'none') {
-                    <button class="btn-rejoindre" (click)="rejoindreClicked.emit(sortie.id)">
+                    <button class="btn-rejoindre" (click)="rejoindreClicked.emit(s.id)">
                       ✅ Rejoindre cette sortie
                     </button>
                   }
                   @if (inscriptionStatus() === 'pending') {
-                    <button class="btn-quitter" (click)="quitterClicked.emit(sortie.id)">
+                    <button class="btn-quitter" (click)="quitterClicked.emit(s.id)">
                       ❌ Quitter cette sortie
                     </button>
                   }
                   @if (inscriptionStatus() === 'waiting') {
                     <div class="waiting-block">
                       <div class="waiting-badge">⏳ Vous êtes sur liste d'attente</div>
-                      <button class="btn-quitter-attente" (click)="quitterClicked.emit(sortie.id)">
+                      <button class="btn-quitter-attente" (click)="quitterClicked.emit(s.id)">
                         Quitter la liste d'attente
                       </button>
                     </div>
@@ -208,22 +203,22 @@
               </div>
             }
             <!-- Corps — Membres -->
-            @if (activeTab === 'membres') {
+            @if (activeTab() === 'membres') {
               <div class="drawer-body membres-tab">
-                @if (membresLoading) {
+                @if (membresLoading()) {
                   <div class="membres-loading">Chargement…</div>
                 }
-                @if (!membresLoading) {
+                @if (!membresLoading()) {
                   <!-- Inscrits -->
                   <div class="membres-section">
                     <div class="membres-section-title">
-                      ✅ Inscrits ({{ membresInscrits.length }})
+                      ✅ Inscrits ({{ membresInscrits().length }})
                     </div>
-                    @if (membresInscrits.length === 0) {
+                    @if (membresInscrits().length === 0) {
                       <div class="membres-empty">Aucun inscrit pour le moment.</div>
                     }
                     <div class="membres-list">
-                      @for (m of membresInscrits; track m) {
+                      @for (m of membresInscrits(); track m) {
                         <div
                           appClickable
                           class="membre-item membre-clickable"
@@ -246,16 +241,16 @@
                     </div>
                   </div>
                   <!-- Liste d'attente -->
-                  @if (membresWaiting.length > 0 || sortie?.max_participants) {
+                  @if (membresWaiting().length > 0 || s?.max_participants) {
                     <div class="membres-section">
                       <div class="membres-section-title">
-                        ⏳ Liste d'attente ({{ membresWaiting.length }})
+                        ⏳ Liste d'attente ({{ membresWaiting().length }})
                       </div>
-                      @if (membresWaiting.length === 0) {
+                      @if (membresWaiting().length === 0) {
                         <div class="membres-empty">Personne en liste d'attente.</div>
                       }
                       <div class="membres-list">
-                        @for (m of membresWaiting; track m; let i = $index) {
+                        @for (m of membresWaiting(); track m; let i = $index) {
                           <div
                             appClickable
                             class="membre-item membre-clickable"
@@ -278,12 +273,14 @@
                   }
                   <!-- Likes -->
                   <div class="membres-section">
-                    <div class="membres-section-title">❤️ Ont liké ({{ membresLikes.length }})</div>
-                    @if (membresLikes.length === 0) {
+                    <div class="membres-section-title">
+                      ❤️ Ont liké ({{ membresLikes().length }})
+                    </div>
+                    @if (membresLikes().length === 0) {
                       <div class="membres-empty">Personne n'a liké cette sortie.</div>
                     }
                     <div class="membres-list">
-                      @for (m of membresLikes; track m) {
+                      @for (m of membresLikes(); track m) {
                         <div
                           appClickable
                           class="membre-item membre-clickable"

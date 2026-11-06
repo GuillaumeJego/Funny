@@ -1,12 +1,12 @@
 <!-- Chargement -->
-@if (loading) {
+@if (loading()) {
   <div class="state-center">
     <div class="spinner"></div>
   </div>
 }
 
 <!-- Accès refusé -->
-@if (!loading && accessDenied) {
+@if (!loading() && accessDenied()) {
   <div class="locked-page">
     <span class="lock-icon">🔒</span>
     <h2>Accès réservé aux membres Premium</h2>
@@ -17,15 +17,15 @@
 }
 
 <!-- Profil -->
-@if (!loading && !accessDenied && profile) {
+@if (!loading() && !accessDenied() && profile(); as p) {
   <div class="profile-page">
     <!-- ── Photo héro plein largeur ── -->
     <div class="hero-photo">
-      @if (profile.avatar_url) {
-        <img [src]="profile.avatar_url" class="hero-img" alt="" (click)="lightboxOpen = true" />
+      @if (p.avatar_url) {
+        <img [src]="p.avatar_url" class="hero-img" alt="" (click)="lightboxOpen.set(true)" />
       }
-      @if (!profile.avatar_url) {
-        <div class="hero-placeholder">{{ getInitial(profile.username) }}</div>
+      @if (!p.avatar_url) {
+        <div class="hero-placeholder">{{ getInitial(p.username) }}</div>
       }
       <!-- Overlay top bar -->
       <div class="hero-topbar">
@@ -42,20 +42,20 @@
           </svg>
         </button>
         <div class="hero-title">
-          <span class="hero-name">{{ profile.username }}</span>
+          <span class="hero-name">{{ p.username }}</span>
         </div>
         <div class="hero-topbar-right">
-          @if (profile.gender === 'Homme') {
+          @if (p.gender === 'Homme') {
             <span class="gender-icon">♂</span>
           }
-          @if (profile.gender === 'Femme') {
+          @if (p.gender === 'Femme') {
             <span class="gender-icon">♀</span>
           }
-          @if (!isOwnProfile) {
+          @if (!isOwnProfile()) {
             <app-member-safety
-              [memberId]="profile.id"
-              [username]="profile.username"
-              [blocked]="blocked"
+              [memberId]="p.id"
+              [username]="p.username"
+              [blocked]="blocked()"
               (blockedChange)="onBlockedChange($event)"
             />
           }
@@ -63,7 +63,7 @@
       </div>
       <!-- Chips badges bas de photo -->
       <div class="hero-bottom-chips">
-        @if (profile.role === 'admin') {
+        @if (p.role === 'admin') {
           <span class="chip chip-admin">🛡️ Admin</span>
         }
         @if (isPremium()) {
@@ -73,9 +73,9 @@
     </div>
     <!-- ── Identité ── -->
     <div class="identity-section">
-      <h1 class="identity-name">{{ profile.username }}</h1>
+      <h1 class="identity-name">{{ p.username }}</h1>
       <div class="stats-row">
-        @if (profile.city) {
+        @if (p.city) {
           <div class="stat-chip">
             <svg
               width="13"
@@ -88,29 +88,29 @@
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
               <circle cx="12" cy="10" r="3" />
             </svg>
-            {{ profile.city }}
+            {{ p.city }}
           </div>
         }
         @if (getAge()) {
           <div class="stat-chip">{{ getAge() }} ans</div>
         }
-        <div class="stat-chip">{{ totalSorties }} sortie{{ totalSorties > 1 ? 's' : '' }}</div>
+        <div class="stat-chip">{{ totalSorties() }} sortie{{ totalSorties() > 1 ? 's' : '' }}</div>
       </div>
     </div>
     <!-- ── Actions amis (si profil autre) ── -->
-    @if (!isOwnProfile && blocked) {
+    @if (!isOwnProfile() && blocked()) {
       <div class="blocked-notice">
         🚫 Vous avez bloqué ce membre. Pour le débloquer, utilisez le bouton ⋯ en haut à droite.
       </div>
     }
-    @if (!isOwnProfile && !blocked) {
+    @if (!isOwnProfile() && !blocked()) {
       <div class="friend-actions">
-        @switch (friendshipStatus) {
+        @switch (friendshipStatus()) {
           @case ('none') {
             <div class="friend-btn-row">
               <button
                 class="btn-friend add"
-                [disabled]="friendshipLoading"
+                [disabled]="friendshipLoading()"
                 (click)="sendFriendRequest()"
               >
                 <svg
@@ -148,7 +148,7 @@
               </button>
               <button
                 class="btn-friend cancel"
-                [disabled]="friendshipLoading"
+                [disabled]="friendshipLoading()"
                 (click)="declineFriend()"
               >
                 Annuler
@@ -159,14 +159,14 @@
             <div class="friend-btn-row">
               <button
                 class="btn-friend accept"
-                [disabled]="friendshipLoading"
+                [disabled]="friendshipLoading()"
                 (click)="acceptFriend()"
               >
                 ✓ Accepter
               </button>
               <button
                 class="btn-friend cancel"
-                [disabled]="friendshipLoading"
+                [disabled]="friendshipLoading()"
                 (click)="declineFriend()"
               >
                 Refuser
@@ -190,7 +190,7 @@
               </button>
               <button
                 class="btn-friend remove"
-                [disabled]="friendshipLoading"
+                [disabled]="friendshipLoading()"
                 (click)="removeFriend()"
               >
                 <svg
@@ -213,11 +213,11 @@
       </div>
     }
     <!-- ── À propos de moi ── -->
-    @if (profile.bio) {
+    @if (p.bio) {
       <div class="section-card">
         <div class="section-header">
           <span class="section-title">À propos de moi</span>
-          @if (isOwnProfile) {
+          @if (isOwnProfile()) {
             <a routerLink="/profile/edit" class="btn-edit-inline">
               <svg
                 width="14"
@@ -236,9 +236,9 @@
         </div>
         <!-- La bio utilise white-space: pre-wrap : aucun espace autour du texte -->
         <!-- prettier-ignore -->
-        <p class="bio-text" [class.bio-collapsed]="!bioExpanded && (profile.bio?.length || 0) > 150">{{ profile.bio }}</p>
-        @if ((profile.bio?.length || 0) > 150) {
-          <button class="btn-show-more" (click)="bioExpanded = !bioExpanded">
+        <p class="bio-text" [class.bio-collapsed]="!bioExpanded() && (p.bio?.length || 0) > 150">{{ p.bio }}</p>
+        @if ((p.bio?.length || 0) > 150) {
+          <button class="btn-show-more" (click)="bioExpanded.set(!bioExpanded())">
             <svg
               width="16"
               height="16"
@@ -246,11 +246,11 @@
               fill="none"
               stroke="currentColor"
               stroke-width="2"
-              [style.transform]="bioExpanded ? 'rotate(180deg)' : 'rotate(0)'"
+              [style.transform]="bioExpanded() ? 'rotate(180deg)' : 'rotate(0)'"
             >
               <polyline points="6 9 12 15 18 9" />
             </svg>
-            {{ bioExpanded ? 'Réduire' : 'Afficher la suite' }}
+            {{ bioExpanded() ? 'Réduire' : 'Afficher la suite' }}
           </button>
         }
       </div>
@@ -260,7 +260,7 @@
       <div class="section-card">
         <div class="section-header">
           <span class="section-title">En savoir plus</span>
-          @if (isOwnProfile) {
+          @if (isOwnProfile()) {
             <a routerLink="/profile/edit" class="btn-edit-inline">
               <svg
                 width="14"
@@ -278,58 +278,58 @@
           }
         </div>
         <div class="info-list">
-          @if (profile.relationship) {
+          @if (p.relationship) {
             <div class="info-row">
               <span class="info-label">Côté cœur</span>
-              <span class="info-value">{{ profile.relationship }}</span>
+              <span class="info-value">{{ p.relationship }}</span>
             </div>
           }
-          @if (profile.gender) {
+          @if (p.gender) {
             <div class="info-row">
               <span class="info-label">Genre</span>
-              <span class="info-value">{{ profile.gender }}</span>
+              <span class="info-value">{{ p.gender }}</span>
             </div>
           }
-          @if (profile.children) {
+          @if (p.children) {
             <div class="info-row">
               <span class="info-label">Enfants</span>
-              <span class="info-value">{{ profile.children }}</span>
+              <span class="info-value">{{ p.children }}</span>
             </div>
           }
-          @if (profile.smoking) {
+          @if (p.smoking) {
             <div class="info-row">
               <span class="info-label">Tabac</span>
-              <span class="info-value">{{ profile.smoking }}</span>
+              <span class="info-value">{{ p.smoking }}</span>
             </div>
           }
-          @if (profile.vaping) {
+          @if (p.vaping) {
             <div class="info-row">
               <span class="info-label">Vapotage</span>
-              <span class="info-value">{{ profile.vaping }}</span>
+              <span class="info-value">{{ p.vaping }}</span>
             </div>
           }
-          @if (profile.alcohol) {
+          @if (p.alcohol) {
             <div class="info-row">
               <span class="info-label">Alcool</span>
-              <span class="info-value">{{ profile.alcohol }}</span>
+              <span class="info-value">{{ p.alcohol }}</span>
             </div>
           }
         </div>
       </div>
     }
     <!-- ── Amis ── -->
-    @if (friends.length > 0 || isOwnProfile) {
+    @if (friends().length > 0 || isOwnProfile()) {
       <div class="section-card">
         <div class="section-header">
           <span class="section-title"
-            >Amis <span class="friends-count">{{ friends.length }}</span></span
+            >Amis <span class="friends-count">{{ friends().length }}</span></span
           >
-          @if (isOwnProfile) {
+          @if (isOwnProfile()) {
             <button class="btn-edit-inline" (click)="router.navigate(['/amis'])">Gérer</button>
           }
         </div>
         <div class="friends-grid">
-          @for (f of friends; track f) {
+          @for (f of friends(); track f) {
             <div
               appClickable
               class="friend-chip"
@@ -360,8 +360,8 @@
         <div class="view-toggle">
           <button
             class="toggle-btn"
-            [class.active]="viewMode === 'grid'"
-            (click)="viewMode = 'grid'"
+            [class.active]="viewMode() === 'grid'"
+            (click)="viewMode.set('grid')"
             title="Grille"
           >
             <svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor">
@@ -373,8 +373,8 @@
           </button>
           <button
             class="toggle-btn"
-            [class.active]="viewMode === 'list'"
-            (click)="viewMode = 'list'"
+            [class.active]="viewMode() === 'list'"
+            (click)="viewMode.set('list')"
             title="Liste"
           >
             <svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor">
@@ -388,20 +388,20 @@
       <!-- Tabs -->
       <div class="tabs">
         @for (t of tabs; track t) {
-          <button class="tab" [class.active]="activeTab === t.key" (click)="activeTab = t.key">
+          <button class="tab" [class.active]="activeTab() === t.key" (click)="activeTab.set(t.key)">
             {{ t.label }} <span class="count">{{ countFor(t.key) }}</span>
           </button>
         }
       </div>
       <!-- État vide -->
-      @if (currentList.length === 0) {
+      @if (currentList().length === 0) {
         <div class="empty">
           <span>{{
-            activeTab === 'organisees'
+            activeTab() === 'organisees'
               ? '📋'
-              : activeTab === 'rejointes'
+              : activeTab() === 'rejointes'
                 ? '✅'
-                : activeTab === 'attente'
+                : activeTab() === 'attente'
                   ? '⏳'
                   : '❤️'
           }}</span>
@@ -409,9 +409,9 @@
         </div>
       }
       <!-- VUE GRILLE -->
-      @if (currentList.length > 0 && viewMode === 'grid') {
+      @if (currentList().length > 0 && viewMode() === 'grid') {
         <div class="sorties-grid">
-          @for (sortie of currentList; track sortie) {
+          @for (sortie of currentList(); track sortie.id) {
             <div
               appClickable
               class="sortie-card"
@@ -463,9 +463,9 @@
         </div>
       }
       <!-- VUE LISTE -->
-      @if (currentList.length > 0 && viewMode === 'list') {
+      @if (currentList().length > 0 && viewMode() === 'list') {
         <div class="sorties-list">
-          @for (sortie of currentList; track sortie) {
+          @for (sortie of currentList(); track sortie.id) {
             <div
               appClickable
               class="list-card"
@@ -544,7 +544,7 @@
       }
     </div>
     <!-- ── Boutons bas de page (profil propre) ── -->
-    @if (isOwnProfile) {
+    @if (isOwnProfile()) {
       <div class="bottom-actions">
         <a routerLink="/profile/edit" class="bottom-btn">✏️ Mes paramètres</a>
         <a routerLink="/mes-sorties" class="bottom-btn bottom-btn-primary">📋 Mes sorties</a>
@@ -554,21 +554,21 @@
 }
 
 <!-- Lightbox avatar -->
-@if (lightboxOpen && profile?.avatar_url) {
-  <div class="lightbox-overlay" (click)="lightboxOpen = false">
-    <button class="lightbox-close" (click)="lightboxOpen = false">✕</button>
-    <img [src]="profile!.avatar_url" class="lightbox-img" (click)="$event.stopPropagation()" />
+@if (lightboxOpen() && profile()?.avatar_url) {
+  <div class="lightbox-overlay" (click)="lightboxOpen.set(false)">
+    <button class="lightbox-close" (click)="lightboxOpen.set(false)">✕</button>
+    <img [src]="profile()!.avatar_url" class="lightbox-img" (click)="$event.stopPropagation()" />
   </div>
 }
 
 <app-sortie-drawer
-  [sortie]="selectedSortie"
-  [isOpen]="drawerOpen"
-  [userRole]="viewerRole"
-  [isFavori]="selectedSortie ? isFavori(selectedSortie.id) : false"
-  [inscriptionStatus]="inscriptionStatus"
-  [currentUserId]="viewerUserId"
-  [userIsPremium]="viewerIsPremium"
+  [sortie]="selectedSortie()"
+  [isOpen]="drawerOpen()"
+  [userRole]="viewerRole()"
+  [isFavori]="isFavori(selectedSortie()?.id ?? '')"
+  [inscriptionStatus]="inscriptionStatus()"
+  [currentUserId]="viewerUserId()"
+  [userIsPremium]="viewerIsPremium()"
   (closed)="closeDrawer()"
   (favoriToggled)="onFavoriFromDrawer($event)"
   (rejoindreClicked)="onRejoindre($event)"

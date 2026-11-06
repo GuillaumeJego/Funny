@@ -3,35 +3,40 @@
   <div
     appClickable
     class="filter-item"
-    [class.active]="filters.themeIds?.length"
+    [class.active]="filters().themeIds?.length"
     (click)="togglePanel('quoi')"
   >
     <span class="filter-icon">🍽️</span>
-    <span class="filter-label">{{ quoiLabel }}</span>
+    <span class="filter-label">{{ quoiLabel() }}</span>
   </div>
 
   <!-- Où ? -->
-  <div appClickable class="filter-item" [class.active]="filters.ou" (click)="togglePanel('ou')">
+  <div appClickable class="filter-item" [class.active]="filters().ou" (click)="togglePanel('ou')">
     <span class="filter-icon">📍</span>
-    <span class="filter-label">{{ filters.ou || 'Où ?' }}</span>
+    <span class="filter-label">{{ filters().ou || 'Où ?' }}</span>
   </div>
 
   <!-- Quand ? -->
   <div
     appClickable
     class="filter-item"
-    [class.active]="filters.dateDebut || filters.dateFin || filters.quickPeriod"
+    [class.active]="filters().dateDebut || filters().dateFin || filters().quickPeriod"
     (click)="togglePanel('quand')"
   >
     <span class="filter-icon">📅</span>
-    <span class="filter-label">{{ quandLabel }}</span>
+    <span class="filter-label">{{ quandLabel() }}</span>
   </div>
 
   <!-- Prix -->
-  <div appClickable class="filter-item" [class.active]="filters.prix" (click)="togglePanel('prix')">
+  <div
+    appClickable
+    class="filter-item"
+    [class.active]="filters().prix"
+    (click)="togglePanel('prix')"
+  >
     <span class="filter-icon">💰</span>
     <span class="filter-label">{{
-      filters.prix === 'gratuit' ? 'Gratuit' : filters.prix === 'payant' ? 'Payant' : 'Prix'
+      filters().prix === 'gratuit' ? 'Gratuit' : filters().prix === 'payant' ? 'Payant' : 'Prix'
     }}</span>
   </div>
 
@@ -39,7 +44,7 @@
   <div
     appClickable
     class="filter-item"
-    [class.active]="filters.premium"
+    [class.active]="filters().premium"
     (click)="togglePanel('premium')"
   >
     <span class="filter-icon">⭐</span>
@@ -49,17 +54,17 @@
   <!-- Reset -->
   <div
     class="filter-item filter-reset"
-    [class.has-active]="activeCount > 0"
+    [class.has-active]="activeCount() > 0"
     (click)="resetFilters()"
   >
-    <span class="filter-icon">{{ activeCount > 0 ? '✕' : '⚙️' }}</span>
+    <span class="filter-icon">{{ activeCount() > 0 ? '✕' : '⚙️' }}</span>
     <span class="filter-label">{{
-      activeCount > 0 ? activeCount + ' filtre' + (activeCount > 1 ? 's' : '') : 'Filtres'
+      activeCount() > 0 ? activeCount() + ' filtre' + (activeCount() > 1 ? 's' : '') : 'Filtres'
     }}</span>
   </div>
 
   <!-- ── Panel Quoi : thèmes ── -->
-  @if (openPanel === 'quoi') {
+  @if (openPanel() === 'quoi') {
     <div class="filter-panel" (click)="$event.stopPropagation()">
       <div class="panel-inner">
         <label>Sélectionner un ou plusieurs thèmes</label>
@@ -68,19 +73,19 @@
             <div
               appClickable
               class="theme-option"
-              [class.selected]="selectedThemeIds.has(theme.id)"
+              [class.selected]="selectedThemeIds().has(theme.id)"
               (click)="toggleTheme(theme.id)"
             >
               <span class="theme-icon">{{ theme.icon }}</span>
               <span class="theme-name">{{ theme.name }}</span>
-              @if (selectedThemeIds.has(theme.id)) {
+              @if (selectedThemeIds().has(theme.id)) {
                 <span class="check">✓</span>
               }
             </div>
           }
         </div>
         <div class="panel-actions">
-          @if (filters.themeIds?.length) {
+          @if (filters().themeIds?.length) {
             <button class="btn-clear" (click)="clearThemes()">✕ Effacer</button>
           }
           <button class="btn-apply" (click)="applyThemes()">Appliquer</button>
@@ -90,16 +95,20 @@
   }
 
   <!-- ── Panel Où : lieux existants + recherche Nominatim ── -->
-  @if (openPanel === 'ou') {
+  @if (openPanel() === 'ou') {
     <div class="filter-panel" (click)="$event.stopPropagation()">
       <div class="panel-inner">
         <!-- Lieux déjà en base -->
-        @if (availableLocations.length) {
+        @if (availableLocations().length) {
           <div>
             <label>Lieux existants</label>
             <div class="location-chips">
-              @for (loc of availableLocations; track loc) {
-                <button class="chip" [class.active]="filters.ou === loc" (click)="setOuDirect(loc)">
+              @for (loc of availableLocations(); track loc) {
+                <button
+                  class="chip"
+                  [class.active]="filters().ou === loc"
+                  (click)="setOuDirect(loc)"
+                >
                   📍 {{ loc }}
                 </button>
               }
@@ -108,7 +117,7 @@
           </div>
         }
         <!-- Recherche Nominatim -->
-        @if (!availableLocations.length) {
+        @if (!availableLocations().length) {
           <label>Rechercher une ville</label>
         }
         <div class="location-search">
@@ -120,21 +129,21 @@
             placeholder="Ex: Paris, Lyon, Rennes…"
             autocomplete="off"
           />
-          @if (locationSearching) {
+          @if (locationSearching()) {
             <span class="location-spinner">⏳</span>
           }
         </div>
         <!-- Ville active (depuis recherche) -->
-        @if (filters.ou && !locationSuggestions.length) {
+        @if (filters().ou && !locationSuggestions().length) {
           <div class="location-active">
-            <span>📍 {{ filters.ou }}</span>
+            <span>📍 {{ filters().ou }}</span>
             <button class="btn-clear-inline" (click)="clearOu()">✕</button>
           </div>
         }
         <!-- Suggestions Nominatim -->
-        @if (locationSuggestions.length) {
+        @if (locationSuggestions().length) {
           <div class="location-suggestions">
-            @for (place of locationSuggestions; track place) {
+            @for (place of locationSuggestions(); track place) {
               <div appClickable class="suggestion-item" (click)="setOu(place)">
                 <span class="sug-icon">📍</span>
                 <span class="sug-city">{{ place.city }}</span>
@@ -145,14 +154,14 @@
           </div>
         }
         @if (
-          locationQuery.length > 1 &&
-          !locationSearching &&
-          !locationSuggestions.length &&
-          !filters.ou
+          locationQuery().length > 1 &&
+          !locationSearching() &&
+          !locationSuggestions().length &&
+          !filters().ou
         ) {
           <div class="empty-hint">Aucun résultat</div>
         }
-        @if (filters.ou) {
+        @if (filters().ou) {
           <div class="panel-actions">
             <button class="btn-clear" (click)="clearOu()">✕ Effacer</button>
           </div>
@@ -162,42 +171,42 @@
   }
 
   <!-- ── Panel Quand : plage de dates ── -->
-  @if (openPanel === 'quand') {
+  @if (openPanel() === 'quand') {
     <div class="filter-panel" (click)="$event.stopPropagation()">
       <div class="panel-inner">
         <label>Raccourcis</label>
         <div class="chip-list" style="margin-bottom: 0.75rem">
           <button
             class="chip"
-            [class.active]="quickPeriod === 'past'"
+            [class.active]="quickPeriod() === 'past'"
             (click)="setQuickPeriod('past')"
           >
             📅 Passées
           </button>
           <button
             class="chip"
-            [class.active]="quickPeriod === 'upcoming'"
+            [class.active]="quickPeriod() === 'upcoming'"
             (click)="setQuickPeriod('upcoming')"
           >
             🔜 À venir
           </button>
           <button
             class="chip"
-            [class.active]="quickPeriod === 'today'"
+            [class.active]="quickPeriod() === 'today'"
             (click)="setQuickPeriod('today')"
           >
             Ce jour
           </button>
           <button
             class="chip"
-            [class.active]="quickPeriod === 'week'"
+            [class.active]="quickPeriod() === 'week'"
             (click)="setQuickPeriod('week')"
           >
             Cette semaine
           </button>
           <button
             class="chip"
-            [class.active]="quickPeriod === 'month'"
+            [class.active]="quickPeriod() === 'month'"
             (click)="setQuickPeriod('month')"
           >
             Ce mois
@@ -210,8 +219,8 @@
             <input
               type="date"
               [(ngModel)]="dateDebut"
-              [max]="dateFin || ''"
-              (change)="quickPeriod = ''"
+              [max]="dateFin() || ''"
+              (change)="quickPeriod.set('')"
             />
           </div>
           <span class="date-sep">→</span>
@@ -220,13 +229,13 @@
             <input
               type="date"
               [(ngModel)]="dateFin"
-              [min]="dateDebut || ''"
-              (change)="quickPeriod = ''"
+              [min]="dateDebut() || ''"
+              (change)="quickPeriod.set('')"
             />
           </div>
         </div>
         <div class="panel-actions">
-          @if (filters.dateDebut || filters.dateFin) {
+          @if (filters().dateDebut || filters().dateFin) {
             <button class="btn-clear" (click)="clearDates()">Effacer</button>
           }
           <button class="btn-apply" (click)="applyDates()">Appliquer</button>
@@ -236,27 +245,27 @@
   }
 
   <!-- ── Panel Prix ── -->
-  @if (openPanel === 'prix') {
+  @if (openPanel() === 'prix') {
     <div class="filter-panel" (click)="$event.stopPropagation()">
       <div class="panel-inner">
         <label>Tarif</label>
         <div class="chip-list">
           <button
             class="chip"
-            [class.active]="filters.prix === 'gratuit'"
+            [class.active]="filters().prix === 'gratuit'"
             (click)="setPrix('gratuit')"
           >
             🟢 Gratuit
           </button>
           <button
             class="chip"
-            [class.active]="filters.prix === 'payant'"
+            [class.active]="filters().prix === 'payant'"
             (click)="setPrix('payant')"
           >
             💶 Payant
           </button>
         </div>
-        @if (filters.prix) {
+        @if (filters().prix) {
           <div class="panel-actions">
             <button class="btn-clear" (click)="clearPrix()">✕ Effacer</button>
           </div>
@@ -266,18 +275,20 @@
   }
 
   <!-- ── Panel Premium ── -->
-  @if (openPanel === 'premium') {
+  @if (openPanel() === 'premium') {
     <div class="filter-panel" (click)="$event.stopPropagation()">
       <div class="panel-inner">
         <label>Sorties réservées aux abonnés</label>
         <div class="chip-list">
-          <button class="chip" [class.active]="filters.premium" (click)="togglePremium()">
+          <button class="chip" [class.active]="filters().premium" (click)="togglePremium()">
             ⭐ Afficher uniquement les sorties Premium
           </button>
         </div>
-        @if (filters.premium) {
+        @if (filters().premium) {
           <div class="panel-actions">
-            <button class="btn-clear" (click)="togglePremium(); openPanel = null">✕ Effacer</button>
+            <button class="btn-clear" (click)="togglePremium(); openPanel.set(null)">
+              ✕ Effacer
+            </button>
           </div>
         }
       </div>

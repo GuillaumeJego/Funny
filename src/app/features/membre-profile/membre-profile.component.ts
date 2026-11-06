@@ -1,4 +1,11 @@
-import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -30,7 +37,7 @@ type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees';
   standalone: true,
   imports: [ClickableDirective, RouterModule, SortieDrawerComponent, MemberSafetyComponent],
   templateUrl: './membre-profile.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './membre-profile.component.scss',
 })
 export class MembreProfileComponent implements OnInit {
@@ -46,37 +53,37 @@ export class MembreProfileComponent implements OnInit {
   private conversationService = inject(ConversationService);
   private moderationService = inject(ModerationService);
 
-  profile: Profile | null = null;
-  loading = true;
-  accessDenied = false;
-  isOwnProfile = false;
+  readonly profile = signal<Profile | null>(null);
+  readonly loading = signal(true);
+  readonly accessDenied = signal(false);
+  readonly isOwnProfile = signal(false);
 
-  activeTab: TabKey = 'organisees';
-  viewMode: 'grid' | 'list' = 'list';
-  currentFilters: Filters = { quickPeriod: 'upcoming' };
-  availableThemes: ThemeOption[] = [];
-  availableLocations: string[] = [];
+  readonly activeTab = signal<TabKey>('organisees');
+  readonly viewMode = signal<'grid' | 'list'>('list');
+  readonly currentFilters = signal<Filters>({ quickPeriod: 'upcoming' });
+  readonly availableThemes = signal<ThemeOption[]>([]);
+  readonly availableLocations = signal<string[]>([]);
 
-  sortiesOrganisees: SortieWithRelations[] = [];
-  sortiesRejointes: SortieWithRelations[] = [];
-  sortiesAttente: SortieWithRelations[] = [];
-  sortiesLikees: SortieWithRelations[] = [];
+  readonly sortiesOrganisees = signal<SortieWithRelations[]>([]);
+  readonly sortiesRejointes = signal<SortieWithRelations[]>([]);
+  readonly sortiesAttente = signal<SortieWithRelations[]>([]);
+  readonly sortiesLikees = signal<SortieWithRelations[]>([]);
 
-  lightboxOpen = false;
-  bioExpanded = false;
+  readonly lightboxOpen = signal(false);
+  readonly bioExpanded = signal(false);
 
-  friendship: Friendship | null = null;
-  friendshipLoading = false;
+  readonly friendship = signal<Friendship | null>(null);
+  readonly friendshipLoading = signal(false);
   /** Le membre connecté a bloqué ce membre. */
-  blocked = false;
-  friends: Friendship[] = [];
-  selectedSortie: SortieWithRelations | null = null;
-  drawerOpen = false;
-  viewerUserId = '';
-  viewerRole = 'user';
-  viewerIsPremium = false;
-  viewerFavoris: Set<string> = new Set();
-  inscriptionStatus: InscriptionStatus = 'none';
+  readonly blocked = signal(false);
+  readonly friends = signal<Friendship[]>([]);
+  readonly selectedSortie = signal<SortieWithRelations | null>(null);
+  readonly drawerOpen = signal(false);
+  readonly viewerUserId = signal('');
+  readonly viewerRole = signal('user');
+  readonly viewerIsPremium = signal(false);
+  readonly viewerFavoris = signal<Set<string>>(new Set());
+  readonly inscriptionStatus = signal<InscriptionStatus>('none');
 
   tabs: { key: TabKey; label: string; icon: string }[] = [
     { key: 'organisees', label: 'Organisées', icon: '📋' },
@@ -100,25 +107,25 @@ export class MembreProfileComponent implements OnInit {
       return;
     }
 
-    this.viewerUserId = user.id;
-    this.isOwnProfile = user.id === targetId;
+    this.viewerUserId.set(user.id);
+    this.isOwnProfile.set(user.id === targetId);
 
     const { data: viewerProfile } = await this.profileService.getMyProfile(user.id);
     if (viewerProfile) {
-      this.viewerRole = viewerProfile.role ?? 'user';
-      this.viewerIsPremium = isPremiumMember(viewerProfile);
-      if (!this.isOwnProfile) {
+      this.viewerRole.set(viewerProfile.role ?? 'user');
+      this.viewerIsPremium.set(isPremiumMember(viewerProfile));
+      if (!this.isOwnProfile()) {
         const canView = await this.settingsService.canViewProfiles(viewerProfile);
         if (!canView) {
-          this.accessDenied = true;
-          this.loading = false;
+          this.accessDenied.set(true);
+          this.loading.set(false);
           return;
         }
       }
     }
 
     const favorisIds = await this.favoriService.getFavoris(user.id);
-    this.viewerFavoris = new Set(favorisIds);
+    this.viewerFavoris.set(new Set(favorisIds));
 
     const [profileRes, organisees, rejointes, attente, likees] = await Promise.all([
       this.profileService.getProfileById(targetId),
@@ -128,18 +135,18 @@ export class MembreProfileComponent implements OnInit {
       this.sortieService.getSortiesLikees(targetId),
     ]);
 
-    this.profile = profileRes.data as Profile;
-    this.sortiesOrganisees = (organisees.data ?? []) as SortieWithRelations[];
-    this.sortiesRejointes = rejointes;
-    this.sortiesAttente = attente;
-    this.sortiesLikees = likees;
+    this.profile.set(profileRes.data as Profile);
+    this.sortiesOrganisees.set((organisees.data ?? []) as SortieWithRelations[]);
+    this.sortiesRejointes.set(rejointes);
+    this.sortiesAttente.set(attente);
+    this.sortiesLikees.set(likees);
 
     // Les images et le nombre d’inscrits sont déjà calculés par le service.
     const all = [
-      ...this.sortiesOrganisees,
-      ...this.sortiesRejointes,
-      ...this.sortiesAttente,
-      ...this.sortiesLikees,
+      ...this.sortiesOrganisees(),
+      ...this.sortiesRejointes(),
+      ...this.sortiesAttente(),
+      ...this.sortiesLikees(),
     ];
     // Thèmes et villes disponibles
     const themesMap = new Map<string, ThemeOption>();
@@ -149,28 +156,27 @@ export class MembreProfileComponent implements OnInit {
         themesMap.set(s.theme_id, { id: s.theme_id, name: s.themes.name, icon: s.themes.icon });
       if (s.location) locationsSet.add(s.location);
     }
-    this.availableThemes = [...themesMap.values()];
-    this.availableLocations = [...locationsSet].sort();
+    this.availableThemes.set([...themesMap.values()]);
+    this.availableLocations.set([...locationsSet].sort());
 
-    if (!this.isOwnProfile) {
-      this.blocked = await this.moderationService.isBlocked(targetId);
-      this.friendship = await this.friendshipService.getFriendshipStatus(
-        this.viewerUserId,
-        targetId,
+    if (!this.isOwnProfile()) {
+      this.blocked.set(await this.moderationService.isBlocked(targetId));
+      this.friendship.set(
+        await this.friendshipService.getFriendshipStatus(this.viewerUserId(), targetId),
       );
     }
-    this.friends = await this.friendshipService.getFriends(targetId);
+    this.friends.set(await this.friendshipService.getFriends(targetId));
 
-    this.loading = false;
+    this.loading.set(false);
   }
 
   onFiltersChanged(f: Filters) {
-    this.currentFilters = f;
+    this.currentFilters.set(f);
   }
 
   private applyFilters(list: SortieWithRelations[]): SortieWithRelations[] {
     const now = new Date();
-    const f = this.currentFilters;
+    const f = this.currentFilters();
     return list.filter((s) => {
       if (f.themeIds?.length && !f.themeIds.includes(s.theme_id ?? '')) return false;
       if (f.ou && s.location !== f.ou) return false;
@@ -192,33 +198,34 @@ export class MembreProfileComponent implements OnInit {
     });
   }
 
-  get currentList(): SortieWithRelations[] {
+  readonly currentList = computed<SortieWithRelations[]>(() => {
     const base =
-      this.activeTab === 'organisees'
-        ? this.sortiesOrganisees
-        : this.activeTab === 'rejointes'
-          ? this.sortiesRejointes
-          : this.activeTab === 'attente'
-            ? this.sortiesAttente
-            : this.sortiesLikees;
+      this.activeTab() === 'organisees'
+        ? this.sortiesOrganisees()
+        : this.activeTab() === 'rejointes'
+          ? this.sortiesRejointes()
+          : this.activeTab() === 'attente'
+            ? this.sortiesAttente()
+            : this.sortiesLikees();
     return this.applyFilters(base);
-  }
+  });
 
   countFor(tab: TabKey): number {
     const base =
       tab === 'organisees'
-        ? this.sortiesOrganisees
+        ? this.sortiesOrganisees()
         : tab === 'rejointes'
-          ? this.sortiesRejointes
+          ? this.sortiesRejointes()
           : tab === 'attente'
-            ? this.sortiesAttente
-            : this.sortiesLikees;
+            ? this.sortiesAttente()
+            : this.sortiesLikees();
     return this.applyFilters(base).length;
   }
 
   isPremium(): boolean {
-    if (!this.profile?.subscription_end_date) return false;
-    return new Date(this.profile.subscription_end_date) > new Date();
+    const end = this.profile()?.subscription_end_date;
+    if (!end) return false;
+    return new Date(end) > new Date();
   }
 
   getInitial(username?: string | null): string {
@@ -226,8 +233,9 @@ export class MembreProfileComponent implements OnInit {
   }
 
   getAge(): number | null {
-    if (!this.profile?.birthdate) return null;
-    const birth = new Date(this.profile.birthdate);
+    const birthdate = this.profile()?.birthdate;
+    if (!birthdate) return null;
+    const birth = new Date(birthdate);
     const now = new Date();
     let age = now.getFullYear() - birth.getFullYear();
     const m = now.getMonth() - birth.getMonth();
@@ -236,13 +244,13 @@ export class MembreProfileComponent implements OnInit {
   }
 
   hasExtraInfo(): boolean {
-    const p = this.profile;
+    const p = this.profile();
     return !!(p?.relationship || p?.children || p?.smoking || p?.vaping || p?.alcohol || p?.gender);
   }
 
-  get totalSorties(): number {
-    return this.sortiesOrganisees.length + this.sortiesRejointes.length;
-  }
+  readonly totalSorties = computed<number>(() => {
+    return this.sortiesOrganisees().length + this.sortiesRejointes().length;
+  });
 
   formatDate(dateStr: string): string {
     const d = new Date(dateStr);
@@ -270,71 +278,81 @@ export class MembreProfileComponent implements OnInit {
     window.history.back();
   }
 
-  get friendshipStatus(): 'none' | 'pending_sent' | 'pending_received' | 'accepted' {
-    if (!this.friendship) return 'none';
-    if (this.friendship.status === 'accepted') return 'accepted';
-    if (this.friendship.status === 'pending') {
-      return this.friendship.requester_id === this.viewerUserId
-        ? 'pending_sent'
-        : 'pending_received';
-    }
-    return 'none';
-  }
+  readonly friendshipStatus = computed<'none' | 'pending_sent' | 'pending_received' | 'accepted'>(
+    () => {
+      const friendship = this.friendship();
+      if (!friendship) return 'none';
+      if (friendship.status === 'accepted') return 'accepted';
+      if (friendship.status === 'pending') {
+        return friendship.requester_id === this.viewerUserId()
+          ? 'pending_sent'
+          : 'pending_received';
+      }
+      return 'none';
+    },
+  );
 
   async sendFriendRequest() {
-    this.friendshipLoading = true;
+    this.friendshipLoading.set(true);
     const targetId = this.route.snapshot.paramMap.get('id')!;
-    await this.friendshipService.sendRequest(this.viewerUserId, targetId);
-    this.friendship = await this.friendshipService.getFriendshipStatus(this.viewerUserId, targetId);
-    this.friendshipLoading = false;
+    await this.friendshipService.sendRequest(this.viewerUserId(), targetId);
+    this.friendship.set(
+      await this.friendshipService.getFriendshipStatus(this.viewerUserId(), targetId),
+    );
+    this.friendshipLoading.set(false);
   }
 
   async acceptFriend() {
-    if (!this.friendship) return;
-    this.friendshipLoading = true;
-    await this.friendshipService.acceptRequest(this.friendship.id);
-    this.friendship = { ...this.friendship, status: 'accepted' };
+    const friendship = this.friendship();
+    if (!friendship) return;
+    this.friendshipLoading.set(true);
+    await this.friendshipService.acceptRequest(friendship.id);
+    this.friendship.set({ ...friendship, status: 'accepted' });
     const targetId = this.route.snapshot.paramMap.get('id')!;
-    this.friends = await this.friendshipService.getFriends(targetId);
-    this.friendshipLoading = false;
+    this.friends.set(await this.friendshipService.getFriends(targetId));
+    this.friendshipLoading.set(false);
   }
 
   async declineFriend() {
-    if (!this.friendship) return;
-    this.friendshipLoading = true;
-    await this.friendshipService.declineRequest(this.friendship.id);
-    this.friendship = null;
-    this.friendshipLoading = false;
+    const friendship = this.friendship();
+    if (!friendship) return;
+    this.friendshipLoading.set(true);
+    await this.friendshipService.declineRequest(friendship.id);
+    this.friendship.set(null);
+    this.friendshipLoading.set(false);
   }
 
   async removeFriend() {
-    if (!this.friendship) return;
-    this.friendshipLoading = true;
-    await this.friendshipService.removeFriend(this.friendship.id);
-    this.friendship = null;
+    const friendship = this.friendship();
+    if (!friendship) return;
+    this.friendshipLoading.set(true);
+    await this.friendshipService.removeFriend(friendship.id);
+    this.friendship.set(null);
     const targetId = this.route.snapshot.paramMap.get('id')!;
-    this.friends = await this.friendshipService.getFriends(targetId);
-    this.friendshipLoading = false;
+    this.friends.set(await this.friendshipService.getFriends(targetId));
+    this.friendshipLoading.set(false);
   }
 
   async onBlockedChange(blocked: boolean) {
-    this.blocked = blocked;
+    this.blocked.set(blocked);
     if (!blocked) return;
     // Le blocage supprime l'amitié : on met l'affichage à jour.
-    this.friendship = null;
-    this.friends = await this.friendshipService.getFriends(this.route.snapshot.paramMap.get('id')!);
+    this.friendship.set(null);
+    this.friends.set(
+      await this.friendshipService.getFriends(this.route.snapshot.paramMap.get('id')!),
+    );
   }
 
   async openChat() {
     const targetId = this.route.snapshot.paramMap.get('id')!;
     const convId = await this.conversationService.getOrCreateConversation(
-      this.viewerUserId,
+      this.viewerUserId(),
       targetId,
     );
     this.router.navigate(['/messages', convId], {
       state: {
-        friendName: this.profile?.username,
-        friendAvatar: this.profile?.avatar_url,
+        friendName: this.profile()?.username,
+        friendAvatar: this.profile()?.avatar_url,
         friendId: targetId,
       },
     });
@@ -345,56 +363,63 @@ export class MembreProfileComponent implements OnInit {
   }
 
   async openDrawer(sortie: SortieWithRelations) {
-    this.selectedSortie = sortie;
-    this.drawerOpen = true;
-    this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(
-      this.viewerUserId,
-      sortie.id,
+    this.selectedSortie.set(sortie);
+    this.drawerOpen.set(true);
+    this.inscriptionStatus.set(
+      await this.inscriptionService.getInscriptionStatus(this.viewerUserId(), sortie.id),
     );
   }
 
   closeDrawer() {
-    this.drawerOpen = false;
-    this.selectedSortie = null;
+    this.drawerOpen.set(false);
+    this.selectedSortie.set(null);
   }
 
   isFavori(id: string): boolean {
-    return this.viewerFavoris.has(id);
+    return this.viewerFavoris().has(id);
   }
 
   async onFavoriFromDrawer(sortieId: string) {
-    if (this.isFavori(sortieId)) {
-      this.viewerFavoris.delete(sortieId);
-      await this.favoriService.removeFavori(this.viewerUserId, sortieId);
-    } else {
-      this.viewerFavoris.add(sortieId);
-      await this.favoriService.addFavori(this.viewerUserId, sortieId);
-    }
-    this.viewerFavoris = new Set(this.viewerFavoris);
+    const next = new Set(this.viewerFavoris());
+    const wasFavori = next.has(sortieId);
+    if (wasFavori) next.delete(sortieId);
+    else next.add(sortieId);
+    this.viewerFavoris.set(next);
+    if (wasFavori) await this.favoriService.removeFavori(this.viewerUserId(), sortieId);
+    else await this.favoriService.addFavori(this.viewerUserId(), sortieId);
   }
 
   async onRejoindre(sortieId: string) {
-    const { error, status } = await this.inscriptionService.rejoindre(this.viewerUserId, sortieId);
+    const { error, status } = await this.inscriptionService.rejoindre(
+      this.viewerUserId(),
+      sortieId,
+    );
     if (!error && status) {
-      this.inscriptionStatus = await this.inscriptionService.getInscriptionStatus(
-        this.viewerUserId,
-        sortieId,
+      this.inscriptionStatus.set(
+        await this.inscriptionService.getInscriptionStatus(this.viewerUserId(), sortieId),
       );
-      if (this.selectedSortie) {
-        this.selectedSortie.inscriptionsCount =
-          await this.sortieService.getInscriptionsCount(sortieId);
-      }
+      await this.refreshInscriptionsCount(sortieId);
     }
   }
 
+  /** Relit le nombre d'inscrits d'une sortie et l'affiche dans les listes et le tiroir. */
+  private async refreshInscriptionsCount(sortieId: string) {
+    const inscriptionsCount = await this.sortieService.getInscriptionsCount(sortieId);
+    const withCount = (s: SortieWithRelations) =>
+      s.id === sortieId ? { ...s, inscriptionsCount } : s;
+    this.sortiesOrganisees.set(this.sortiesOrganisees().map(withCount));
+    this.sortiesRejointes.set(this.sortiesRejointes().map(withCount));
+    this.sortiesAttente.set(this.sortiesAttente().map(withCount));
+    this.sortiesLikees.set(this.sortiesLikees().map(withCount));
+    const selected = this.selectedSortie();
+    if (selected) this.selectedSortie.set(withCount(selected));
+  }
+
   async onQuitter(sortieId: string) {
-    const { error } = await this.inscriptionService.quitter(this.viewerUserId, sortieId);
+    const { error } = await this.inscriptionService.quitter(this.viewerUserId(), sortieId);
     if (!error) {
-      this.inscriptionStatus = 'none';
-      if (this.selectedSortie) {
-        this.selectedSortie.inscriptionsCount =
-          await this.sortieService.getInscriptionsCount(sortieId);
-      }
+      this.inscriptionStatus.set('none');
+      await this.refreshInscriptionsCount(sortieId);
     }
   }
 }
