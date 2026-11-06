@@ -227,6 +227,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
           if (d > fin) return false;
         }
       }
+      // Prix inconnu pour une sortie Premium vue en aperçu : elle sort du filtre de prix.
+      if (filters.prix && s.locked) return false;
       if (filters.prix === 'gratuit' && s.price > 0) return false;
       if (filters.prix === 'payant' && s.price === 0) return false;
       if (filters.premium && !s.is_premium) return false;

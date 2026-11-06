@@ -63,7 +63,10 @@ export class SortieDrawerComponent implements OnChanges {
   });
 
   readonly isPremiumLocked = computed<boolean>(() => {
-    if (!this.sortie()?.is_premium) return false;
+    const sortie = this.sortie();
+    // Aperçu seulement : le serveur n'a pas donné les détails, on reste verrouillé.
+    if (sortie?.locked) return true;
+    if (!sortie?.is_premium) return false;
     if (this.userIsPremium()) return false;
     return !['admin', 'developer', 'user_premium'].includes(this.userRole());
   });

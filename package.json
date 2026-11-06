@@ -18,6 +18,7 @@
     "appwrite:admin": "node scripts/appwrite/make-admin.mjs",
     "stripe:setup": "node scripts/stripe/setup.mjs",
     "appwrite:themes": "node scripts/appwrite/themes.mjs",
+    "appwrite:apercus": "node scripts/appwrite/premium-previews.mjs",
     "test:functions": "vitest run --root functions"
   },
   "private": true,

@@ -11,7 +11,12 @@ import {
   uniqueId,
   usernameOf,
 } from './shared/appwrite.js';
-import { confirmPlace, deleteSortie, promoteFromWaitingList } from './shared/sorties.js';
+import {
+  confirmPlace,
+  deleteSortie,
+  promoteFromWaitingList,
+  savePremiumPreview,
+} from './shared/sorties.js';
 import { cleanSortie, isSafeDefaultImage, sortieImageFileId } from './shared/sortie-rules.js';
 
 /**
@@ -83,6 +88,8 @@ async function create({ api, userId, input }) {
   data.created_by = userId;
   data.status = 'published';
   const sortie = await api.createRow('sorties', uniqueId(), data, sortiePermissions(data, userId));
+  // Les non-abonnés voient la sortie Premium floutée, grâce à son aperçu.
+  await savePremiumPreview(api, sortie);
   // L'organisateur est inscrit d'office (statut « confirmed »).
   await api.createRow('inscriptions', uniqueId(), {
     sortie_id: sortie.$id,

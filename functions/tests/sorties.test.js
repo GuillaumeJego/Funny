@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { HttpError } from '../shared/appwrite.js';
-import { confirmPlace, deleteSortie, promoteFromWaitingList } from '../shared/sorties.js';
+import {
+  confirmPlace,
+  deleteSortie,
+  premiumPreview,
+  promoteFromWaitingList,
+  savePremiumPreview,
+} from '../shared/sorties.js';
 import { cleanSortie, isSafeDefaultImage, sortieImageFileId } from '../shared/sortie-rules.js';
 import { isPremium } from '../shared/premium.js';
 import { createFakeApi } from './fake-api.js';
@@ -156,6 +162,35 @@ describe('suppression d’une sortie', () => {
     expect(await api.listAllRows('inscriptions')).toHaveLength(0);
     expect(await api.listAllRows('favoris')).toHaveLength(0);
     expect(await api.getRow('sorties', 's1')).toBeNull();
+  });
+});
+
+describe('aperçu des sorties Premium', () => {
+  const premium = {
+    $id: 'p1',
+    ...valid,
+    description: 'Adresse secrète',
+    created_by: 'alice',
+    is_premium: true,
+    image_url: '',
+  };
+
+  it("ne garde que le titre, le thème, la date et l'image", () => {
+    expect(premiumPreview(premium)).toEqual({
+      title: valid.title,
+      theme_id: valid.theme_id,
+      date: valid.date,
+      image_url: null,
+    });
+  });
+
+  it('est créé pour une sortie Premium seulement, et supprimé avec elle', async () => {
+    const api = createFakeApi({ sorties: [premium, { $id: 's2', ...valid, is_premium: false }] });
+    await savePremiumPreview(api, premium);
+    await savePremiumPreview(api, await api.getRow('sorties', 's2'));
+    expect((await api.listAllRows('sorties_apercus')).map((r) => r.$id)).toEqual(['p1']);
+    await deleteSortie(api, premium, { notifyMembers: false });
+    expect(await api.listAllRows('sorties_apercus')).toHaveLength(0);
   });
 });
 

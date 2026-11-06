@@ -49,6 +49,25 @@ export async function promoteFromWaitingList(api, sortie) {
   ]);
 }
 
+/**
+ * Aperçu d'une sortie Premium, lisible par tous les membres : de quoi afficher une carte
+ * floutée qui donne envie de s'abonner, sans le lieu, le prix, la description ni l'organisateur.
+ */
+export function premiumPreview(sortie) {
+  return {
+    title: sortie.title,
+    theme_id: sortie.theme_id,
+    date: sortie.date,
+    image_url: sortie.image_url || null,
+  };
+}
+
+/** Crée l'aperçu d'une sortie Premium (ne fait rien pour une sortie ouverte à tous). */
+export async function savePremiumPreview(api, sortie) {
+  if (!sortie.is_premium) return;
+  await api.createRow('sorties_apercus', sortie.$id, premiumPreview(sortie));
+}
+
 /** Supprime une sortie et tout ce qui la concerne, en prévenant inscrits et likeurs. */
 export async function deleteSortie(api, sortie, { notifyMembers = true } = {}) {
   const [inscriptions, favoris] = await Promise.all([
@@ -84,5 +103,6 @@ export async function deleteSortie(api, sortie, { notifyMembers = true } = {}) {
   if (sortie.image_source === 'custom' && sortie.image_url) {
     await deleteFile(api, 'sorties-images', sortie.image_url);
   }
+  await api.deleteRow('sorties_apercus', sortie.$id);
   await api.deleteRow('sorties', sortie.$id);
 }

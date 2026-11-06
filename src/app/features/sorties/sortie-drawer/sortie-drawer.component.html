@@ -39,6 +39,9 @@
             </div>
             <div class="locked-info">
               <h2 class="sortie-title">{{ s.title }}</h2>
+              <p class="locked-meta">
+                {{ s.themes?.icon }} {{ s.themes?.name }} · {{ formatDate(s.date) }}
+              </p>
               <span class="badge-premium">⭐ Réservé aux abonnés</span>
             </div>
           </div>
