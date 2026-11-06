@@ -31,12 +31,14 @@ export class NavbarTopComponent implements OnInit {
   readonly menuOpen = signal(false);
   readonly isPremium = signal(false);
   readonly subscriptionEndDate = signal<Date | undefined>(undefined);
+  private userId = '';
 
   async ngOnInit() {
     const {
       data: { user },
     } = await this.authService.getUser();
     if (user) {
+      this.userId = user.id;
       const { data } = await this.profileService.getMyProfile(user.id);
       if (data) {
         this.avatarUrl.set(data.avatar_url);
@@ -78,15 +80,29 @@ export class NavbarTopComponent implements OnInit {
     this.menuOpen.set(!this.menuOpen());
   }
 
+  /** Échap ferme le menu du compte. */
+  @HostListener('document:keydown.escape')
+  closeMenu() {
+    this.menuOpen.set(false);
+  }
+
+  goToMyProfile() {
+    this.menuOpen.set(false);
+    if (this.userId) this.router.navigate(['/membres', this.userId]);
+  }
+
   goToProfile() {
+    this.menuOpen.set(false);
     this.router.navigate(['/profile/edit']);
   }
 
   goToPremium() {
+    this.menuOpen.set(false);
     this.router.navigate(['/premium']);
   }
 
   async logout() {
+    this.menuOpen.set(false);
     await this.authService.logout();
     this.router.navigate(['/login']);
   }

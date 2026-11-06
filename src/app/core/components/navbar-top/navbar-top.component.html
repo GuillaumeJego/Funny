@@ -1,20 +1,4 @@
 <nav class="navbar-top">
-  <!-- Menu burger -->
-  <div class="menu-wrap">
-    <div appClickable class="menu-btn" (click)="toggleMenu()">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-
-    <!-- Menu déroulant ancré sous le burger -->
-    @if (menuOpen()) {
-      <div class="dropdown-menu">
-        <div appClickable class="menu-item" (click)="logout()">🚪 Déconnexion</div>
-      </div>
-    }
-  </div>
-
   <!-- Logo / Nom de l'app -->
   <div class="app-name">Funny</div>
 
@@ -38,12 +22,39 @@
       }
     </div>
 
-    <!-- Avatar -->
-    <div appClickable class="profile-btn" (click)="goToProfile()">
-      @if (avatarUrl()) {
-        <img [src]="avatarUrl()" alt="Avatar" class="avatar" />
-      } @else {
-        <div class="avatar-placeholder">👤</div>
+    <!-- Avatar : ouvre le menu du compte (profil, Premium, déconnexion) -->
+    <div class="menu-wrap">
+      <button
+        type="button"
+        class="profile-btn"
+        (click)="toggleMenu()"
+        [attr.aria-expanded]="menuOpen()"
+        aria-haspopup="menu"
+        title="Mon compte"
+      >
+        @if (avatarUrl()) {
+          <img [src]="avatarUrl()" alt="Mon compte" class="avatar" />
+        } @else {
+          <div class="avatar-placeholder">👤</div>
+        }
+      </button>
+
+      @if (menuOpen()) {
+        <div class="dropdown-menu" role="menu">
+          <button type="button" role="menuitem" class="menu-item" (click)="goToMyProfile()">
+            👤 Voir mon profil
+          </button>
+          <button type="button" role="menuitem" class="menu-item" (click)="goToProfile()">
+            ✏️ Modifier mon profil
+          </button>
+          <button type="button" role="menuitem" class="menu-item" (click)="goToPremium()">
+            ⭐ Premium
+          </button>
+          <div class="menu-separator"></div>
+          <button type="button" role="menuitem" class="menu-item logout" (click)="logout()">
+            🚪 Se déconnecter
+          </button>
+        </div>
       }
     </div>
   </div>
