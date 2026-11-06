@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Sortie, SortieWithRelations } from '../models/sortie.model';
 import { SortieRepository } from '../repositories/sortie.repository';
 import { StorageRepository } from '../repositories/storage.repository';
@@ -9,13 +9,11 @@ import { MiniProfile } from '../repositories/repository.types';
 
 @Injectable({ providedIn: 'root' })
 export class SortieService {
-  constructor(
-    private sorties: SortieRepository,
-    private inscriptions: InscriptionRepository,
-    private favoris: FavoriRepository,
-    private profiles: ProfileRepository,
-    private storage: StorageRepository,
-  ) {}
+  private sorties = inject(SortieRepository);
+  private inscriptions = inject(InscriptionRepository);
+  private favoris = inject(FavoriRepository);
+  private profiles = inject(ProfileRepository);
+  private storage = inject(StorageRepository);
 
   // Récupérer toutes les sorties publiées (avec image et nombre d'inscrits)
   async getAllSorties() {

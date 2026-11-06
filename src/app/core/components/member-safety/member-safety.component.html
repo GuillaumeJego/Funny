@@ -12,7 +12,7 @@
   @if (menuOpen) {
     <div class="menu" role="menu">
       <button type="button" role="menuitem" (click)="open('report')">🚩 Signaler</button>
-      @if (blocked) {
+      @if (blocked()) {
         <button type="button" role="menuitem" (click)="unblock()" [disabled]="busy">
           🔓 Débloquer
         </button>
@@ -84,7 +84,7 @@
           </p>
           <div class="modal-actions">
             <button type="button" class="btn-cancel" (click)="close()">Non, fermer</button>
-            @if (!blocked) {
+            @if (!blocked()) {
               <button type="button" class="btn-danger" (click)="open('block')">Bloquer</button>
             }
           </div>

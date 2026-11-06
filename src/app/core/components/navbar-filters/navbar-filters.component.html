@@ -64,7 +64,7 @@
       <div class="panel-inner">
         <label>Sélectionner un ou plusieurs thèmes</label>
         <div class="theme-list">
-          @for (theme of availableThemes; track theme) {
+          @for (theme of availableThemes(); track theme) {
             <div
               appClickable
               class="theme-option"

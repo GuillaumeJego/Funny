@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { Router, RouterModule, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -32,6 +32,14 @@ export interface SortieGroup {
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit, OnDestroy {
+  private sortieService = inject(SortieService);
+  private favoriService = inject(FavoriService);
+  private authService = inject(AuthService);
+  private profileService = inject(ProfileService);
+  private drawerService = inject(DrawerService);
+  private inscriptionService = inject(InscriptionService);
+  private router = inject(Router);
+
   private routerSub!: Subscription;
   private drawerSub!: Subscription;
   sorties: SortieWithRelations[] = [];
@@ -49,16 +57,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   inscriptionStatus: InscriptionStatus = 'none';
   availableThemes: ThemeOption[] = [];
   availableLocations: string[] = [];
-
-  constructor(
-    private sortieService: SortieService,
-    private favoriService: FavoriService,
-    private authService: AuthService,
-    private profileService: ProfileService,
-    private drawerService: DrawerService,
-    private inscriptionService: InscriptionService,
-    private router: Router,
-  ) {}
 
   ngOnDestroy() {
     this.routerSub?.unsubscribe();

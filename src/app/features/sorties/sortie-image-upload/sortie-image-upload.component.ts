@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, output } from '@angular/core';
 
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 
@@ -11,7 +11,7 @@ import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
   styleUrl: './sortie-image-upload.component.scss',
 })
 export class SortieImageUploadComponent {
-  @Output() imageReady = new EventEmitter<Blob>();
+  readonly imageReady = output<Blob>();
 
   imageChangedEvent: Event | null = null;
   croppedImageBlob: Blob | null = null;

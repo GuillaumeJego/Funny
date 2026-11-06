@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { MetanaCreditComponent } from '../../../core/components/metana-credit/metana-credit.component';
@@ -17,6 +17,10 @@ import { MetanaCreditComponent } from '../../../core/components/metana-credit/me
   styleUrl: '../login/login.component.scss',
 })
 export class VerifierEmailComponent implements OnInit {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
   state: 'loading' | 'pending' | 'confirmed' | 'error' = 'loading';
   email = '';
   /** Un e-mail vient de partir (à l'inscription ou avec le bouton « Renvoyer »). */
@@ -24,12 +28,6 @@ export class VerifierEmailComponent implements OnInit {
   sending = false;
   errorMessage = '';
   private hasSession = false;
-
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute,
-  ) {}
 
   async ngOnInit() {
     const params = this.route.snapshot.queryParamMap;

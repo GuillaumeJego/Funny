@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,19 +18,17 @@ import { ClickableDirective } from '../../core/directives/clickable.directive';
   styleUrl: './messages.component.scss',
 })
 export class MessagesComponent implements OnInit {
+  private auth = inject(AuthService);
+  private conversationService = inject(ConversationService);
+  private friendshipService = inject(FriendshipService);
+  router = inject(Router);
+
   conversations: Conversation[] = [];
   friends: Friendship[] = [];
   loading = true;
   myId = '';
   search = '';
   openingChat = false;
-
-  constructor(
-    private auth: AuthService,
-    private conversationService: ConversationService,
-    private friendshipService: FriendshipService,
-    public router: Router,
-  ) {}
 
   async ngOnInit() {
     const {

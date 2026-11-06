@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -13,12 +13,12 @@ import { MetanaCreditComponent } from '../../../core/components/metana-credit/me
   styleUrl: '../login/login.component.scss',
 })
 export class MotDePasseOublieComponent {
+  private authService = inject(AuthService);
+
   email = '';
   sent = false;
   loading = false;
   errorMessage = '';
-
-  constructor(private authService: AuthService) {}
 
   async onSubmit() {
     this.errorMessage = '';

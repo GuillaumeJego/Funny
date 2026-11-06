@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { FavoriRepository } from '../repositories/favori.repository';
 
 @Injectable({ providedIn: 'root' })
 export class FavoriService {
-  constructor(private favoris: FavoriRepository) {}
+  private favoris = inject(FavoriRepository);
 
   async getFavoris(userId: string): Promise<string[]> {
     return await this.favoris.getSortieIds(userId);

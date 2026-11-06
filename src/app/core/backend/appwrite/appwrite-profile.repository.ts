@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Models, Query } from 'appwrite';
 import { Profile } from '../../models/profile.model';
 import { ProfileRepository } from '../../repositories/profile.repository';
@@ -28,9 +28,7 @@ function toProfile(row: ProfileRow, ...parts: (Models.Row | null)[]): Profile {
 
 @Injectable()
 export class AppwriteProfileRepository extends ProfileRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   async getById(userId: string): Promise<RepositoryResult<Profile>> {
     return attempt(async () => {

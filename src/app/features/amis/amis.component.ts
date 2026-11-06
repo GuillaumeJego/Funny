@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -19,6 +19,11 @@ type Tab = 'amis' | 'recues' | 'envoyees';
   styleUrl: './amis.component.scss',
 })
 export class AmisComponent implements OnInit {
+  private auth = inject(AuthService);
+  private friendshipService = inject(FriendshipService);
+  private conversationService = inject(ConversationService);
+  router = inject(Router);
+
   myId = '';
   activeTab: Tab = 'amis';
   loading = true;
@@ -38,13 +43,6 @@ export class AmisComponent implements OnInit {
       return p?.username?.toLowerCase().includes(q);
     });
   }
-
-  constructor(
-    private auth: AuthService,
-    private friendshipService: FriendshipService,
-    private conversationService: ConversationService,
-    public router: Router,
-  ) {}
 
   async ngOnInit() {
     const {

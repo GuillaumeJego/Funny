@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule, Location, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -20,6 +20,12 @@ import { isPremiumMember } from '../../../core/utils/premium';
   styleUrl: './edit-profile.component.scss',
 })
 export class EditProfileComponent implements OnInit {
+  private authService = inject(AuthService);
+  private profileService = inject(ProfileService);
+  private billing = inject(BillingService);
+  private router = inject(Router);
+  private location = inject(Location);
+
   profile: Partial<Profile> = {};
   userId = '';
   loading = false;
@@ -42,14 +48,6 @@ export class EditProfileComponent implements OnInit {
   habitOptions = ['Pas du tout', 'Un peu', 'Beaucoup', 'secret'];
   childrenOptions = ["J'en veux", "J'en ai", "Je n'en ai pas", 'secret'];
   relationshipOptions = ['En couple', 'Célibataire', 'secret'];
-
-  constructor(
-    private authService: AuthService,
-    private profileService: ProfileService,
-    private billing: BillingService,
-    private router: Router,
-    private location: Location,
-  ) {}
 
   async ngOnInit() {
     this.loading = true;

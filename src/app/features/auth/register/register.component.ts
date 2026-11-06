@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -17,6 +17,9 @@ const USERNAME = /^[\p{L}\p{N}._-]{3,40}$/u;
   styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   username = '';
   email = '';
   password = '';
@@ -25,11 +28,6 @@ export class RegisterComponent {
   acceptTerms = false;
   errorMessage = '';
   loading = false;
-
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-  ) {}
 
   async onRegister() {
     this.loading = true;

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Channel, ID, Models, Permission, Query, Role } from 'appwrite';
 import { Conversation, Message, MessageReaction } from '../../models/message.model';
 import { ConversationRepository, NewMessage } from '../../repositories/conversation.repository';
@@ -29,12 +29,10 @@ function writtenBy(row: Models.Row, authorId: string): boolean {
  */
 @Injectable()
 export class AppwriteConversationRepository extends ConversationRepository {
+  private appwrite = inject(AppwriteClientService);
+
   /** Fichiers privés déjà chargés, pour ne pas les retélécharger à chaque nouveau message. */
   private mediaUrls = new Map<string, Promise<string | null>>();
-
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
 
   async open(otherUserId: string): Promise<string> {
     const { data, error } = await this.appwrite.run<{ conversationId: string }>(

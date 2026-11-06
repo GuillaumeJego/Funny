@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -29,6 +29,9 @@ interface MembreProfile {
   styleUrl: './membres.component.scss',
 })
 export class MembresComponent implements OnInit {
+  private profileService = inject(ProfileService);
+  private router = inject(Router);
+
   membres: MembreProfile[] = [];
   loading = true;
   filtersOpen = false;
@@ -39,11 +42,6 @@ export class MembresComponent implements OnInit {
   filterSmoking = '';
   filterVaping = '';
   filterAlcohol = '';
-
-  constructor(
-    private profileService: ProfileService,
-    private router: Router,
-  ) {}
 
   async ngOnInit() {
     const { data } = await this.profileService.getAllProfiles();

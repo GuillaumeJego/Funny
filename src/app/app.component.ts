@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { NavbarTopComponent } from './core/components/navbar-top/navbar-top.component';
@@ -14,6 +14,8 @@ import { filter } from 'rxjs/operators';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
+  private router = inject(Router);
+
   showNavbar = false;
   currentRoute = '';
 
@@ -29,8 +31,6 @@ export class AppComponent implements OnInit {
     '/conditions',
     '/aide',
   ];
-
-  constructor(private router: Router) {}
 
   ngOnInit() {
     this.router.events

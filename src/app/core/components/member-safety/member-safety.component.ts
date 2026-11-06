@@ -1,10 +1,11 @@
 import {
   Component,
-  EventEmitter,
   HostListener,
   Input,
-  Output,
   ChangeDetectionStrategy,
+  inject,
+  input,
+  output,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ModerationService } from '../../services/moderation.service';
@@ -20,11 +21,13 @@ import { REPORT_REASONS, ReportReason } from '../../models/report.model';
   styleUrl: './member-safety.component.scss',
 })
 export class MemberSafetyComponent {
+  private moderation = inject(ModerationService);
+
   @Input({ required: true }) memberId!: string;
   @Input() username = '';
-  @Input() blocked = false;
+  readonly blocked = input(false);
   /** Émis après un blocage (true) ou un déblocage (false). */
-  @Output() blockedChange = new EventEmitter<boolean>();
+  readonly blockedChange = output<boolean>();
 
   reasons = REPORT_REASONS;
   menuOpen = false;
@@ -33,8 +36,6 @@ export class MemberSafetyComponent {
   details = '';
   busy = false;
   errorMessage = '';
-
-  constructor(private moderation: ModerationService) {}
 
   /** Un clic ailleurs ou Échap ferment le menu. */
   @HostListener('document:click')

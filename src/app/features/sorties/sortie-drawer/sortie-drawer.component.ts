@@ -1,11 +1,12 @@
 import {
   Component,
   Input,
-  Output,
-  EventEmitter,
   OnChanges,
   SimpleChanges,
   ChangeDetectionStrategy,
+  inject,
+  input,
+  output,
 } from '@angular/core';
 
 import { Router } from '@angular/router';
@@ -30,18 +31,21 @@ interface MiniProfile {
   styleUrl: './sortie-drawer.component.scss',
 })
 export class SortieDrawerComponent implements OnChanges {
+  private router = inject(Router);
+  private sortieService = inject(SortieService);
+
   @Input() sortie: SortieWithRelations | null = null;
   @Input() isOpen = false;
-  @Input() userRole = 'user';
-  @Input() isFavori = false;
-  @Input() inscriptionStatus: InscriptionStatus = 'none';
-  @Input() currentUserId = '';
-  @Input() userIsPremium = false;
-  @Output() closed = new EventEmitter<void>();
-  @Output() favoriToggled = new EventEmitter<string>();
-  @Output() rejoindreClicked = new EventEmitter<string>();
-  @Output() quitterClicked = new EventEmitter<string>();
-  @Output() supprimerClicked = new EventEmitter<string>();
+  readonly userRole = input('user');
+  readonly isFavori = input(false);
+  readonly inscriptionStatus = input<InscriptionStatus>('none');
+  readonly currentUserId = input('');
+  readonly userIsPremium = input(false);
+  readonly closed = output<void>();
+  readonly favoriToggled = output<string>();
+  readonly rejoindreClicked = output<string>();
+  readonly quitterClicked = output<string>();
+  readonly supprimerClicked = output<string>();
   /** Le bouton Supprimer demande une confirmation dans le tiroir lui-même. */
   confirmingDelete = false;
 
@@ -52,19 +56,15 @@ export class SortieDrawerComponent implements OnChanges {
   membresLoaded = false;
   membresLoading = false;
 
-  constructor(
-    private router: Router,
-    private sortieService: SortieService,
-  ) {}
-
   get isOrganizer(): boolean {
-    return !!this.currentUserId && this.currentUserId === this.sortie?.created_by;
+    const currentUserId = this.currentUserId();
+    return !!currentUserId && currentUserId === this.sortie?.created_by;
   }
 
   get isPremiumLocked(): boolean {
     if (!this.sortie?.is_premium) return false;
-    if (this.userIsPremium) return false;
-    return !['admin', 'developer', 'user_premium'].includes(this.userRole);
+    if (this.userIsPremium()) return false;
+    return !['admin', 'developer', 'user_premium'].includes(this.userRole());
   }
 
   get membresTabCount(): number {

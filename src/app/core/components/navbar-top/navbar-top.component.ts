@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, HostListener, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -15,16 +15,14 @@ import { ClickableDirective } from '../../directives/clickable.directive';
   styleUrl: './navbar-top.component.scss',
 })
 export class NavbarTopComponent implements OnInit {
+  private authService = inject(AuthService);
+  private profileService = inject(ProfileService);
+  private router = inject(Router);
+
   avatarUrl?: string;
   menuOpen = false;
   isPremium = false;
   subscriptionEndDate?: Date;
-
-  constructor(
-    private authService: AuthService,
-    private profileService: ProfileService,
-    private router: Router,
-  ) {}
 
   async ngOnInit() {
     const {

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AppwriteException, ID, Permission, Role } from 'appwrite';
 import { RepositoryResult } from '../../repositories/repository.types';
 import { StorageRepository } from '../../repositories/storage.repository';
@@ -6,9 +6,7 @@ import { AppwriteClientService, attempt } from './appwrite-client';
 
 @Injectable()
 export class AppwriteStorageRepository extends StorageRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   /** Une seule photo par membre : son identifiant est celui du membre. */
   uploadAvatar(userId: string, image: Blob): Promise<RepositoryResult<string>> {

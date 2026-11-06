@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Models, Query } from 'appwrite';
 import { Report } from '../../models/report.model';
 import { AdminRepository } from '../../repositories/admin.repository';
@@ -14,9 +14,7 @@ type ReportRow = Models.Row & {
 
 @Injectable()
 export class AppwriteAdminRepository extends AdminRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   setRole(userId: string, role: string): Promise<RepositoryResult<null>> {
     return this.call('setRole', { userId, role });

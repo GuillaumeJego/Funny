@@ -1,11 +1,12 @@
 import {
   Component,
-  EventEmitter,
   Input,
-  Output,
-  ViewChild,
   ElementRef,
   ChangeDetectionStrategy,
+  inject,
+  input,
+  output,
+  viewChild,
 } from '@angular/core';
 
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
@@ -21,10 +22,12 @@ import { ClickableDirective } from '../../../core/directives/clickable.directive
   styleUrl: './avatar-upload.component.scss',
 })
 export class AvatarUploadComponent {
-  @Input() userId!: string;
+  private profileService = inject(ProfileService);
+
+  readonly userId = input.required<string>();
   @Input() currentAvatarUrl?: string;
-  @Output() avatarUpdated = new EventEmitter<string>();
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  readonly avatarUpdated = output<string>();
+  readonly fileInput = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
 
   imageChangedEvent: Event | null = null;
   croppedBase64: string = '';
@@ -41,8 +44,6 @@ export class AvatarUploadComponent {
     { name: 'Contraste', value: 'contrast(1.5)' },
   ];
   selectedFilter = 'none';
-
-  constructor(private profileService: ProfileService) {}
 
   onFileSelected(event: Event) {
     this.imageChangedEvent = event;
@@ -62,7 +63,8 @@ export class AvatarUploadComponent {
   }
 
   async onUpload() {
-    if (!this.croppedBase64 || !this.userId) {
+    const userId = this.userId();
+    if (!this.croppedBase64 || !userId) {
       this.errorMessage = 'Aucune image sélectionnée.';
       return;
     }
@@ -73,7 +75,7 @@ export class AvatarUploadComponent {
     try {
       const blob = await this.applyFilterAndGetBlob(this.croppedBase64);
       const { data: urlWithCache, error: uploadError } = await this.profileService.uploadAvatar(
-        this.userId,
+        userId,
         blob,
       );
 
@@ -84,7 +86,8 @@ export class AvatarUploadComponent {
       this.croppedBase64 = '';
       this.croppedImageUrl = '';
       // Reset le file input pour permettre de re-sélectionner une photo
-      if (this.fileInput) this.fileInput.nativeElement.value = '';
+      const fileInput = this.fileInput();
+      if (fileInput) fileInput.nativeElement.value = '';
     } catch (err) {
       console.error('Upload error:', err);
       this.errorMessage = "Erreur lors de l'upload.";
@@ -115,6 +118,7 @@ export class AvatarUploadComponent {
     this.croppedBase64 = '';
     this.croppedImageUrl = '';
     this.selectedFilter = 'none';
-    if (this.fileInput) this.fileInput.nativeElement.value = '';
+    const fileInput = this.fileInput();
+    if (fileInput) fileInput.nativeElement.value = '';
   }
 }

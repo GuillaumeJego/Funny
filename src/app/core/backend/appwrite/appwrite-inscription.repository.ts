@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Models, Query } from 'appwrite';
 import {
   InscriptionRepository,
@@ -15,9 +15,7 @@ type InscriptionRow = Models.Row & {
 
 @Injectable()
 export class AppwriteInscriptionRepository extends InscriptionRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   async getStatus(userId: string, sortieId: string): Promise<InscriptionStatus> {
     const [row] = await this.appwrite.listAll<InscriptionRow>('inscriptions', [

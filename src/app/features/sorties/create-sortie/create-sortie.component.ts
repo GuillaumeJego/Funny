@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -25,6 +25,14 @@ import { ClickableDirective } from '../../../core/directives/clickable.directive
   styleUrl: './create-sortie.component.scss',
 })
 export class CreateSortieComponent implements OnInit, OnDestroy {
+  private authService = inject(AuthService);
+  private sortieService = inject(SortieService);
+  private themeService = inject(ThemeService);
+  router = inject(Router);
+  private geo = inject(GeoService);
+  private profileService = inject(ProfileService);
+  private settingsService = inject(SettingsService);
+
   themes: Theme[] = [];
   themeImages: ThemeImage[] = [];
   userId = '';
@@ -64,16 +72,6 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   accessDenied = false;
   /** Seuls les abonnés (et les admins) peuvent réserver une sortie aux abonnés. */
   canCreatePremium = false;
-
-  constructor(
-    private authService: AuthService,
-    private sortieService: SortieService,
-    private themeService: ThemeService,
-    public router: Router,
-    private geo: GeoService,
-    private profileService: ProfileService,
-    private settingsService: SettingsService,
-  ) {}
 
   async ngOnInit() {
     const {

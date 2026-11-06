@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { StorageRepository } from '../repositories/storage.repository';
 import { Unsubscribe } from '../repositories/repository.types';
@@ -6,10 +6,8 @@ import { Message, Conversation } from '../models/message.model';
 
 @Injectable({ providedIn: 'root' })
 export class ConversationService {
-  constructor(
-    private conversations: ConversationRepository,
-    private storage: StorageRepository,
-  ) {}
+  private conversations = inject(ConversationRepository);
+  private storage = inject(StorageRepository);
 
   // Ouvre (ou retrouve) la conversation avec un ami : le serveur vérifie l'amitié
   async getOrCreateConversation(_myId: string, friendId: string): Promise<string> {

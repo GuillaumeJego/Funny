@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -13,15 +13,13 @@ import { NotificationService, Notification } from '../../core/services/notificat
   styleUrl: './notifications.component.scss',
 })
 export class NotificationsComponent implements OnInit {
+  private auth = inject(AuthService);
+  private notifService = inject(NotificationService);
+  private router = inject(Router);
+
   notifications: Notification[] = [];
   loading = true;
   userId = '';
-
-  constructor(
-    private auth: AuthService,
-    private notifService: NotificationService,
-    private router: Router,
-  ) {}
 
   async ngOnInit() {
     const {

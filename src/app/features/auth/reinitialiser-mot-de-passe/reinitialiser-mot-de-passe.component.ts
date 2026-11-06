@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -14,6 +14,9 @@ import { MetanaCreditComponent } from '../../../core/components/metana-credit/me
   styleUrl: '../login/login.component.scss',
 })
 export class ReinitialiserMotDePasseComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   password = '';
   confirmPassword = '';
   loading = false;
@@ -21,11 +24,9 @@ export class ReinitialiserMotDePasseComponent {
   private readonly userId: string | null;
   private readonly secret: string | null;
 
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    route: ActivatedRoute,
-  ) {
+  constructor() {
+    const route = inject(ActivatedRoute);
+
     this.userId = route.snapshot.queryParamMap.get('userId');
     this.secret = route.snapshot.queryParamMap.get('secret');
   }

@@ -91,7 +91,7 @@
                   <h2 class="sortie-title">{{ sortie.title }}</h2>
                   <button
                     class="btn-heart"
-                    [class.active]="isFavori"
+                    [class.active]="isFavori()"
                     (click)="favoriToggled.emit(sortie.id)"
                     title="Favoris"
                   >
@@ -99,9 +99,9 @@
                       width="22"
                       height="22"
                       viewBox="0 0 24 24"
-                      [attr.fill]="isFavori ? '#ef4444' : 'none'"
+                      [attr.fill]="isFavori() ? '#ef4444' : 'none'"
                       stroke="currentColor"
-                      [attr.stroke]="isFavori ? '#ef4444' : 'currentColor'"
+                      [attr.stroke]="isFavori() ? '#ef4444' : 'currentColor'"
                       stroke-width="2"
                     >
                       <path
@@ -186,17 +186,17 @@
                 }
                 <!-- Boutons rejoindre / quitter / liste d'attente (non-organisateur) -->
                 @if (!isOrganizer) {
-                  @if (inscriptionStatus === 'none') {
+                  @if (inscriptionStatus() === 'none') {
                     <button class="btn-rejoindre" (click)="rejoindreClicked.emit(sortie.id)">
                       ✅ Rejoindre cette sortie
                     </button>
                   }
-                  @if (inscriptionStatus === 'pending') {
+                  @if (inscriptionStatus() === 'pending') {
                     <button class="btn-quitter" (click)="quitterClicked.emit(sortie.id)">
                       ❌ Quitter cette sortie
                     </button>
                   }
-                  @if (inscriptionStatus === 'waiting') {
+                  @if (inscriptionStatus() === 'waiting') {
                     <div class="waiting-block">
                       <div class="waiting-badge">⏳ Vous êtes sur liste d'attente</div>
                       <button class="btn-quitter-attente" (click)="quitterClicked.emit(sortie.id)">

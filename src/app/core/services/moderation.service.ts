@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AdminRepository } from '../repositories/admin.repository';
 import { ModerationRepository } from '../repositories/moderation.repository';
 import { ReportReason } from '../models/report.model';
@@ -6,10 +6,8 @@ import { ReportReason } from '../models/report.model';
 /** Signaler, bloquer, et côté admin : suspendre et traiter les signalements. */
 @Injectable({ providedIn: 'root' })
 export class ModerationService {
-  constructor(
-    private moderation: ModerationRepository,
-    private admin: AdminRepository,
-  ) {}
+  private moderation = inject(ModerationRepository);
+  private admin = inject(AdminRepository);
 
   async report(userId: string, reason: ReportReason, details: string) {
     return await this.moderation.report(userId, reason, details);

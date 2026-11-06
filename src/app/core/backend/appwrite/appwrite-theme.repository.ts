@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ID, Models, Query } from 'appwrite';
 import { Theme, ThemeImage } from '../../models/theme.model';
 import { RepositoryResult } from '../../repositories/repository.types';
@@ -10,9 +10,7 @@ type ThemeImageRow = Models.Row & { theme_id: string; image_url: string; positio
 
 @Injectable()
 export class AppwriteThemeRepository extends ThemeRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   getAll(): Promise<RepositoryResult<Theme[]>> {
     return attempt(async () =>

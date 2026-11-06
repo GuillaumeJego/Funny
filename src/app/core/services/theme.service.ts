@@ -1,13 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ThemeRepository } from '../repositories/theme.repository';
 import { StorageRepository } from '../repositories/storage.repository';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  constructor(
-    private themes: ThemeRepository,
-    private storage: StorageRepository,
-  ) {}
+  private themes = inject(ThemeRepository);
+  private storage = inject(StorageRepository);
 
   // Récupérer tous les thèmes
   async getAllThemes() {

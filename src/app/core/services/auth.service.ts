@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AuthRepository } from '../repositories/auth.repository';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  constructor(private auth: AuthRepository) {}
+  private auth = inject(AuthRepository);
 
   // Inscription
   async register(

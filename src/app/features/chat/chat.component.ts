@@ -2,11 +2,12 @@ import {
   Component,
   OnInit,
   OnDestroy,
-  ViewChild,
   ElementRef,
   AfterViewChecked,
   NgZone,
   ChangeDetectionStrategy,
+  inject,
+  viewChild,
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
@@ -30,8 +31,16 @@ const EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
   styleUrl: './chat.component.scss',
 })
 export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
-  @ViewChild('messagesEnd') messagesEnd!: ElementRef;
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private auth = inject(AuthService);
+  private conversationService = inject(ConversationService);
+  private profileService = inject(ProfileService);
+  private moderationService = inject(ModerationService);
+  private zone = inject(NgZone);
+
+  readonly messagesEnd = viewChild.required<ElementRef>('messagesEnd');
+  readonly fileInput = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
 
   messages: Message[] = [];
   loading = true;
@@ -56,16 +65,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   private stopListening: (() => void) | null = null;
   private shouldScroll = false;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private auth: AuthService,
-    private conversationService: ConversationService,
-    private profileService: ProfileService,
-    private moderationService: ModerationService,
-    private zone: NgZone,
-  ) {}
 
   async ngOnInit() {
     const {
@@ -144,7 +143,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   scrollToBottom() {
     try {
-      this.messagesEnd?.nativeElement?.scrollIntoView({ behavior: 'smooth' });
+      this.messagesEnd()?.nativeElement?.scrollIntoView({ behavior: 'smooth' });
     } catch {}
   }
 
@@ -182,7 +181,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   triggerFileInput(type: 'image' | 'video') {
-    const input = this.fileInput.nativeElement;
+    const input = this.fileInput().nativeElement;
     input.accept = type === 'image' ? 'image/*' : 'video/*';
     input.click();
   }

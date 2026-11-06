@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -34,6 +34,18 @@ type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees';
   styleUrl: './membre-profile.component.scss',
 })
 export class MembreProfileComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  router = inject(Router);
+  private auth = inject(AuthService);
+  private profileService = inject(ProfileService);
+  private sortieService = inject(SortieService);
+  private settingsService = inject(SettingsService);
+  private inscriptionService = inject(InscriptionService);
+  private favoriService = inject(FavoriService);
+  private friendshipService = inject(FriendshipService);
+  private conversationService = inject(ConversationService);
+  private moderationService = inject(ModerationService);
+
   profile: Profile | null = null;
   loading = true;
   accessDenied = false;
@@ -72,20 +84,6 @@ export class MembreProfileComponent implements OnInit {
     { key: 'attente', label: 'En attente', icon: '⏳' },
     { key: 'likees', label: 'Likées', icon: '❤️' },
   ];
-
-  constructor(
-    private route: ActivatedRoute,
-    public router: Router,
-    private auth: AuthService,
-    private profileService: ProfileService,
-    private sortieService: SortieService,
-    private settingsService: SettingsService,
-    private inscriptionService: InscriptionService,
-    private favoriService: FavoriService,
-    private friendshipService: FriendshipService,
-    private conversationService: ConversationService,
-    private moderationService: ModerationService,
-  ) {}
 
   async ngOnInit() {
     const targetId = this.route.snapshot.paramMap.get('id');

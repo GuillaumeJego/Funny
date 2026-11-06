@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
@@ -21,6 +21,12 @@ import { ClickableDirective } from '../../core/directives/clickable.directive';
   styleUrl: './admin.component.scss',
 })
 export class AdminComponent implements OnInit {
+  private auth = inject(AuthService);
+  private profileService = inject(ProfileService);
+  private settingsService = inject(SettingsService);
+  private moderationService = inject(ModerationService);
+  router = inject(Router);
+
   loading = true;
   saving = false;
   profilePagePremiumOnly = false;
@@ -40,14 +46,6 @@ export class AdminComponent implements OnInit {
     { days: 30, label: '30 jours' },
     { days: 3650, label: 'Définitif' },
   ];
-
-  constructor(
-    private auth: AuthService,
-    private profileService: ProfileService,
-    private settingsService: SettingsService,
-    private moderationService: ModerationService,
-    public router: Router,
-  ) {}
 
   async ngOnInit() {
     const {

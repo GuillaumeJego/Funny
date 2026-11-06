@@ -1,12 +1,13 @@
 import {
   Component,
-  EventEmitter,
   HostListener,
   Input,
   OnChanges,
   OnDestroy,
-  Output,
   ChangeDetectionStrategy,
+  inject,
+  input,
+  output,
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
@@ -40,9 +41,11 @@ export interface ThemeOption {
   styleUrl: './navbar-filters.component.scss',
 })
 export class NavbarFiltersComponent implements OnChanges, OnDestroy {
-  @Input() availableThemes: ThemeOption[] = [];
+  private geo = inject(GeoService);
+
+  readonly availableThemes = input<ThemeOption[]>([]);
   @Input() availableLocations: string[] = [];
-  @Output() filtersChanged = new EventEmitter<Filters>();
+  readonly filtersChanged = output<Filters>();
 
   filters: Filters = { quickPeriod: 'upcoming' };
   openPanel: string | null = null;
@@ -59,8 +62,6 @@ export class NavbarFiltersComponent implements OnChanges, OnDestroy {
   locationSearching = false;
   private locationSearch$ = new Subject<string>();
   private locationSub!: Subscription;
-
-  constructor(private geo: GeoService) {}
 
   ngOnInit() {
     this.locationSub = this.locationSearch$
@@ -102,7 +103,7 @@ export class NavbarFiltersComponent implements OnChanges, OnDestroy {
     const n = this.filters.themeIds?.length ?? 0;
     if (n === 0) return 'Quoi ?';
     if (n === 1) {
-      const t = this.availableThemes.find((t) => t.id === this.filters.themeIds![0]);
+      const t = this.availableThemes().find((t) => t.id === this.filters.themeIds![0]);
       return t ? `${t.icon} ${t.name}` : '1 thème';
     }
     return `${n} thèmes`;

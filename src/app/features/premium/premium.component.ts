@@ -1,4 +1,10 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,6 +23,12 @@ import { LEGAL } from '../legal/legal-info';
   styleUrl: './premium.component.scss',
 })
 export class PremiumComponent implements OnInit {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private authService = inject(AuthService);
+  private billing = inject(BillingService);
+  private cdr = inject(ChangeDetectorRef);
+
   avantages = [
     { icon: '🎟️', label: 'Accès aux sorties exclusives Premium' },
     { icon: '🔍', label: 'Voir les profils complets des participants' },
@@ -56,14 +68,6 @@ export class PremiumComponent implements OnInit {
   activating = false;
   errorMessage = '';
   private userId = '';
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private authService: AuthService,
-    private billing: BillingService,
-    private cdr: ChangeDetectorRef,
-  ) {}
 
   get isSubscribed() {
     return this.subscription?.status === 'active' || this.subscription?.status === 'past_due';

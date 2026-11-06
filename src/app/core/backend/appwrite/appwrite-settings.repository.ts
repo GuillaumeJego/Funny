@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Models } from 'appwrite';
 import { RepositoryError } from '../../repositories/repository.types';
 import { SettingsRepository } from '../../repositories/settings.repository';
@@ -7,9 +7,7 @@ import { AppwriteClientService, DB, toError } from './appwrite-client';
 /** Réglages : une ligne par clé, la valeur est enregistrée en JSON. */
 @Injectable()
 export class AppwriteSettingsRepository extends SettingsRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   async get(key: string): Promise<any> {
     const row = await this.appwrite.getRowOrNull<Models.Row & { value: string }>(

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { DrawerService } from '../../services/drawer.service';
@@ -17,6 +17,13 @@ import { ClickableDirective } from '../../directives/clickable.directive';
   styleUrl: './navbar-main.component.scss',
 })
 export class NavbarMainComponent implements OnInit {
+  router = inject(Router);
+  private drawerService = inject(DrawerService);
+  private auth = inject(AuthService);
+  private profileService = inject(ProfileService);
+  private notifService = inject(NotificationService);
+  private friendshipService = inject(FriendshipService);
+
   navItems = [
     { icon: '🏠', label: 'Sorties', route: '/dashboard' },
     { icon: '⭐', label: 'Mes sorties', route: '/mes-sorties' },
@@ -30,15 +37,6 @@ export class NavbarMainComponent implements OnInit {
   unreadCount = 0;
   pendingFriendsCount = 0;
   isAdmin = false;
-
-  constructor(
-    public router: Router,
-    private drawerService: DrawerService,
-    private auth: AuthService,
-    private profileService: ProfileService,
-    private notifService: NotificationService,
-    private friendshipService: FriendshipService,
-  ) {}
 
   async ngOnInit() {
     const {

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Models } from 'appwrite';
 import { ReportReason } from '../../models/report.model';
 import { ModerationRepository } from '../../repositories/moderation.repository';
@@ -9,9 +9,7 @@ type BlockRow = Models.Row & { blocker_id: string; blocked_id: string };
 
 @Injectable()
 export class AppwriteModerationRepository extends ModerationRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   report(userId: string, reason: ReportReason, details: string): Promise<RepositoryResult<null>> {
     return this.call('report', { userId, reason, details });

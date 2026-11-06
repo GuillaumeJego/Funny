@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Theme, ThemeImage } from '../../../core/models/theme.model';
 import { ThemeService } from '../../../core/services/theme.service';
@@ -20,8 +20,10 @@ interface ThemeRow extends Theme {
   styleUrl: './admin-themes.component.scss',
 })
 export class AdminThemesComponent implements OnInit {
+  private themeService = inject(ThemeService);
+
   /** Identifiant de l'admin connecté : propriétaire des images envoyées. */
-  @Input({ required: true }) adminId = '';
+  readonly adminId = input.required<string>();
 
   themes: ThemeRow[] = [];
   loading = true;
@@ -29,8 +31,6 @@ export class AdminThemesComponent implements OnInit {
   error = '';
   newName = '';
   newIcon = '';
-
-  constructor(private themeService: ThemeService) {}
 
   async ngOnInit() {
     await this.load();
@@ -105,7 +105,7 @@ export class AdminThemesComponent implements OnInit {
     }
     let added: ThemeImage | null = null;
     await this.run(async () => {
-      const result = await this.themeService.addThemeImage(this.adminId, theme.id, file);
+      const result = await this.themeService.addThemeImage(this.adminId(), theme.id, file);
       added = result.data;
       return result;
     });

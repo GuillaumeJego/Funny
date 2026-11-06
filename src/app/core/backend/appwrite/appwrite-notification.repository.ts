@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Models, Query } from 'appwrite';
 import {
   AppNotification,
@@ -11,9 +11,7 @@ import { fromRow } from './rows';
 /** Les notifications sont écrites par le serveur ; le membre ne fait que les lire. */
 @Injectable()
 export class AppwriteNotificationRepository extends NotificationRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   getForUser(userId: string): Promise<RepositoryResult<AppNotification[]>> {
     return attempt(async () => {

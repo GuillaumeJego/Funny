@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Models, Query } from 'appwrite';
 import { Sortie, SortieWithRelations } from '../../models/sortie.model';
 import { Theme } from '../../models/theme.model';
@@ -9,9 +9,7 @@ import { fromRow } from './rows';
 
 @Injectable()
 export class AppwriteSortieRepository extends SortieRepository {
-  constructor(private appwrite: AppwriteClientService) {
-    super();
-  }
+  private appwrite = inject(AppwriteClientService);
 
   getPublished(): Promise<RepositoryResult<SortieWithRelations[]>> {
     return attempt(() => this.list([]));

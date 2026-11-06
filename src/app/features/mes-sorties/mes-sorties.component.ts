@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -25,6 +25,13 @@ import { ClickableDirective } from '../../core/directives/clickable.directive';
   styleUrl: './mes-sorties.component.scss',
 })
 export class MesSortiesComponent implements OnInit {
+  private auth = inject(AuthService);
+  private sortieService = inject(SortieService);
+  private profileService = inject(ProfileService);
+  private inscriptionService = inject(InscriptionService);
+  private favoriService = inject(FavoriService);
+  private router = inject(Router);
+
   activeTab: 'creees' | 'rejointes' | 'attente' | 'likees' = 'creees';
   viewMode: 'grid' | 'list' = 'list';
   sortiesCreees: SortieWithRelations[] = [];
@@ -43,15 +50,6 @@ export class MesSortiesComponent implements OnInit {
   selectedSortie: SortieWithRelations | null = null;
   drawerOpen = false;
   inscriptionStatus: InscriptionStatus = 'none';
-
-  constructor(
-    private auth: AuthService,
-    private sortieService: SortieService,
-    private profileService: ProfileService,
-    private inscriptionService: InscriptionService,
-    private favoriService: FavoriService,
-    private router: Router,
-  ) {}
 
   async ngOnInit() {
     const {

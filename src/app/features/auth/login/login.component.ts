@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -14,6 +14,9 @@ import { MetanaCreditComponent } from '../../../core/components/metana-credit/me
   styleUrl: './login.component.scss',
 })
 export class LoginComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   email = '';
   password = '';
   errorMessage = '';
@@ -21,11 +24,9 @@ export class LoginComponent {
   /** Affiché après la suppression du compte, un changement de mot de passe ou la confirmation de l'adresse. */
   successMessage = '';
 
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    route: ActivatedRoute,
-  ) {
+  constructor() {
+    const route = inject(ActivatedRoute);
+
     const params = route.snapshot.queryParamMap;
     if (params.get('compte') === 'supprime') {
       this.successMessage = 'Votre compte et toutes vos données ont été supprimés.';
