@@ -280,8 +280,8 @@
         <div class="info-list">
           @if (p.relationship) {
             <div class="info-row">
-              <span class="info-label">Côté cœur</span>
-              <span class="info-value">{{ p.relationship }}</span>
+              <span class="info-label">Situation</span>
+              <span class="info-value">{{ relationshipLabel(p.relationship) }}</span>
             </div>
           }
           @if (p.gender) {

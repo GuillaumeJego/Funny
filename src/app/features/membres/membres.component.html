@@ -48,12 +48,12 @@
           </select>
         </div>
         <div class="filter-group">
-          <label>Statut conjugal</label>
+          <label>Situation</label>
           <select [(ngModel)]="filterRelationship">
             <option value="">Tous</option>
-            <option value="Célibataire">Célibataire</option>
-            <option value="En couple">En couple</option>
-            <option value="secret">C'est secret</option>
+            @for (opt of relationshipOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
           </select>
         </div>
         <div class="filter-group">

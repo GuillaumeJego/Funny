@@ -27,6 +27,7 @@ interface MembreProfile {
   subscription_end_date?: string;
 }
 
+import { RELATIONSHIP_OPTIONS } from '../../core/models/profile.model';
 @Component({
   selector: 'app-membres',
   standalone: true,
@@ -46,6 +47,7 @@ export class MembresComponent implements OnInit {
   readonly searchQuery = signal('');
   readonly filterGender = signal('');
   readonly filterRelationship = signal('');
+  relationshipOptions = RELATIONSHIP_OPTIONS;
   readonly filterSmoking = signal('');
   readonly filterVaping = signal('');
   readonly filterAlcohol = signal('');

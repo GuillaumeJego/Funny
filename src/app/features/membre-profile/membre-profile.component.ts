@@ -18,7 +18,7 @@ import {
   ThemeOption,
 } from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
-import { Profile } from '../../core/models/profile.model';
+import { Profile, relationshipLabel } from '../../core/models/profile.model';
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { InscriptionService, InscriptionStatus } from '../../core/services/inscription.service';
 import { FavoriService } from '../../core/services/favori.service';
@@ -41,6 +41,7 @@ type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees';
   styleUrl: './membre-profile.component.scss',
 })
 export class MembreProfileComponent implements OnInit {
+  readonly relationshipLabel = relationshipLabel;
   private route = inject(ActivatedRoute);
   router = inject(Router);
   private auth = inject(AuthService);
