@@ -46,15 +46,32 @@ try {
       console.log(`+ thème « ${theme.name} »`);
     }
     for (let n = 1; n <= IMAGES_PER_THEME; n++) {
-      const added = await createIfMissing('theme_images', `${theme.id}-${n}`, {
+      const rowId = `${theme.id}-${n}`;
+      const imageUrl = themeImagePath(theme.id, n);
+      const added = await createIfMissing('theme_images', rowId, {
         theme_id: theme.id,
-        image_url: themeImagePath(theme.id, n),
+        image_url: imageUrl,
         position: n,
       });
       if (added) images++;
+      else {
+        // Image de départ déjà là : on la remet à jour si son fichier a changé.
+        const row = await db.getRow({ databaseId, tableId: 'theme_images', rowId });
+        if (row.image_url !== imageUrl) {
+          await db.updateRow({
+            databaseId,
+            tableId: 'theme_images',
+            rowId,
+            data: { image_url: imageUrl },
+          });
+          images++;
+        }
+      }
     }
   }
-  console.log(`Terminé : ${themes} thème(s) et ${images} image(s) ajoutés.`);
+  console.log(
+    `Terminé : ${themes} thème(s) ajouté(s), ${images} image(s) ajoutée(s) ou mise(s) à jour.`,
+  );
   console.log('Pense à supprimer la clé API dans la console Appwrite.');
 } catch (error) {
   console.error(`Erreur : ${error.message}`);

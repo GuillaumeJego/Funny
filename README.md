@@ -41,9 +41,10 @@ Chaque script se lance avec une clé API à durée courte, collée dans le termi
 | `npm run appwrite:admin -- email` | Donne le rôle admin à un membre                                               |
 | `npm run stripe:setup`            | Produit et prix Stripe                                                        |
 
-Les images par défaut des thèmes sont dans `public/images/themes/`. Après avoir ajouté un thème
-dans `scripts/appwrite/themes-data.mjs`, `node scripts/appwrite/theme-images.mjs` les redessine.
-Les admins peuvent aussi gérer les thèmes et leurs images depuis l'espace admin.
+Les images par défaut des thèmes sont dans `public/images/themes/` (`<thème>-1.webp` à `-3.webp`,
+1600 × 900). Pour un nouveau thème de départ : l'ajouter dans `scripts/appwrite/themes-data.mjs`
+avec ses 3 images, puis relancer `npm run appwrite:themes`. Les admins peuvent aussi gérer les
+thèmes et leurs images depuis l'espace admin.
 
 ## Sauvegardes
 
