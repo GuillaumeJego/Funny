@@ -52,7 +52,7 @@
         @if (filteredFriends.length > 0) {
           <div class="membres-grid">
             @for (f of filteredFriends; track f) {
-              <div class="membre-card" (click)="goToProfile(f, 'friend')">
+              <div appClickable class="membre-card" (click)="goToProfile(f, 'friend')">
                 <div class="avatar-wrap">
                   @if (getProfile(f, 'friend')?.avatar_url) {
                     <img [src]="getProfile(f, 'friend')!.avatar_url!" class="avatar" alt="" />
@@ -87,7 +87,7 @@
         @if (received.length > 0) {
           <div class="membres-grid">
             @for (f of received; track f) {
-              <div class="membre-card" (click)="goToProfile(f, 'requester')">
+              <div appClickable class="membre-card" (click)="goToProfile(f, 'requester')">
                 <div class="avatar-wrap">
                   @if (f.requester?.avatar_url) {
                     <img [src]="f.requester!.avatar_url!" class="avatar" alt="" />
@@ -133,7 +133,7 @@
         @if (sent.length > 0) {
           <div class="membres-grid">
             @for (f of sent; track f) {
-              <div class="membre-card" (click)="goToProfile(f, 'receiver')">
+              <div appClickable class="membre-card" (click)="goToProfile(f, 'receiver')">
                 <div class="avatar-wrap">
                   @if (f.receiver?.avatar_url) {
                     <img [src]="f.receiver!.avatar_url!" class="avatar" alt="" />

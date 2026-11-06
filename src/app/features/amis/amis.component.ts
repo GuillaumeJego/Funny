@@ -6,13 +6,14 @@ import { AuthService } from '../../core/services/auth.service';
 import { FriendshipService } from '../../core/services/friendship.service';
 import { ConversationService } from '../../core/services/conversation.service';
 import { Friendship } from '../../core/models/friendship.model';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 type Tab = 'amis' | 'recues' | 'envoyees';
 
 @Component({
   selector: 'app-amis',
   standalone: true,
-  imports: [FormsModule],
+  imports: [ClickableDirective, FormsModule],
   templateUrl: './amis.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './amis.component.scss',

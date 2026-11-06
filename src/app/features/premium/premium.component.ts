@@ -5,11 +5,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PremiumPlan, Subscription } from '../../core/models/subscription.model';
 import { AuthService } from '../../core/services/auth.service';
 import { BillingService } from '../../core/services/billing.service';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
+import { LEGAL } from '../legal/legal-info';
 
 @Component({
   selector: 'app-premium',
   standalone: true,
-  imports: [DatePipe, FormsModule],
+  imports: [ClickableDirective, DatePipe, FormsModule],
   templateUrl: './premium.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './premium.component.scss',
@@ -118,10 +120,8 @@ export class PremiumComponent implements OnInit {
     }
   }
 
-  contactAdmin() {
-    // À relier à la messagerie admin
-    alert('Message envoyé aux administrateurs — fonctionnalité à configurer');
-  }
+  /** Adresse de contact des pages légales : une question avant de s'abonner. */
+  readonly contactEmail = LEGAL.contact;
 
   goBack() {
     this.router.navigate(['/dashboard']);

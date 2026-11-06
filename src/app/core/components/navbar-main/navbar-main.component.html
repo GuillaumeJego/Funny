@@ -1,6 +1,11 @@
 <nav class="navbar-main">
   @for (item of navItems; track item) {
-    <div class="nav-item" [class.active]="isActive(item.route)" (click)="navigate(item.route)">
+    <div
+      appClickable
+      class="nav-item"
+      [class.active]="isActive(item.route)"
+      (click)="navigate(item.route)"
+    >
       <div class="nav-icon-wrap">
         <span class="nav-icon">{{ item.icon }}</span>
         @if (item.route === '/notifications' && unreadCount > 0) {
@@ -15,6 +20,7 @@
   }
   @if (isAdmin) {
     <div
+      appClickable
       class="nav-item admin-item"
       [class.active]="isActive('/admin')"
       (click)="navigate('/admin')"

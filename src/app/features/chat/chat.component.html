@@ -93,6 +93,7 @@
               }
               <!-- Bulle -->
               <div
+                appClickable
                 class="bubble"
                 [class.own]="isOwn(msg)"
                 (click)="openReactionPicker($event, msg)"
@@ -116,6 +117,7 @@
                 <div class="reactions" [class.own]="isOwn(msg)">
                   @for (r of reactionGroups(msg); track r) {
                     <span
+                      appClickable
                       class="reaction-chip"
                       [class.mine]="myReaction(msg) === r.emoji"
                       (click)="react(r.emoji); $event.stopPropagation()"

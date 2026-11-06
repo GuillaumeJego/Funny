@@ -21,13 +21,14 @@ import { Friendship } from '../../core/models/friendship.model';
 import { ModerationService } from '../../core/services/moderation.service';
 import { MemberSafetyComponent } from '../../core/components/member-safety/member-safety.component';
 import { isPremiumMember } from '../../core/utils/premium';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees';
 
 @Component({
   selector: 'app-membre-profile',
   standalone: true,
-  imports: [RouterModule, SortieDrawerComponent, MemberSafetyComponent],
+  imports: [ClickableDirective, RouterModule, SortieDrawerComponent, MemberSafetyComponent],
   templateUrl: './membre-profile.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './membre-profile.component.scss',

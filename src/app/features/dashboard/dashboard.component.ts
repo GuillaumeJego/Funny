@@ -16,6 +16,7 @@ import { InscriptionService, InscriptionStatus } from '../../core/services/inscr
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
 import { isPremiumMember } from '../../core/utils/premium';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 export interface SortieGroup {
   dateLabel: string;
@@ -25,7 +26,7 @@ export interface SortieGroup {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterModule, NavbarFiltersComponent, SortieDrawerComponent],
+  imports: [ClickableDirective, RouterModule, NavbarFiltersComponent, SortieDrawerComponent],
   templateUrl: './dashboard.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './dashboard.component.scss',
@@ -167,10 +168,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   async onSupprimer(sortieId: string) {
     if (!this.userId || !this.selectedSortie) return;
-    const confirmed = window.confirm(
-      `Supprimer la sortie "${this.selectedSortie.title}" ? Les membres inscrits seront notifiés.`,
-    );
-    if (!confirmed) return;
+    // La confirmation est demandée dans le tiroir de la sortie.
 
     const { error } = await this.sortieService.deleteSortie(sortieId);
 

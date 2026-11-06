@@ -1,7 +1,7 @@
 <nav class="navbar-top">
   <!-- Menu burger -->
   <div class="menu-wrap">
-    <div class="menu-btn" (click)="toggleMenu()">
+    <div appClickable class="menu-btn" (click)="toggleMenu()">
       <span></span>
       <span></span>
       <span></span>
@@ -10,7 +10,7 @@
     <!-- Menu déroulant ancré sous le burger -->
     @if (menuOpen) {
       <div class="dropdown-menu">
-        <div class="menu-item" (click)="logout()">🚪 Déconnexion</div>
+        <div appClickable class="menu-item" (click)="logout()">🚪 Déconnexion</div>
       </div>
     }
   </div>
@@ -22,6 +22,7 @@
   <div class="right-section">
     <!-- Badge premium -->
     <div
+      appClickable
       class="subscription-badge"
       [class.premium]="isPremium"
       [class.not-premium]="!isPremium"
@@ -38,7 +39,7 @@
     </div>
 
     <!-- Avatar -->
-    <div class="profile-btn" (click)="goToProfile()">
+    <div appClickable class="profile-btn" (click)="goToProfile()">
       @if (avatarUrl) {
         <img [src]="avatarUrl" alt="Avatar" class="avatar" />
       } @else {

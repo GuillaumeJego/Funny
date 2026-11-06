@@ -25,3 +25,5 @@ jobs:
           APPWRITE_PROJECT_ID: verification
       - name: Tests
         run: npm run test:ci
+      - name: Tests des fonctions serveur
+        run: npm run test:functions

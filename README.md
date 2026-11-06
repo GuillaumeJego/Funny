@@ -1,59 +1,50 @@
 # Funny
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.3.
+Application de sorties entre membres : on crée une sortie, on la rejoint (avec liste d'attente
+quand elle est complète), on discute entre amis et on peut s'abonner à Funny Premium.
 
-## Development server
+- Site : Angular 22 (`src/`), hébergé sur Vercel.
+- Données, comptes et fichiers : Appwrite, sur `https://appwrite.metanafr.fr`.
+- Règles côté serveur : Appwrite Functions (`functions/`). Tout ce qui a de la valeur (inscriptions,
+  amis, rôles, paiements) passe par elles ; le navigateur ne fait que lire.
+- Paiements : Stripe (fonctions `billing` et `stripe-webhook`).
 
-To start a local development server, run:
+## Lancer le site sur son PC
 
-```bash
-ng serve
+```powershell
+npm ci
+# .env.local (jamais commité) : APPWRITE_ENDPOINT et APPWRITE_PROJECT_ID
+npm start          # http://localhost:4200
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Vérifier avant d'envoyer
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```powershell
+npm run format     # mise en forme (Prettier)
+npm run build      # construction du site
+npm run test:ci    # tests du site
+npm run test:functions   # tests des règles des fonctions serveur
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+GitHub refait ces vérifications à chaque demande de fusion (`.github/workflows/ci.yml`).
 
-```bash
-ng generate --help
-```
+## Installer ou mettre à jour Appwrite
 
-## Building
+Chaque script se lance avec une clé API à durée courte, collée dans le terminal puis supprimée
+(voir le haut de chaque fichier pour les droits nécessaires) :
 
-To build the project run:
+| Commande                          | Rôle                                                                          |
+| --------------------------------- | ----------------------------------------------------------------------------- |
+| `npm run appwrite:setup`          | Tables, colonnes, droits, stockage et équipes (`scripts/appwrite/schema.mjs`) |
+| `npm run appwrite:themes`         | Thèmes de départ et leurs images par défaut                                   |
+| `npm run appwrite:functions`      | Envoie le code des fonctions serveur                                          |
+| `npm run appwrite:admin -- email` | Donne le rôle admin à un membre                                               |
+| `npm run stripe:setup`            | Produit et prix Stripe                                                        |
 
-```bash
-ng build
-```
+Les images par défaut des thèmes sont dans `public/images/themes/`. Après avoir ajouté un thème
+dans `scripts/appwrite/themes-data.mjs`, `node scripts/appwrite/theme-images.mjs` les redessine.
+Les admins peuvent aussi gérer les thèmes et leurs images depuis l'espace admin.
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Sauvegardes
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Voir `docs/sauvegardes.md`.

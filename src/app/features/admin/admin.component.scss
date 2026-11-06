@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'styles' as *;
 
 .admin-page {
@@ -273,7 +274,7 @@
   }
   &.tag-allowed {
     background: rgba($success, 0.15);
-    color: darken(#22c55e, 15%);
+    color: color.adjust(#22c55e, $lightness: -15%);
   }
   &.tag-denied {
     background: rgba($error, 0.12);

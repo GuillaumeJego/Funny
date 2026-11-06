@@ -6,11 +6,12 @@ import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { NotificationService } from '../../services/notification.service';
 import { FriendshipService } from '../../services/friendship.service';
+import { ClickableDirective } from '../../directives/clickable.directive';
 
 @Component({
   selector: 'app-navbar-main',
   standalone: true,
-  imports: [],
+  imports: [ClickableDirective],
   templateUrl: './navbar-main.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './navbar-main.component.scss',

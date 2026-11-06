@@ -157,9 +157,32 @@
                 }
                 <!-- Bouton supprimer (organisateur uniquement) -->
                 @if (isOrganizer) {
-                  <button class="btn-supprimer" (click)="supprimerClicked.emit(sortie.id)">
-                    🗑️ Supprimer la sortie
-                  </button>
+                  @if (!confirmingDelete) {
+                    <button class="btn-supprimer" (click)="confirmingDelete = true">
+                      🗑️ Supprimer la sortie
+                    </button>
+                  } @else {
+                    <div
+                      class="confirm-delete"
+                      role="alertdialog"
+                      aria-labelledby="confirm-delete-text"
+                    >
+                      <p id="confirm-delete-text">
+                        Supprimer « {{ sortie.title }} » ? Les membres inscrits seront prévenus.
+                      </p>
+                      <div class="confirm-delete-actions">
+                        <button class="btn-annuler" (click)="confirmingDelete = false">
+                          Annuler
+                        </button>
+                        <button
+                          class="btn-supprimer"
+                          (click)="confirmingDelete = false; supprimerClicked.emit(sortie.id)"
+                        >
+                          Oui, supprimer
+                        </button>
+                      </div>
+                    </div>
+                  }
                 }
                 <!-- Boutons rejoindre / quitter / liste d'attente (non-organisateur) -->
                 @if (!isOrganizer) {
@@ -201,7 +224,11 @@
                     }
                     <div class="membres-list">
                       @for (m of membresInscrits; track m) {
-                        <div class="membre-item membre-clickable" (click)="goToProfile(m.id)">
+                        <div
+                          appClickable
+                          class="membre-item membre-clickable"
+                          (click)="goToProfile(m.id)"
+                        >
                           @if (m.avatar_url) {
                             <img [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
                           }
@@ -229,7 +256,11 @@
                       }
                       <div class="membres-list">
                         @for (m of membresWaiting; track m; let i = $index) {
-                          <div class="membre-item membre-clickable" (click)="goToProfile(m.id)">
+                          <div
+                            appClickable
+                            class="membre-item membre-clickable"
+                            (click)="goToProfile(m.id)"
+                          >
                             <span class="m-rank">#{{ i + 1 }}</span>
                             @if (m.avatar_url) {
                               <img [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
@@ -253,7 +284,11 @@
                     }
                     <div class="membres-list">
                       @for (m of membresLikes; track m) {
-                        <div class="membre-item membre-clickable" (click)="goToProfile(m.id)">
+                        <div
+                          appClickable
+                          class="membre-item membre-clickable"
+                          (click)="goToProfile(m.id)"
+                        >
                           @if (m.avatar_url) {
                             <img [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
                           }

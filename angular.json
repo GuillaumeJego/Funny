@@ -33,7 +33,8 @@
             "stylePreprocessorOptions": {
               "includePaths": ["src"]
             },
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": ["json-bigint"]
           },
           "configurations": {
             "production": {

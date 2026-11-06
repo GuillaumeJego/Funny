@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { GeoService, GeoPlace } from '../../services/geo.service';
+import { ClickableDirective } from '../../directives/clickable.directive';
 
 export interface Filters {
   themeIds?: string[];
@@ -33,7 +34,7 @@ export interface ThemeOption {
 @Component({
   selector: 'app-navbar-filters',
   standalone: true,
-  imports: [FormsModule],
+  imports: [ClickableDirective, FormsModule],
   templateUrl: './navbar-filters.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './navbar-filters.component.scss',

@@ -102,7 +102,12 @@
     @if (currentList.length > 0 && viewMode === 'grid') {
       <div class="sorties-grid">
         @for (sortie of currentList; track sortie; let i = $index) {
-          <div class="sortie-card" [class.premium]="sortie.is_premium" (click)="openDrawer(sortie)">
+          <div
+            appClickable
+            class="sortie-card"
+            [class.premium]="sortie.is_premium"
+            (click)="openDrawer(sortie)"
+          >
             <div class="card-image">
               @if (sortie.resolvedImageUrl) {
                 <img [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
@@ -187,7 +192,12 @@
     @if (currentList.length > 0 && viewMode === 'list') {
       <div class="sorties-list">
         @for (sortie of currentList; track sortie; let i = $index) {
-          <div class="list-card" [class.premium]="sortie.is_premium" (click)="openDrawer(sortie)">
+          <div
+            appClickable
+            class="list-card"
+            [class.premium]="sortie.is_premium"
+            (click)="openDrawer(sortie)"
+          >
             <div class="list-image">
               @if (sortie.resolvedImageUrl) {
                 <img [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />

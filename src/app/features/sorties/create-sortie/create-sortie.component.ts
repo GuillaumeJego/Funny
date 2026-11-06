@@ -14,11 +14,12 @@ import { Theme, ThemeImage } from '../../../core/models/theme.model';
 import { Sortie } from '../../../core/models/sortie.model';
 import { SortieImageUploadComponent } from '../sortie-image-upload/sortie-image-upload.component';
 import { isPremiumMember } from '../../../core/utils/premium';
+import { ClickableDirective } from '../../../core/directives/clickable.directive';
 
 @Component({
   selector: 'app-create-sortie',
   standalone: true,
-  imports: [CommonModule, FormsModule, SortieImageUploadComponent],
+  imports: [ClickableDirective, CommonModule, FormsModule, SortieImageUploadComponent],
   templateUrl: './create-sortie.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './create-sortie.component.scss',

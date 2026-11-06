@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 import { SortieWithRelations } from '../../../core/models/sortie.model';
 import { SortieService } from '../../../core/services/sortie.service';
 import { InscriptionStatus } from '../../../core/services/inscription.service';
+import { ClickableDirective } from '../../../core/directives/clickable.directive';
 
 interface MiniProfile {
   id: string;
@@ -23,7 +24,7 @@ interface MiniProfile {
 @Component({
   selector: 'app-sortie-drawer',
   standalone: true,
-  imports: [],
+  imports: [ClickableDirective],
   templateUrl: './sortie-drawer.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './sortie-drawer.component.scss',
@@ -41,6 +42,8 @@ export class SortieDrawerComponent implements OnChanges {
   @Output() rejoindreClicked = new EventEmitter<string>();
   @Output() quitterClicked = new EventEmitter<string>();
   @Output() supprimerClicked = new EventEmitter<string>();
+  /** Le bouton Supprimer demande une confirmation dans le tiroir lui-même. */
+  confirmingDelete = false;
 
   activeTab: 'details' | 'membres' = 'details';
   membresInscrits: MiniProfile[] = [];

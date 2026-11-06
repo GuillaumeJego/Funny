@@ -1,5 +1,5 @@
 // Règles partagées par les fonctions « sorties » et « account ».
-import { Query, deleteFile, notify, usernameOf } from './appwrite.js';
+import { Query, deleteFile, inBatches, notify, usernameOf } from './appwrite.js';
 
 /**
  * Vérifie, après coup, qu'une inscription « pending » tient dans le nombre de places.
@@ -79,8 +79,8 @@ export async function deleteSortie(api, sortie, { notifyMembers = true } = {}) {
     }
     await notify(api, notifications);
   }
-  for (const row of inscriptions) await api.deleteRow('inscriptions', row.$id);
-  for (const row of favoris) await api.deleteRow('favoris', row.$id);
+  await inBatches(inscriptions, (row) => api.deleteRow('inscriptions', row.$id));
+  await inBatches(favoris, (row) => api.deleteRow('favoris', row.$id));
   if (sortie.image_source === 'custom' && sortie.image_url) {
     await deleteFile(api, 'sorties-images', sortie.image_url);
   }

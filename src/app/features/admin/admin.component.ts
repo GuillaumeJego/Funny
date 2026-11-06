@@ -10,11 +10,12 @@ import { ModerationService } from '../../core/services/moderation.service';
 import { Profile } from '../../core/models/profile.model';
 import { Report, reportReasonLabel } from '../../core/models/report.model';
 import { AdminThemesComponent } from './admin-themes/admin-themes.component';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [FormsModule, DatePipe, AdminThemesComponent],
+  imports: [ClickableDirective, FormsModule, DatePipe, AdminThemesComponent],
   templateUrl: './admin.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin.component.scss',

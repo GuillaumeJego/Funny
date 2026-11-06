@@ -39,7 +39,7 @@
     "@angular/build": "^22.2.3",
     "@angular/cli": "^22.2.3",
     "@angular/compiler-cli": "^22.2.3",
-    "happy-dom": "^21.0.3",
+    "happy-dom": "^21.0.4",
     "node-appwrite": "29.4.0",
     "prettier": "^3.9.10",
     "typescript": "~6.0.3",
@@ -47,5 +47,8 @@
   },
   "engines": {
     "node": ">=22.22.3"
+  },
+  "overrides": {
+    "vite": "8.3.5"
   }
 }

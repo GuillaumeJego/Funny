@@ -102,7 +102,7 @@
               @if (locationSuggestions.length) {
                 <div class="location-suggestions">
                   @for (place of locationSuggestions; track place) {
-                    <div class="suggestion-item" (click)="selectLocation(place)">
+                    <div appClickable class="suggestion-item" (click)="selectLocation(place)">
                       <span>📍</span>
                       <div class="sug-details">
                         <span class="sug-name">{{ place.shortName }}</span>
@@ -113,6 +113,7 @@
                       <span class="sug-country">{{ place.country }}</span>
                     </div>
                   }
+                  <p class="osm-credit">Adresses : © les contributeurs OpenStreetMap</p>
                 </div>
               }
               @if (locationSearching) {

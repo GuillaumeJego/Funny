@@ -63,9 +63,9 @@ export const Role = {
 /** Identifiant unique, accepté par Appwrite (20 caractères hexadécimaux). */
 export const uniqueId = () =>
   Date.now().toString(16).padStart(12, '0') +
-  Math.floor(Math.random() * 0xffffffff)
-    .toString(16)
-    .padStart(8, '0');
+  Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) =>
+    b.toString(16).padStart(2, '0'),
+  ).join('');
 
 export function createApi(req) {
   const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT;
@@ -174,16 +174,26 @@ export function createApi(req) {
   return api;
 }
 
+/**
+ * Lance `task` sur chaque élément, `size` à la fois : bien plus rapide qu'un par un
+ * (suppression d'un compte actif, d'une sortie très suivie…) sans saturer le serveur.
+ */
+export async function inBatches(items, task, size = 10) {
+  for (let i = 0; i < items.length; i += size) {
+    await Promise.all(items.slice(i, i + size).map(task));
+  }
+}
+
 /** Envoie des notifications : chaque destinataire est seul à pouvoir les lire. */
 export async function notify(api, notifications) {
-  for (const n of notifications) {
-    if (!n.user_id || n.user_id === n.actor_id) continue;
-    await api.createRow('notifications', uniqueId(), n, [
+  const recipients = notifications.filter((n) => n.user_id && n.user_id !== n.actor_id);
+  await inBatches(recipients, (n) =>
+    api.createRow('notifications', uniqueId(), n, [
       Permission.read(Role.user(n.user_id)),
       Permission.update(Role.user(n.user_id)),
       Permission.delete(Role.user(n.user_id)),
-    ]);
-  }
+    ]),
+  );
 }
 
 /**

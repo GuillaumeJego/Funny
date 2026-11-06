@@ -17,13 +17,14 @@ import { ConversationService } from '../../core/services/conversation.service';
 import { Message } from '../../core/models/message.model';
 import { ModerationService } from '../../core/services/moderation.service';
 import { MemberSafetyComponent } from '../../core/components/member-safety/member-safety.component';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 const EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [FormsModule, MemberSafetyComponent],
+  imports: [ClickableDirective, FormsModule, MemberSafetyComponent],
   templateUrl: './chat.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './chat.component.scss',

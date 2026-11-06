@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProfileService } from '../../core/services/profile.service';
 import { isPremiumMember } from '../../core/utils/premium';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 interface MembreProfile {
   id: string;
@@ -22,7 +23,7 @@ interface MembreProfile {
 @Component({
   selector: 'app-membres',
   standalone: true,
-  imports: [FormsModule],
+  imports: [ClickableDirective, FormsModule],
   templateUrl: './membres.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './membres.component.scss',

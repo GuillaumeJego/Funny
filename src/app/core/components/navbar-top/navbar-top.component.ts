@@ -4,11 +4,12 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { isPremiumMember } from '../../utils/premium';
+import { ClickableDirective } from '../../directives/clickable.directive';
 
 @Component({
   selector: 'app-navbar-top',
   standalone: true,
-  imports: [],
+  imports: [ClickableDirective],
   templateUrl: './navbar-top.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './navbar-top.component.scss',

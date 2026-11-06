@@ -48,3 +48,19 @@ body {
   background-color: $bg-light;
   color: $text-dark;
 }
+
+// Éléments cliquables qui ne sont pas des boutons (directive appClickable) :
+// contour visible quand on les atteint au clavier.
+.clickable:focus-visible {
+  outline: 2px solid $primary;
+  outline-offset: 2px;
+}
+
+// Mention obligatoire sous les suggestions d'adresses (OpenStreetMap).
+.osm-credit {
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.7rem;
+  color: $text-light;
+  text-align: right;
+}

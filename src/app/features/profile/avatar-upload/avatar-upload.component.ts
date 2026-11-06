@@ -10,11 +10,12 @@ import {
 
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 import { ProfileService } from '../../../core/services/profile.service';
+import { ClickableDirective } from '../../../core/directives/clickable.directive';
 
 @Component({
   selector: 'app-avatar-upload',
   standalone: true,
-  imports: [ImageCropperComponent],
+  imports: [ClickableDirective, ImageCropperComponent],
   templateUrl: './avatar-upload.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './avatar-upload.component.scss',

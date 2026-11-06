@@ -14,11 +14,12 @@ import {
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
 import { isPremiumMember } from '../../core/utils/premium';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 @Component({
   selector: 'app-mes-sorties',
   standalone: true,
-  imports: [SortieDrawerComponent, NavbarFiltersComponent],
+  imports: [ClickableDirective, SortieDrawerComponent, NavbarFiltersComponent],
   templateUrl: './mes-sorties.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './mes-sorties.component.scss',
@@ -190,10 +191,7 @@ export class MesSortiesComponent implements OnInit {
 
   async onSupprimer(sortieId: string) {
     if (!this.selectedSortie) return;
-    const confirmed = window.confirm(
-      `Supprimer "${this.selectedSortie.title}" ? Les membres inscrits seront notifiés.`,
-    );
-    if (!confirmed) return;
+    // La confirmation est demandée dans le tiroir de la sortie.
     const { error } = await this.sortieService.deleteSortie(sortieId);
     if (!error) {
       this.sortiesCreees = this.sortiesCreees.filter((s) => s.id !== sortieId);

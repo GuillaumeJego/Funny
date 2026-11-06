@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'styles' as *;
 
 // ─── États ────────────────────────────────────────────────
@@ -103,7 +104,7 @@
   font-size: 5rem;
   font-weight: 800;
   color: #fff;
-  background: linear-gradient(135deg, $primary 0%, lighten(#6366f1, 20%) 100%);
+  background: linear-gradient(135deg, $primary 0%, color.adjust(#6366f1, $lightness: 20%) 100%);
 }
 
 .hero-topbar {
@@ -881,7 +882,7 @@
     background: $primary;
     color: #fff;
     &:hover {
-      background: darken(#6366f1, 8%);
+      background: color.adjust(#6366f1, $lightness: -8%);
     }
   }
 }
