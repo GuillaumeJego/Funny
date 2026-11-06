@@ -52,7 +52,7 @@
       <div class="error">{{ errorMessage() }}</div>
     }
 
-    <button (click)="onRegister()" [disabled]="loading() || !adult || !acceptTerms">
+    <button (click)="onRegister()" [disabled]="loading() || !adult() || !acceptTerms()">
       {{ loading() ? 'Inscription...' : "S'inscrire" }}
     </button>
 

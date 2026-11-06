@@ -41,7 +41,7 @@ describe('PremiumComponent', () => {
   });
 
   it('asks the server for the chosen plan with the waiver and shows its error', async () => {
-    fixture.componentInstance.waiver = true;
+    fixture.componentInstance.waiver.set(true);
     fixture.componentInstance.selectPlan(0);
     await fixture.componentInstance.onSubscribe();
     fixture.detectChanges();

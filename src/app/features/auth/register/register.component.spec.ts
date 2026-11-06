@@ -27,10 +27,10 @@ describe('RegisterComponent', () => {
   it('keeps the button disabled until both boxes are checked', () => {
     const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
     expect(button.disabled).toBe(true);
-    component.adult = true;
+    component.adult.set(true);
     fixture.detectChanges();
     expect(button.disabled).toBe(true);
-    component.acceptTerms = true;
+    component.acceptTerms.set(true);
     fixture.detectChanges();
     expect(button.disabled).toBe(false);
   });
@@ -42,11 +42,11 @@ describe('RegisterComponent', () => {
       email: 'test@exemple.fr',
       password: 'MotDePasse-2026!',
       confirmPassword: 'MotDePasse-2026!',
-      adult: true,
-      acceptTerms: true,
     });
+    component.adult.set(true);
+    component.acceptTerms.set(true);
     await component.onRegister();
     expect(register).not.toHaveBeenCalled();
-    expect(component.errorMessage).toContain('Pseudo invalide');
+    expect(component.errorMessage()).toContain('Pseudo invalide');
   });
 });

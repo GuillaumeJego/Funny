@@ -24,8 +24,8 @@ export class RegisterComponent {
   email = '';
   password = '';
   confirmPassword = '';
-  adult = false;
-  acceptTerms = false;
+  readonly adult = signal(false);
+  readonly acceptTerms = signal(false);
   readonly errorMessage = signal('');
   readonly loading = signal(false);
 
@@ -33,7 +33,7 @@ export class RegisterComponent {
     this.loading.set(true);
     this.errorMessage.set('');
 
-    if (!this.adult || !this.acceptTerms) {
+    if (!this.adult() || !this.acceptTerms()) {
       this.errorMessage.set('Cochez les deux cases pour continuer.');
       this.loading.set(false);
       return;
@@ -57,7 +57,7 @@ export class RegisterComponent {
       this.email,
       this.password,
       this.username.trim(),
-      { adult: this.adult, terms: this.acceptTerms },
+      { adult: this.adult(), terms: this.acceptTerms() },
     );
 
     this.loading.set(false);

@@ -6,11 +6,11 @@
   </div>
 
   <!-- Éditeur de recadrage -->
-  @if (showCropper) {
+  @if (showCropper()) {
     <div class="cropper-container">
       <h4>Recadrer votre image</h4>
       <image-cropper
-        [imageChangedEvent]="imageChangedEvent"
+        [imageChangedEvent]="imageChangedEvent()"
         [maintainAspectRatio]="true"
         [aspectRatio]="1"
         [resizeToWidth]="600"
@@ -20,16 +20,16 @@
         (imageCropped)="imageCropped($event)"
       />
       <!-- Prévisualisation -->
-      @if (croppedImageUrl) {
+      @if (croppedImageUrl()) {
         <div class="preview">
           <h4>Prévisualisation</h4>
-          <img [src]="croppedImageUrl" alt="Prévisualisation" class="preview-img" />
+          <img [src]="croppedImageUrl()" alt="Prévisualisation" class="preview-img" />
         </div>
       }
       <!-- Boutons -->
       <div class="actions">
         <button class="btn-secondary" (click)="cancel()">Annuler</button>
-        <button class="btn-primary" (click)="validate()" [disabled]="!croppedImageUrl">
+        <button class="btn-primary" (click)="validate()" [disabled]="!croppedImageUrl()">
           ✅ Valider
         </button>
       </div>
@@ -37,10 +37,10 @@
   }
 
   <!-- Aperçu final -->
-  @if (!showCropper && croppedImageUrl) {
+  @if (!showCropper() && croppedImageUrl()) {
     <div class="final-preview">
-      <img [src]="croppedImageUrl" alt="Image sélectionnée" class="final-img" />
-      <button class="btn-change" (click)="showCropper = true">Modifier</button>
+      <img [src]="croppedImageUrl()" alt="Image sélectionnée" class="final-img" />
+      <button class="btn-change" (click)="showCropper.set(true)">Modifier</button>
     </div>
   }
 </div>
