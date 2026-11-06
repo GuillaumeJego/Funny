@@ -92,7 +92,8 @@ export const TABLES = [
     indexes: [],
   },
   {
-    // Sorties : créées par le serveur (Function « sorties »).
+    // Sorties : créées, vérifiées et supprimées par le serveur (Function « sorties »).
+    // Aucun droit « update » : le navigateur ne peut pas modifier une sortie en direct.
     // Ligne normale : read("users/verified"). Ligne Premium : read("team:abonnes") et l'organisateur.
     id: 'sorties',
     name: 'Sorties',
@@ -134,10 +135,11 @@ export const TABLES = [
     ],
   },
   {
-    // Favoris (likes) : visibles par les membres, chacun crée et supprime les siens.
+    // Favoris (likes) : visibles par les membres, créés par le serveur (Function « sorties »,
+    // qui prévient l'organisateur), supprimés par leur auteur.
     id: 'favoris',
     name: 'Favoris',
-    permissions: [MEMBRES, MEMBRES_CREENT],
+    permissions: [MEMBRES],
     rowSecurity: true, // delete("user:<id>")
     columns: [str('user_id', ID, { required: true }), str('sortie_id', ID, { required: true })],
     indexes: [

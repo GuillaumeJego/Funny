@@ -104,7 +104,7 @@
   @if (!loading) {
     <div class="membres-grid">
       @for (m of filteredMembres; track m) {
-        <div class="membre-card" (click)="goToProfile(m.id)">
+        <div appClickable class="membre-card" (click)="goToProfile(m.id)">
           <div class="avatar-wrap">
             @if (m.avatar_url) {
               <img [src]="m.avatar_url" [alt]="m.username" class="avatar" />

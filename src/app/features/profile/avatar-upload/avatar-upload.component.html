@@ -47,6 +47,7 @@
           <div class="filters">
             @for (filter of filters; track filter) {
               <div
+                appClickable
                 class="filter-option"
                 [class.active]="selectedFilter === filter.value"
                 (click)="selectFilter(filter.value)"

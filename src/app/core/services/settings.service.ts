@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SettingsRepository } from '../repositories/settings.repository';
 import { Profile } from '../models/profile.model';
+import { isPremiumMember } from '../utils/premium';
 
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
@@ -19,12 +20,7 @@ export class SettingsService {
     const setting = (await this.get('sortie_creation_access')) ?? 'all';
     if (setting === 'all') return true;
     if (setting === 'admin') return false;
-    // premium
-    if (['user_premium'].includes(profile.role || '')) return true;
-    if (profile.subscription_end_date) {
-      return new Date(profile.subscription_end_date) > new Date();
-    }
-    return false;
+    return isPremiumMember(profile); // « premium »
   }
 
   // Vérifie si le viewer peut voir les profils

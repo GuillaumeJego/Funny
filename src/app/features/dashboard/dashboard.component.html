@@ -70,7 +70,12 @@
     @if (!loading && !error && sortiesFiltrees.length > 0 && viewMode === 'grid') {
       <div class="sorties-grid">
         @for (sortie of sortiesFiltrees; track sortie) {
-          <div class="sortie-card" [class.premium]="sortie.is_premium" (click)="openDrawer(sortie)">
+          <div
+            appClickable
+            class="sortie-card"
+            [class.premium]="sortie.is_premium"
+            (click)="openDrawer(sortie)"
+          >
             <div class="card-image">
               @if (sortie.resolvedImageUrl) {
                 <img [src]="sortie.resolvedImageUrl" [alt]="sortie.title" />
@@ -169,6 +174,7 @@
             <!-- Cards liste -->
             @for (sortie of groupe.sorties; track sortie) {
               <div
+                appClickable
                 class="list-card"
                 [class.premium]="sortie.is_premium"
                 (click)="openDrawer(sortie)"

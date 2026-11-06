@@ -9,11 +9,13 @@ import { SettingsService } from '../../core/services/settings.service';
 import { ModerationService } from '../../core/services/moderation.service';
 import { Profile } from '../../core/models/profile.model';
 import { Report, reportReasonLabel } from '../../core/models/report.model';
+import { AdminThemesComponent } from './admin-themes/admin-themes.component';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [FormsModule, DatePipe],
+  imports: [ClickableDirective, FormsModule, DatePipe, AdminThemesComponent],
   templateUrl: './admin.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin.component.scss',
@@ -26,6 +28,7 @@ export class AdminComponent implements OnInit {
   membres: Profile[] = [];
   searchQuery = '';
   currentUserRole = '';
+  currentUserId = '';
   reports: Report[] = [];
 
   banModal: { membre: Profile; days: number; reason: string } | null = null;
@@ -61,6 +64,7 @@ export class AdminComponent implements OnInit {
       return;
     }
     this.currentUserRole = profile.role ?? '';
+    this.currentUserId = user.id;
 
     const [setting, creationSetting, membres, reports] = await Promise.all([
       this.settingsService.get('profile_page_premium_only'),

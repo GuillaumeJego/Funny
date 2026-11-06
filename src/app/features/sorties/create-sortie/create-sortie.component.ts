@@ -13,11 +13,13 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { Theme, ThemeImage } from '../../../core/models/theme.model';
 import { Sortie } from '../../../core/models/sortie.model';
 import { SortieImageUploadComponent } from '../sortie-image-upload/sortie-image-upload.component';
+import { isPremiumMember } from '../../../core/utils/premium';
+import { ClickableDirective } from '../../../core/directives/clickable.directive';
 
 @Component({
   selector: 'app-create-sortie',
   standalone: true,
-  imports: [CommonModule, FormsModule, SortieImageUploadComponent],
+  imports: [ClickableDirective, CommonModule, FormsModule, SortieImageUploadComponent],
   templateUrl: './create-sortie.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './create-sortie.component.scss',
@@ -60,6 +62,8 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   private locationSub!: Subscription;
 
   accessDenied = false;
+  /** Seuls les abonnés (et les admins) peuvent réserver une sortie aux abonnés. */
+  canCreatePremium = false;
 
   constructor(
     private authService: AuthService,
@@ -82,6 +86,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     this.userId = user.id;
 
     const { data: profile } = await this.profileService.getMyProfile(user.id);
+    this.canCreatePremium = isPremiumMember(profile);
     if (profile) {
       const canCreate = await this.settingsService.canCreateSortie(profile);
       if (!canCreate) {
@@ -133,8 +138,12 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   async onThemeSelected() {
     if (!this.sortie.theme_id) return;
     const { data } = await this.themeService.getThemeImages(this.sortie.theme_id);
-    if (data) this.themeImages = data;
+    this.themeImages = data ?? [];
     this.selectedImageUrl = '';
+    // La première image du thème est choisie d'office ; l'organisateur peut en changer.
+    if (this.themeImages.length && !this.customImageFile) {
+      this.selectDefaultImage(this.themeImages[0].image_url);
+    }
   }
 
   selectDefaultImage(imageUrl: string) {
@@ -158,6 +167,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
 
     try {
       // Upload image personnalisée si besoin
+      if (!this.canCreatePremium) this.sortie.is_premium = false;
       if (this.customImageFile && this.sortie.image_source === 'custom') {
         const { data: imageUrl, error: uploadError } = await this.sortieService.uploadImage(
           this.userId,
@@ -176,7 +186,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       const { data: newSortie, error } = await this.sortieService.createSortie(this.sortie);
 
       if (error || !newSortie) {
-        this.errorMessage = 'Erreur lors de la création de la sortie.';
+        this.errorMessage = error?.message ?? 'Erreur lors de la création de la sortie.';
       } else {
         this.successMessage = 'Sortie créée avec succès !';
         setTimeout(() => this.router.navigate(['/dashboard']), 1500);
@@ -189,7 +199,6 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   }
 
   onImageReady(blob: Blob) {
-    console.log('Blob reçu - type:', blob.type, '| taille:', blob.size, 'bytes');
     const mimeType = blob.type || 'image/jpeg';
     const ext = mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
     this.customImageFile = new File([blob], `sortie.${ext}`, { type: mimeType });

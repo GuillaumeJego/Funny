@@ -221,6 +221,8 @@
 }
 
 .btn-contact {
+  display: inline-block;
+  text-decoration: none;
   background: none;
   border: 1px solid $border-color;
   border-radius: $border-radius;

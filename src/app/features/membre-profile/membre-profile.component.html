@@ -331,6 +331,7 @@
         <div class="friends-grid">
           @for (f of friends; track f) {
             <div
+              appClickable
               class="friend-chip"
               (click)="
                 router.navigate(['/membres', $safeNavigationMigration(getFriendProfile(f)?.id)])
@@ -412,6 +413,7 @@
         <div class="sorties-grid">
           @for (sortie of currentList; track sortie) {
             <div
+              appClickable
               class="sortie-card"
               [class.premium]="sortie.is_premium"
               (click)="openDrawer(sortie)"
@@ -465,6 +467,7 @@
         <div class="sorties-list">
           @for (sortie of currentList; track sortie) {
             <div
+              appClickable
               class="list-card"
               [class.premium]="sortie.is_premium"
               (click)="openDrawer(sortie)"

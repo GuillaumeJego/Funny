@@ -24,7 +24,11 @@
       @for (r of reports; track r.id) {
         <div class="report-card">
           <div class="report-head">
-            <a class="report-target" (click)="router.navigate(['/membres', r.target_user_id])">
+            <a
+              appClickable
+              class="report-target"
+              (click)="router.navigate(['/membres', r.target_user_id])"
+            >
               {{ r.target?.username ?? 'Membre supprimé' }}
             </a>
             <span class="tag tag-denied">{{ reasonLabel(r.reason) }}</span>
@@ -47,6 +51,9 @@
         </div>
       }
     </section>
+
+    <!-- ── Thèmes des sorties ── -->
+    <app-admin-themes [adminId]="currentUserId" />
 
     <!-- ── Paramètres globaux ── -->
     <section class="section">
@@ -127,6 +134,7 @@
         @for (m of filteredMembres; track m) {
           <div class="membre-row">
             <div
+              appClickable
               class="membre-info"
               (click)="router.navigate(['/membres', m.id])"
               style="cursor: pointer"

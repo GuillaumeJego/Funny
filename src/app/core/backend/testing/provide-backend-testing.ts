@@ -43,7 +43,6 @@ const fakeSorties: SortieRepository = {
   getPublished: async () => empty,
   getPublishedCreatedBy: async () => empty,
   getPublishedByIds: async () => [],
-  getFirstThemeImage: async () => null,
   create: async () => ok,
   delete: async () => ok,
 };
@@ -101,6 +100,11 @@ const fakeSettings: SettingsRepository = {
 const fakeThemes: ThemeRepository = {
   getAll: async () => empty,
   getImages: async () => empty,
+  create: async () => ok,
+  update: async () => ok,
+  delete: async () => ok,
+  addImage: async () => ok,
+  removeImage: async () => ok,
 };
 
 const fakeStorage: StorageRepository = {

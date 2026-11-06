@@ -79,6 +79,7 @@
       <div class="plans">
         @for (plan of plans; track plan.id; let i = $index) {
           <div
+            appClickable
             class="plan-card"
             [class.selected]="selectedPlan === i"
             [class.highlight]="plan.highlight"
@@ -126,9 +127,12 @@
     <!-- Contact admin -->
     <section class="section section-contact">
       <p>Une question avant de vous abonner ?</p>
-      <button class="btn-contact" (click)="contactAdmin()">
-        ✉️ Envoyer un message aux administrateurs
-      </button>
+      <a
+        class="btn-contact"
+        [href]="'mailto:' + contactEmail + '?subject=Question sur Funny Premium'"
+      >
+        ✉️ Écrire à l'équipe
+      </a>
     </section>
   }
 </div>

@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'styles' as *;
 
 .mes-sorties-page {
@@ -478,7 +479,7 @@
 .list-attente-badge {
   font-size: 0.72rem;
   font-weight: 700;
-  color: darken(#f5c518, 25%);
+  color: color.adjust(#f5c518, $lightness: -25%);
   background: rgba($warning, 0.15);
   border-radius: 20px;
   padding: 0.1rem 0.5rem;

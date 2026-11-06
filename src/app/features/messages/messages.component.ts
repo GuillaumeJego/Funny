@@ -7,11 +7,12 @@ import { ConversationService } from '../../core/services/conversation.service';
 import { FriendshipService } from '../../core/services/friendship.service';
 import { Conversation } from '../../core/models/message.model';
 import { Friendship } from '../../core/models/friendship.model';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [FormsModule],
+  imports: [ClickableDirective, FormsModule],
   templateUrl: './messages.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './messages.component.scss',

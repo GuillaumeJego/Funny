@@ -45,23 +45,31 @@
           </div>
           <div class="form-group">
             <label>Thème *</label>
+            @if (themes.length === 0) {
+              <p class="no-images" role="alert">
+                Aucun thème n'est encore disponible : un administrateur doit en ajouter avant qu'on
+                puisse créer une sortie.
+              </p>
+            }
             <select [(ngModel)]="sortie.theme_id" (change)="onThemeSelected()">
               <option value="">Choisir un thème</option>
-              @for (theme of themes; track theme) {
+              @for (theme of themes; track theme.id) {
                 <option [value]="theme.id">{{ theme.icon }} {{ theme.name }}</option>
               }
             </select>
           </div>
-          <div class="form-group">
-            <label>Réservé aux abonnés ?</label>
-            <div class="toggle-group">
-              <label class="toggle">
-                <input type="checkbox" [(ngModel)]="sortie.is_premium" />
-                <span class="slider"></span>
-              </label>
-              <span>{{ sortie.is_premium ? '⭐ Abonnés uniquement' : '🌍 Tout le monde' }}</span>
+          @if (canCreatePremium) {
+            <div class="form-group">
+              <label>Réservé aux abonnés ?</label>
+              <div class="toggle-group">
+                <label class="toggle">
+                  <input type="checkbox" [(ngModel)]="sortie.is_premium" />
+                  <span class="slider"></span>
+                </label>
+                <span>{{ sortie.is_premium ? '⭐ Abonnés uniquement' : '🌍 Tout le monde' }}</span>
+              </div>
             </div>
-          </div>
+          }
         </div>
       }
       <!-- ÉTAPE 2 : Date, lieu et participants -->
@@ -94,7 +102,7 @@
               @if (locationSuggestions.length) {
                 <div class="location-suggestions">
                   @for (place of locationSuggestions; track place) {
-                    <div class="suggestion-item" (click)="selectLocation(place)">
+                    <div appClickable class="suggestion-item" (click)="selectLocation(place)">
                       <span>📍</span>
                       <div class="sug-details">
                         <span class="sug-name">{{ place.shortName }}</span>
@@ -105,6 +113,7 @@
                       <span class="sug-country">{{ place.country }}</span>
                     </div>
                   }
+                  <p class="osm-credit">Adresses : © les contributeurs OpenStreetMap</p>
                 </div>
               }
               @if (locationSearching) {
@@ -136,14 +145,16 @@
             <div>
               <h3>Images par défaut</h3>
               <div class="images-grid">
-                @for (img of themeImages; track img) {
-                  <div
+                @for (img of themeImages; track img.id) {
+                  <button
+                    type="button"
                     class="image-option"
                     [class.selected]="selectedImageUrl === img.image_url"
+                    [attr.aria-pressed]="selectedImageUrl === img.image_url"
                     (click)="selectDefaultImage(img.image_url)"
                   >
-                    <img [src]="img.image_url" alt="Image par défaut" />
-                  </div>
+                    <img [src]="img.image_url" alt="Image par défaut du thème" loading="lazy" />
+                  </button>
                 }
               </div>
             </div>

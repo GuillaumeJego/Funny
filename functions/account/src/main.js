@@ -7,6 +7,7 @@ import {
   deleteFile,
   fail,
   handler,
+  inBatches,
   notify,
   usernameOf,
 } from './shared/appwrite.js';
@@ -52,14 +53,14 @@ async function deleteConversation(api, conversation) {
   const messages = await api.listAllRows('messages', [
     Query.equal('conversation_id', conversation.$id),
   ]);
-  for (const message of messages) {
+  await inBatches(messages, async (message) => {
     if (message.media_file_id) await deleteFile(api, 'chat-media', message.media_file_id);
     await api.deleteRow('messages', message.$id);
-  }
+  });
   const reactions = await api.listAllRows('message_reactions', [
     Query.equal('conversation_id', conversation.$id),
   ]);
-  for (const reaction of reactions) await api.deleteRow('message_reactions', reaction.$id);
+  await inBatches(reactions, (reaction) => api.deleteRow('message_reactions', reaction.$id));
   await api.deleteRow('conversations', conversation.$id);
   try {
     await api.call('DELETE', `/teams/${conversation.$id}`);
@@ -145,9 +146,7 @@ async function remove({ api, userId, input }) {
         ? Query.equal(columns[0], userId)
         : Query.or(columns.map((column) => Query.equal(column, userId))),
     ]);
-  const deleteAll = async (table, rows) => {
-    for (const row of rows) await api.deleteRow(table, row.$id);
-  };
+  const deleteAll = (table, rows) => inBatches(rows, (row) => api.deleteRow(table, row.$id));
 
   await deleteAll('favoris', await byUser('favoris', 'user_id'));
   await deleteAll('friendships', await byUser('friendships', 'requester_id', 'receiver_id'));

@@ -39,7 +39,7 @@ export class AppwriteInscriptionRepository extends InscriptionRepository {
     const rows = await this.appwrite.listAll<InscriptionRow>('inscriptions', [
       Query.equal('user_id', userId),
       Query.equal('status', status),
-      Query.orderAsc('$createdAt'),
+      Query.orderAsc('$updatedAt'),
     ]);
     return rows.map((r) => r.sortie_id);
   }
@@ -58,7 +58,9 @@ export class AppwriteInscriptionRepository extends InscriptionRepository {
     const rows = await this.appwrite.listAll<InscriptionRow>('inscriptions', [
       Query.equal('sortie_id', sortieId),
       Query.equal('status', 'waiting'),
-      Query.orderAsc('$createdAt'),
+      // Même ordre que le serveur : date de passage en liste d'attente.
+      Query.orderAsc('$updatedAt'),
+      Query.orderAsc('$id'),
     ]);
     return rows.map((r) => r.user_id);
   }

@@ -30,15 +30,6 @@ export class AppwriteSortieRepository extends SortieRepository {
     return this.withRelations(rows);
   }
 
-  async getFirstThemeImage(themeId: string): Promise<string | null> {
-    const page = await this.appwrite.tables.listRows<Models.Row & { image_url: string }>({
-      databaseId: 'funny',
-      tableId: 'theme_images',
-      queries: [Query.equal('theme_id', themeId), Query.orderAsc('position'), Query.limit(1)],
-    });
-    return page.rows[0]?.image_url ?? null;
-  }
-
   async create(sortie: Partial<Sortie>): Promise<RepositoryResult<Sortie>> {
     const { data, error } = await this.appwrite.run<{ sortie: Models.Row }>('sorties', 'create', {
       sortie,
@@ -60,15 +51,42 @@ export class AppwriteSortieRepository extends SortieRepository {
     return this.withRelations(rows);
   }
 
-  /** Ajoute le thème et le profil de l'organisateur, en deux requêtes pour toute la liste. */
+  /**
+   * Ajoute le thème, son image par défaut, l'organisateur et le nombre d'inscrits :
+   * quatre requêtes pour toute la liste, quel que soit le nombre de sorties.
+   */
   private async withRelations(rows: Models.Row[]): Promise<SortieWithRelations[]> {
     const sorties = rows.map((row) => fromRow<Sortie>(row));
-    const themeIds = [...new Set(sorties.map((s) => s.theme_id))];
-    const [themes, profileById] = await Promise.all([
+    const themeIds = [...new Set(sorties.map((s) => s.theme_id))].filter(Boolean);
+    const [themes, images, profileById, pending] = await Promise.all([
       themeIds.length ? this.appwrite.listIn('themes', '$id', themeIds) : [],
+      themeIds.length
+        ? this.appwrite.listIn<Models.Row & { theme_id: string; image_url: string }>(
+            'theme_images',
+            'theme_id',
+            themeIds,
+            [Query.orderAsc('position')],
+          )
+        : [],
       this.appwrite.miniProfiles(sorties.map((s) => s.created_by ?? '')),
+      sorties.length
+        ? this.appwrite.listIn<Models.Row & { sortie_id: string }>(
+            'inscriptions',
+            'sortie_id',
+            sorties.map((s) => s.id),
+            [Query.equal('status', 'pending'), Query.select(['$id', 'sortie_id'])],
+          )
+        : [],
     ]);
     const themeById = new Map(themes.map((t) => [t.$id, fromRow<Theme>(t)]));
+    const firstImage = new Map<string, string>();
+    for (const image of images) {
+      if (!firstImage.has(image.theme_id)) firstImage.set(image.theme_id, image.image_url);
+    }
+    const countById = new Map<string, number>();
+    for (const row of pending)
+      countById.set(row.sortie_id, (countById.get(row.sortie_id) ?? 0) + 1);
+
     return sorties.map((s) => {
       const theme = themeById.get(s.theme_id);
       const profile = profileById.get(s.created_by ?? '');
@@ -78,6 +96,9 @@ export class AppwriteSortieRepository extends SortieRepository {
         profiles: profile
           ? { username: profile.username, avatar_url: profile.avatar_url ?? undefined }
           : null,
+        // Sans image choisie, la première image du thème sert d'illustration.
+        resolvedImageUrl: s.image_url || firstImage.get(s.theme_id) || undefined,
+        inscriptionsCount: countById.get(s.id) ?? 0,
       };
     });
   }

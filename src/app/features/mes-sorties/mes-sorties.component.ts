@@ -13,11 +13,13 @@ import {
 } from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
+import { isPremiumMember } from '../../core/utils/premium';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 @Component({
   selector: 'app-mes-sorties',
   standalone: true,
-  imports: [SortieDrawerComponent, NavbarFiltersComponent],
+  imports: [ClickableDirective, SortieDrawerComponent, NavbarFiltersComponent],
   templateUrl: './mes-sorties.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './mes-sorties.component.scss',
@@ -65,10 +67,7 @@ export class MesSortiesComponent implements OnInit {
       this.favoriService.getFavoris(user.id),
     ]);
     this.userRole = profileRes.data?.role ?? 'user';
-    this.userIsPremium =
-      ['admin', 'developer', 'user_premium'].includes(profileRes.data?.role || '') ||
-      (!!profileRes.data?.subscription_end_date &&
-        new Date(profileRes.data.subscription_end_date) > new Date());
+    this.userIsPremium = isPremiumMember(profileRes.data);
     this.favorisIds = new Set(favoris);
     await this.loadAll();
   }
@@ -93,16 +92,6 @@ export class MesSortiesComponent implements OnInit {
       ...this.sortiesEnAttente,
       ...this.sortiesLikees,
     ];
-    await Promise.all(
-      all.map(async (s) => {
-        if (s.image_url) s.resolvedImageUrl = s.image_url;
-        else if (s.theme_id)
-          s.resolvedImageUrl =
-            (await this.sortieService.getFirstThemeImage(s.theme_id)) ?? undefined;
-        s.inscriptionsCount = await this.sortieService.getInscriptionsCount(s.id);
-      }),
-    );
-
     // Thèmes et villes disponibles
     const themesMap = new Map<string, ThemeOption>();
     const locationsSet = new Set<string>();
@@ -202,10 +191,7 @@ export class MesSortiesComponent implements OnInit {
 
   async onSupprimer(sortieId: string) {
     if (!this.selectedSortie) return;
-    const confirmed = window.confirm(
-      `Supprimer "${this.selectedSortie.title}" ? Les membres inscrits seront notifiés.`,
-    );
-    if (!confirmed) return;
+    // La confirmation est demandée dans le tiroir de la sortie.
     const { error } = await this.sortieService.deleteSortie(sortieId);
     if (!error) {
       this.sortiesCreees = this.sortiesCreees.filter((s) => s.id !== sortieId);

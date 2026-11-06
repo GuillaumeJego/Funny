@@ -31,7 +31,7 @@
     @if (filteredFriends.length > 0) {
       <div class="membres-grid">
         @for (f of filteredFriends; track f) {
-          <div class="membre-card" (click)="openChatWithFriend(f)">
+          <div appClickable class="membre-card" (click)="openChatWithFriend(f)">
             <div class="avatar-wrap">
               @if (getFriendProfile(f)?.avatar_url) {
                 <img [src]="getFriendProfile(f)!.avatar_url!" class="avatar" alt="" />
@@ -64,7 +64,7 @@
     @if (conversations.length > 0) {
       <div class="membres-grid">
         @for (conv of conversations; track conv) {
-          <div class="membre-card" (click)="openChat(conv)">
+          <div appClickable class="membre-card" (click)="openChat(conv)">
             <div class="avatar-wrap">
               @if (getFriend(conv)?.avatar_url) {
                 <img [src]="getFriend(conv)!.avatar_url!" class="avatar" alt="" />

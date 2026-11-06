@@ -16,7 +16,9 @@
     "appwrite:setup": "node scripts/appwrite/setup.mjs",
     "appwrite:functions": "node scripts/appwrite/functions.mjs",
     "appwrite:admin": "node scripts/appwrite/make-admin.mjs",
-    "stripe:setup": "node scripts/stripe/setup.mjs"
+    "stripe:setup": "node scripts/stripe/setup.mjs",
+    "appwrite:themes": "node scripts/appwrite/themes.mjs",
+    "test:functions": "vitest run --root functions"
   },
   "private": true,
   "dependencies": {
@@ -37,7 +39,7 @@
     "@angular/build": "^22.2.3",
     "@angular/cli": "^22.2.3",
     "@angular/compiler-cli": "^22.2.3",
-    "happy-dom": "^21.0.3",
+    "happy-dom": "^21.0.4",
     "node-appwrite": "29.4.0",
     "prettier": "^3.9.10",
     "typescript": "~6.0.3",
@@ -45,5 +47,8 @@
   },
   "engines": {
     "node": ">=22.22.3"
+  },
+  "overrides": {
+    "vite": "8.3.5"
   }
 }

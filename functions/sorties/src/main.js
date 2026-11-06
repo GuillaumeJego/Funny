@@ -11,27 +11,42 @@ import {
   uniqueId,
   usernameOf,
 } from './shared/appwrite.js';
-import { deleteSortie, promoteFromWaitingList } from './shared/sorties.js';
+import { confirmPlace, deleteSortie, promoteFromWaitingList } from './shared/sorties.js';
+import { cleanSortie, isSafeDefaultImage, sortieImageFileId } from './shared/sortie-rules.js';
 
-const SORTIE_FIELDS = [
-  'title',
-  'description',
-  'theme_id',
-  'date',
-  'location',
-  'price',
-  'max_participants',
-  'is_premium',
-  'image_url',
-  'image_source',
-];
-
-/** Qui peut voir une sortie : tout le monde, ou seulement les abonnés si elle est Premium. */
+/**
+ * Qui peut voir une sortie : tout le monde, ou seulement les abonnés si elle est Premium.
+ * Personne ne peut la modifier directement : tout changement passe par ce serveur.
+ */
 function sortiePermissions(sortie, organizerId) {
   const readers = sortie.is_premium
     ? [Role.team('abonnes'), Role.team('admins'), Role.user(organizerId)]
     : [Role.verifiedUsers()];
-  return [...readers.map(Permission.read), Permission.update(Role.user(organizerId))];
+  return readers.map(Permission.read);
+}
+
+/** L'image choisie est-elle une image du thème, ou une photo envoyée dans notre stockage ? */
+async function checkImage(api, data) {
+  if (!data.image_url) {
+    data.image_source = 'default';
+    return;
+  }
+  if (data.image_source === 'default') {
+    const known = await api.findRow('theme_images', [
+      Query.equal('theme_id', data.theme_id),
+      Query.equal('image_url', data.image_url),
+    ]);
+    if (!known && !isSafeDefaultImage(data.image_url)) fail(400, 'Image par défaut inconnue.');
+    return;
+  }
+  const fileId = sortieImageFileId(data.image_url, process.env.APPWRITE_FUNCTION_API_ENDPOINT);
+  if (!fileId) fail(400, 'Adresse d’image non autorisée.');
+  try {
+    await api.call('GET', `/storage/buckets/sorties-images/files/${fileId}`);
+  } catch (error) {
+    if (error.code === 404) fail(400, 'Image introuvable : envoie-la à nouveau.');
+    throw error;
+  }
 }
 
 async function canCreateSortie(api, userId) {
@@ -58,12 +73,13 @@ async function getInscription(api, sortieId, userId) {
 
 async function create({ api, userId, input }) {
   if (!(await canCreateSortie(api, userId))) fail(403, "Tu n'as pas le droit de créer une sortie.");
-  const data = {};
-  for (const field of SORTIE_FIELDS)
-    if (input.sortie?.[field] !== undefined) data[field] = input.sortie[field];
-  if (!data.title?.trim() || !data.theme_id || !data.date || !data.location?.trim()) {
-    fail(400, 'Titre, thème, date et lieu sont obligatoires.');
+  const data = cleanSortie(input.sortie);
+  if (!(await api.getRow('themes', data.theme_id))) fail(400, 'Ce thème n’existe pas.');
+  if (data.is_premium && !(await api.isTeamMember('abonnes', userId))) {
+    if (!(await isAdmin(api, userId)))
+      fail(403, 'Seuls les abonnés peuvent créer une sortie Premium.');
   }
+  await checkImage(api, data);
   data.created_by = userId;
   data.status = 'published';
   const sortie = await api.createRow('sorties', uniqueId(), data, sortiePermissions(data, userId));
@@ -81,6 +97,13 @@ async function join({ api, userId, input }) {
   if (sortie.is_premium && !(await api.isTeamMember('abonnes', userId))) {
     if (!(await isAdmin(api, userId))) fail(403, 'Sortie réservée aux abonnés.');
   }
+  if (new Date(sortie.date).getTime() < Date.now()) fail(400, 'Cette sortie est déjà passée.');
+  const blocked = await api.findRow('blocks', [
+    Query.equal('blocker_id', sortie.created_by),
+    Query.equal('blocked_id', userId),
+  ]);
+  if (blocked) fail(403, 'Impossible de rejoindre cette sortie.');
+
   const existing = await getInscription(api, sortie.$id, userId);
   if (existing && existing.status !== 'cancelled') return { status: existing.status };
 
@@ -89,18 +112,20 @@ async function join({ api, userId, input }) {
     Query.equal('status', 'pending'),
   ]);
   const full = sortie.max_participants != null && taken >= sortie.max_participants;
-  const status = full ? 'waiting' : 'pending';
-  if (existing) await api.updateRow('inscriptions', existing.$id, { status });
-  else
-    await api.createRow('inscriptions', uniqueId(), {
-      sortie_id: sortie.$id,
-      user_id: userId,
-      status,
-    });
+  let status = full ? 'waiting' : 'pending';
+  const inscription = existing
+    ? await api.updateRow('inscriptions', existing.$id, { status })
+    : await api.createRow('inscriptions', uniqueId(), {
+        sortie_id: sortie.$id,
+        user_id: userId,
+        status,
+      });
+  // Deux inscriptions au même moment ne doivent pas dépasser le nombre de places.
+  if (status === 'pending') status = await confirmPlace(api, sortie, inscription.$id);
 
   const actor = await usernameOf(api, userId);
   await notify(api, [
-    full
+    status === 'waiting'
       ? {
           user_id: sortie.created_by,
           actor_id: userId,

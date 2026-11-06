@@ -1,70 +1,139 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
-import { RegisterComponent } from './features/auth/register/register.component';
-import { DashboardComponent } from './features/dashboard/dashboard.component';
-import { EditProfileComponent } from './features/profile/edit-profile/edit-profile.component';
-import { CreateSortieComponent } from './features/sorties/create-sortie/create-sortie.component';
-import { PremiumComponent } from './features/premium/premium.component';
-import { MesSortiesComponent } from './features/mes-sorties/mes-sorties.component';
-import { MembresComponent } from './features/membres/membres.component';
-import { NotificationsComponent } from './features/notifications/notifications.component';
 import { authGuard } from './core/guards/auth.guard';
-import { MembreProfileComponent } from './features/membre-profile/membre-profile.component';
-import { AdminComponent } from './features/admin/admin.component';
-import { MessagesComponent } from './features/messages/messages.component';
-import { ChatComponent } from './features/chat/chat.component';
-import { AmisComponent } from './features/amis/amis.component';
-import { MentionsLegalesComponent } from './features/legal/mentions-legales.component';
-import { ConfidentialiteComponent } from './features/legal/confidentialite.component';
-import { ConditionsComponent } from './features/legal/conditions.component';
-import { AideComponent } from './features/legal/aide.component';
-import { VerifierEmailComponent } from './features/auth/verifier-email/verifier-email.component';
-import { MotDePasseOublieComponent } from './features/auth/mot-de-passe-oublie/mot-de-passe-oublie.component';
-import { ReinitialiserMotDePasseComponent } from './features/auth/reinitialiser-mot-de-passe/reinitialiser-mot-de-passe.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/auth/register/register.component').then((m) => m.RegisterComponent),
+  },
   // Liens reçus par e-mail : ouverts aussi sans session
   {
     path: 'verifier-email',
-    component: VerifierEmailComponent,
+    loadComponent: () =>
+      import('./features/auth/verifier-email/verifier-email.component').then(
+        (m) => m.VerifierEmailComponent,
+      ),
     title: 'Confirmation de l’adresse · Funny',
   },
   {
     path: 'mot-de-passe-oublie',
-    component: MotDePasseOublieComponent,
+    loadComponent: () =>
+      import('./features/auth/mot-de-passe-oublie/mot-de-passe-oublie.component').then(
+        (m) => m.MotDePasseOublieComponent,
+      ),
     title: 'Mot de passe oublié · Funny',
   },
   {
     path: 'reinitialiser-mot-de-passe',
-    component: ReinitialiserMotDePasseComponent,
+    loadComponent: () =>
+      import('./features/auth/reinitialiser-mot-de-passe/reinitialiser-mot-de-passe.component').then(
+        (m) => m.ReinitialiserMotDePasseComponent,
+      ),
     title: 'Nouveau mot de passe · Funny',
   },
   // Pages publiques, lisibles sans compte
   {
     path: 'mentions-legales',
-    component: MentionsLegalesComponent,
+    loadComponent: () =>
+      import('./features/legal/mentions-legales.component').then((m) => m.MentionsLegalesComponent),
     title: 'Mentions légales · Funny',
   },
   {
     path: 'confidentialite',
-    component: ConfidentialiteComponent,
+    loadComponent: () =>
+      import('./features/legal/confidentialite.component').then((m) => m.ConfidentialiteComponent),
     title: 'Confidentialité · Funny',
   },
-  { path: 'conditions', component: ConditionsComponent, title: "Conditions d'utilisation · Funny" },
-  { path: 'aide', component: AideComponent, title: 'Aide · Funny' },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
-  { path: 'profile/edit', component: EditProfileComponent, canActivate: [authGuard] },
-  { path: 'sorties/creer', component: CreateSortieComponent, canActivate: [authGuard] },
-  { path: 'premium', component: PremiumComponent, canActivate: [authGuard] },
-  { path: 'mes-sorties', component: MesSortiesComponent, canActivate: [authGuard] },
-  { path: 'membres', component: MembresComponent, canActivate: [authGuard] },
-  { path: 'notifications', component: NotificationsComponent, canActivate: [authGuard] },
-  { path: 'membres/:id', component: MembreProfileComponent, canActivate: [authGuard] },
-  { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
-  { path: 'messages', component: MessagesComponent, canActivate: [authGuard] },
-  { path: 'messages/:id', component: ChatComponent, canActivate: [authGuard] },
-  { path: 'amis', component: AmisComponent, canActivate: [authGuard] },
+  {
+    path: 'conditions',
+    loadComponent: () =>
+      import('./features/legal/conditions.component').then((m) => m.ConditionsComponent),
+    title: "Conditions d'utilisation · Funny",
+  },
+  {
+    path: 'aide',
+    loadComponent: () => import('./features/legal/aide.component').then((m) => m.AideComponent),
+    title: 'Aide · Funny',
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'profile/edit',
+    loadComponent: () =>
+      import('./features/profile/edit-profile/edit-profile.component').then(
+        (m) => m.EditProfileComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'sorties/creer',
+    loadComponent: () =>
+      import('./features/sorties/create-sortie/create-sortie.component').then(
+        (m) => m.CreateSortieComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'premium',
+    loadComponent: () =>
+      import('./features/premium/premium.component').then((m) => m.PremiumComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'mes-sorties',
+    loadComponent: () =>
+      import('./features/mes-sorties/mes-sorties.component').then((m) => m.MesSortiesComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'membres',
+    loadComponent: () =>
+      import('./features/membres/membres.component').then((m) => m.MembresComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'notifications',
+    loadComponent: () =>
+      import('./features/notifications/notifications.component').then(
+        (m) => m.NotificationsComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'membres/:id',
+    loadComponent: () =>
+      import('./features/membre-profile/membre-profile.component').then(
+        (m) => m.MembreProfileComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'admin',
+    loadComponent: () => import('./features/admin/admin.component').then((m) => m.AdminComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'messages',
+    loadComponent: () =>
+      import('./features/messages/messages.component').then((m) => m.MessagesComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'messages/:id',
+    loadComponent: () => import('./features/chat/chat.component').then((m) => m.ChatComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'amis',
+    loadComponent: () => import('./features/amis/amis.component').then((m) => m.AmisComponent),
+    canActivate: [authGuard],
+  },
 ];

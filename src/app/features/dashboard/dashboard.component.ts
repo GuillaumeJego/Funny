@@ -15,6 +15,8 @@ import { DrawerService } from '../../core/services/drawer.service';
 import { InscriptionService, InscriptionStatus } from '../../core/services/inscription.service';
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
+import { isPremiumMember } from '../../core/utils/premium';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 export interface SortieGroup {
   dateLabel: string;
@@ -24,7 +26,7 @@ export interface SortieGroup {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterModule, NavbarFiltersComponent, SortieDrawerComponent],
+  imports: [ClickableDirective, RouterModule, NavbarFiltersComponent, SortieDrawerComponent],
   templateUrl: './dashboard.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './dashboard.component.scss',
@@ -82,10 +84,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.favorisIds = new Set(favoris);
       if (profile.data?.view_mode) this.viewMode = profile.data.view_mode;
       if (profile.data?.role) this.userRole = profile.data.role;
-      this.userIsPremium =
-        ['admin', 'developer', 'user_premium'].includes(profile.data?.role || '') ||
-        (!!profile.data?.subscription_end_date &&
-          new Date(profile.data.subscription_end_date) > new Date());
+      this.userIsPremium = isPremiumMember(profile.data);
     }
 
     const { data, error } = await this.sortieService.getAllSorties();
@@ -96,18 +95,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
     const sorties = (data as SortieWithRelations[]) ?? [];
-
-    await Promise.all(
-      sorties.map(async (s) => {
-        if (s.image_url) {
-          s.resolvedImageUrl = s.image_url;
-        } else if (s.theme_id) {
-          s.resolvedImageUrl =
-            (await this.sortieService.getFirstThemeImage(s.theme_id)) ?? undefined;
-        }
-        s.inscriptionsCount = await this.sortieService.getInscriptionsCount(s.id);
-      }),
-    );
 
     this.sorties = sorties;
     // Filtre "À venir" par défaut
@@ -181,10 +168,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   async onSupprimer(sortieId: string) {
     if (!this.userId || !this.selectedSortie) return;
-    const confirmed = window.confirm(
-      `Supprimer la sortie "${this.selectedSortie.title}" ? Les membres inscrits seront notifiés.`,
-    );
-    if (!confirmed) return;
+    // La confirmation est demandée dans le tiroir de la sortie.
 
     const { error } = await this.sortieService.deleteSortie(sortieId);
 

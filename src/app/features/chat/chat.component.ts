@@ -17,13 +17,14 @@ import { ConversationService } from '../../core/services/conversation.service';
 import { Message } from '../../core/models/message.model';
 import { ModerationService } from '../../core/services/moderation.service';
 import { MemberSafetyComponent } from '../../core/components/member-safety/member-safety.component';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 const EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [FormsModule, MemberSafetyComponent],
+  imports: [ClickableDirective, FormsModule, MemberSafetyComponent],
   templateUrl: './chat.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './chat.component.scss',
@@ -115,10 +116,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     this.stopListening = this.conversationService.subscribeToMessages(
       this.conversationId,
-      async () => {
-        const msgs = await this.conversationService.getMessages(this.conversationId);
+      (message) => {
+        // Ajoute seulement le nouveau message, sans recharger toute la conversation.
         this.zone.run(() => {
-          this.messages = msgs;
+          if (this.messages.some((m) => m.id === message.id)) return;
+          this.messages = [...this.messages, message];
           this.shouldScroll = true;
         });
       },

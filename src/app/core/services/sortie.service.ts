@@ -17,7 +17,7 @@ export class SortieService {
     private storage: StorageRepository,
   ) {}
 
-  // Récupérer toutes les sorties publiées
+  // Récupérer toutes les sorties publiées (avec image et nombre d'inscrits)
   async getAllSorties() {
     return await this.sorties.getPublished();
   }
@@ -25,11 +25,6 @@ export class SortieService {
   // Récupérer le nombre d'inscrits pour une sortie (hors organisateur)
   async getInscriptionsCount(sortieId: string): Promise<number> {
     return await this.inscriptions.countPending(sortieId);
-  }
-
-  // Récupérer la première image d'un thème (fallback image)
-  async getFirstThemeImage(themeId: string): Promise<string | null> {
-    return await this.sorties.getFirstThemeImage(themeId);
   }
 
   // Créer une sortie : le serveur y inscrit aussi son organisateur
