@@ -2,6 +2,7 @@ import {
   Component,
   OnInit,
   OnDestroy,
+  HostListener,
   ElementRef,
   AfterViewChecked,
   NgZone,
@@ -63,6 +64,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   readonly reactionTarget = signal<Message | null>(null);
   readonly reactionPickerPos = signal({ top: 0, left: 0 });
   emojis = EMOJIS;
+
+  /** Photo affichée en grand (adresse de l'image), ou null. */
+  readonly lightboxUrl = signal<string | null>(null);
 
   /** Message qui n'a pas pu partir : affiché sous la zone de saisie. */
   readonly sendError = signal('');
@@ -173,6 +177,18 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     const live = this.messages();
     this.messages.set(loaded);
     this.addMessages(live);
+  }
+
+  openLightbox(event: Event, url: string) {
+    // Toucher la photo l'agrandit, au lieu d'ouvrir le choix des réactions.
+    event.stopPropagation();
+    this.reactionTarget.set(null);
+    this.lightboxUrl.set(url);
+  }
+
+  @HostListener('document:keydown.escape')
+  closeLightbox() {
+    this.lightboxUrl.set(null);
   }
 
   scrollToBottom() {

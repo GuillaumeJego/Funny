@@ -100,7 +100,12 @@
               >
                 <!-- Image -->
                 @if (msg.type === 'image' && msg.media_url) {
-                  <img [src]="msg.media_url" class="msg-media" alt="Photo" />
+                  <img
+                    [src]="msg.media_url"
+                    class="msg-media zoomable"
+                    alt="Photo — toucher pour l'agrandir"
+                    (click)="openLightbox($event, msg.media_url)"
+                  />
                 }
                 <!-- Vidéo -->
                 @if (msg.type === 'video' && msg.media_url) {
@@ -274,6 +279,26 @@
       </div>
 
       <input #fileInput type="file" style="display: none" (change)="onFileSelected($event)" />
+    </div>
+  }
+
+  <!-- Photo en grand -->
+  @if (lightboxUrl(); as url) {
+    <div
+      class="lightbox"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Photo en grand"
+      (click)="closeLightbox()"
+    >
+      <button type="button" class="lightbox-close" (click)="closeLightbox()" title="Fermer">
+        ✕
+      </button>
+      <img
+        [src]="url"
+        alt="Photo envoyée dans la conversation"
+        (click)="$event.stopPropagation()"
+      />
     </div>
   }
 
