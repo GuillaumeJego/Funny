@@ -52,7 +52,13 @@ try {
   console.log(`${missing.length} sortie(s) sans position.`);
   let found = 0;
   for (const sortie of missing) {
-    const position = await geocode(sortie.location);
+    let position = await geocode(sortie.location);
+    // Adresse trop précise ou mal écrite : on se rabat sur la ville (après la dernière virgule).
+    const town = sortie.location?.split(',').pop()?.trim();
+    if (!position && town && town !== sortie.location?.trim()) {
+      await sleep(1100);
+      position = await geocode(town);
+    }
     if (position) {
       await db.updateRow({ databaseId, tableId: 'sorties', rowId: sortie.$id, data: position });
       found++;

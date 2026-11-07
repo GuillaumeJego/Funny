@@ -120,7 +120,12 @@
             }
           </div>
           <div class="membre-info">
-            <div class="membre-name">{{ m.username }}</div>
+            <div class="membre-name-row">
+              <span class="membre-name">{{ m.username }}</span>
+              @if (isNew(m)) {
+                <span class="badge-new" title="Inscrit il y a moins de 2 semaines">New</span>
+              }
+            </div>
             @if (m.bio) {
               <div class="membre-bio">{{ m.bio }}</div>
             }

@@ -20,6 +20,16 @@ export interface Profile {
   view_mode?: 'grid' | 'list';
   subscription_end_date?: string;
   can_view_profiles?: boolean | null;
+  /** Date d'inscription sur Funny. */
+  created_at?: string;
+}
+
+/** Un membre est « nouveau » pendant ses 2 premières semaines. */
+export const NEW_MEMBER_DAYS = 14;
+
+export function isNewMember(createdAt?: string | null, now = new Date()): boolean {
+  if (!createdAt) return false;
+  return now.getTime() - new Date(createdAt).getTime() < NEW_MEMBER_DAYS * 86400000;
 }
 
 /**

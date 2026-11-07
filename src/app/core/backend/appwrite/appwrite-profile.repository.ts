@@ -13,7 +13,8 @@ type StatusRow = Models.Row & Pick<Profile, 'role' | 'subscription_end_date' | '
  * de les lire, la partie privée et la fiche de modération. Les valeurs vides sont omises.
  */
 function toProfile(row: ProfileRow, ...parts: (Models.Row | null)[]): Profile {
-  const profile: Record<string, unknown> = { id: row.$id };
+  // created_at : date d'inscription (création du profil), pour l'étiquette « New ».
+  const profile: Record<string, unknown> = { id: row.$id, created_at: row.$createdAt };
   for (const part of [row, ...parts]) {
     if (!part) continue;
     for (const [key, value] of Object.entries(part)) {
