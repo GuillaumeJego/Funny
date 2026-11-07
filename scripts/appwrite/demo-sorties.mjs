@@ -121,9 +121,23 @@ function permissions(premium, organizerId) {
 async function create() {
   const organizerId = await findOrganizer();
   let created = 0;
+  let positioned = 0;
   for (const [i, s] of DEMO_SORTIES.entries()) {
     const rowId = sortieId(i);
-    if (await exists('sorties', rowId)) continue;
+    if (await exists('sorties', rowId)) {
+      // Sortie déjà créée avant l'arrivée de la carte : on lui ajoute sa position.
+      const row = await db.getRow({ databaseId, tableId: 'sorties', rowId });
+      if (row.lat == null && s.lat != null) {
+        await db.updateRow({
+          databaseId,
+          tableId: 'sorties',
+          rowId,
+          data: { lat: s.lat, lng: s.lng },
+        });
+        positioned++;
+      }
+      continue;
+    }
     const data = {
       title: s.title,
       description: s.description,
@@ -131,6 +145,8 @@ async function create() {
       created_by: organizerId,
       date: dateFor(s.jour, s.heure),
       location: s.location,
+      lat: s.lat ?? null,
+      lng: s.lng ?? null,
       price: s.prix,
       max_participants: s.places,
       is_premium: !!s.premium,
@@ -170,6 +186,7 @@ async function create() {
     console.log(`+ ${data.title}`);
   }
   console.log(`✅ ${created} sortie(s) de démo créée(s) (${DEMO_SORTIES.length} au total).`);
+  if (positioned) console.log(`📍 ${positioned} sortie(s) de démo placée(s) sur la carte.`);
 }
 
 async function removeAll() {

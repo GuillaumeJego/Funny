@@ -12,6 +12,11 @@ import { deleteSortieChat, syncSortieChat } from './conversations.js';
  */
 export async function confirmPlace(api, sortie, inscriptionId) {
   if (sortie.max_participants == null) return 'pending';
+  // L'organisateur (« confirmed ») occupe une des places.
+  const organizers = await api.countRows('inscriptions', [
+    Query.equal('sortie_id', sortie.$id),
+    Query.equal('status', 'confirmed'),
+  ]);
   const pending = await api.listAllRows('inscriptions', [
     Query.equal('sortie_id', sortie.$id),
     Query.equal('status', 'pending'),
@@ -19,16 +24,17 @@ export async function confirmPlace(api, sortie, inscriptionId) {
     Query.orderAsc('$id'),
   ]);
   const rank = pending.findIndex((row) => row.$id === inscriptionId);
-  if (rank === -1 || rank < sortie.max_participants) return 'pending';
+  if (rank === -1 || rank < sortie.max_participants - organizers) return 'pending';
   await api.updateRow('inscriptions', inscriptionId, { status: 'waiting' });
   return 'waiting';
 }
 
 /** Fait passer le premier de la liste d'attente dans les inscrits, s'il y a de la place. */
 export async function promoteFromWaitingList(api, sortie) {
+  // Places prises : inscrits et organisateur.
   const taken = await api.countRows('inscriptions', [
     Query.equal('sortie_id', sortie.$id),
-    Query.equal('status', 'pending'),
+    Query.equal('status', ['pending', 'confirmed']),
   ]);
   if (sortie.max_participants != null && taken >= sortie.max_participants) return;
   // Ordre de la liste d'attente : date de passage en « waiting ».

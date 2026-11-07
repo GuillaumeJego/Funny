@@ -24,6 +24,15 @@ import { MemberSafetyComponent } from '../../core/components/member-safety/membe
 import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 const EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
+/** Nombre de photos ou vidéos envoyées en une fois. */
+const MAX_MEDIA = 10;
+
+interface PendingMedia {
+  file: File;
+  type: 'image' | 'video';
+  /** Adresse locale pour l'aperçu, avant l'envoi. */
+  previewUrl: string;
+}
 
 @Component({
   selector: 'app-chat',
@@ -64,6 +73,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   readonly text = signal('');
   readonly sending = signal(false);
   readonly uploading = signal(false);
+  /** Photos et vidéos choisies, pas encore envoyées. */
+  readonly pendingMedia = signal<PendingMedia[]>([]);
+  /** « 3/10 » pendant l'envoi de plusieurs fichiers. */
+  readonly sendProgress = signal('');
+  readonly maxMedia = MAX_MEDIA;
 
   readonly replyTo = signal<Message | null>(null);
   readonly reactionTarget = signal<Message | null>(null);
@@ -189,6 +203,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.stopListening?.();
     this.stopReactions?.();
     if (this.conversationId && this.myId) this.unread.closed(this.conversationId, this.myId);
+    for (const media of this.pendingMedia()) URL.revokeObjectURL(media.previewUrl);
   }
 
   async loadMessages() {
@@ -221,31 +236,76 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     return msg.sender_id === this.myId;
   }
 
+  /** Envoie les photos et vidéos choisies (dans l'ordre), puis le texte. */
   async send() {
     const content = this.text().trim();
-    if (!content || this.sending()) return;
+    const files = this.pendingMedia();
+    if ((!content && !files.length) || this.sending()) return;
     this.sending.set(true);
     this.sendError.set('');
-    const replyTo = this.replyTo();
-    this.text.set('');
+    let replyTo = this.replyTo();
     this.replyTo.set(null);
 
-    const msg = await this.conversationService.sendMessage(
+    // Photos et vidéos : une par message, celles qui échouent restent prêtes à renvoyer.
+    const failed: PendingMedia[] = [];
+    this.uploading.set(files.length > 0);
+    for (const [index, media] of files.entries()) {
+      this.sendProgress.set(files.length > 1 ? `${index + 1}/${files.length}` : '');
+      const msg = await this.sendMedia(media, replyTo?.id);
+      if (msg) {
+        this.addMessages([msg]);
+        URL.revokeObjectURL(media.previewUrl);
+        replyTo = null; // seule la première pièce jointe répond au message cité
+      } else {
+        failed.push(media);
+      }
+    }
+    this.pendingMedia.set(failed);
+    this.sendProgress.set('');
+    this.uploading.set(false);
+
+    if (content && !failed.length) {
+      this.text.set('');
+      const msg = await this.conversationService.sendMessage(
+        this.conversationId,
+        this.myId,
+        content,
+        'text',
+        replyTo?.id,
+      );
+      if (msg) {
+        this.addMessages([msg]);
+        replyTo = null;
+      } else if (!this.text()) {
+        // Rien n'est perdu : le texte revient dans la zone de saisie pour réessayer.
+        this.text.set(content);
+      }
+      if (!msg) this.sendError.set("Le message n'est pas parti. Vérifie ta connexion et réessaie.");
+    }
+    if (failed.length) {
+      this.sendError.set(
+        `${failed.length} fichier(s) n'ont pas pu partir. Touche « Envoyer » pour réessayer.`,
+      );
+    }
+    if (replyTo) this.replyTo.set(replyTo);
+    this.sending.set(false);
+  }
+
+  private async sendMedia(media: PendingMedia, replyToId?: string): Promise<Message | null> {
+    const fileId = await this.conversationService.uploadMedia(
+      media.file,
+      this.myId,
+      this.conversationId,
+    );
+    if (!fileId) return null;
+    return this.conversationService.sendMessage(
       this.conversationId,
       this.myId,
-      content,
-      'text',
-      replyTo?.id,
+      '',
+      media.type,
+      replyToId,
+      fileId,
     );
-    if (msg) {
-      this.addMessages([msg]);
-    } else {
-      // Rien n'est perdu : le texte revient dans la zone de saisie pour réessayer.
-      if (!this.text()) this.text.set(content);
-      this.replyTo.set(replyTo);
-      this.sendError.set("Le message n'est pas parti. Vérifie ta connexion et réessaie.");
-    }
-    this.sending.set(false);
   }
 
   onKeydown(e: KeyboardEvent) {
@@ -261,30 +321,28 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     input.click();
   }
 
-  async onFileSelected(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    this.uploading.set(true);
+  /** Fichiers choisis : ils s'affichent en aperçu et partent au clic sur « Envoyer ». */
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const chosen = Array.from(input.files ?? []);
+    input.value = '';
+    if (!chosen.length) return;
     this.sendError.set('');
-    const type: 'image' | 'video' = file.type.startsWith('video') ? 'video' : 'image';
-    const fileId = await this.conversationService.uploadMedia(file, this.myId, this.conversationId);
-    if (fileId) {
-      const msg = await this.conversationService.sendMessage(
-        this.conversationId,
-        this.myId,
-        '',
-        type,
-        this.replyTo()?.id,
-        fileId,
-      );
-      if (msg) {
-        this.addMessages([msg]);
-        this.replyTo.set(null);
-      }
+    const room = MAX_MEDIA - this.pendingMedia().length;
+    if (chosen.length > room) {
+      this.sendError.set(`${MAX_MEDIA} photos ou vidéos au maximum à la fois.`);
     }
-    if (!fileId) this.sendError.set("La photo ou la vidéo n'a pas pu être envoyée. Réessaie.");
-    this.uploading.set(false);
-    (event.target as HTMLInputElement).value = '';
+    const added = chosen.slice(0, Math.max(0, room)).map((file) => ({
+      file,
+      type: (file.type.startsWith('video') ? 'video' : 'image') as 'image' | 'video',
+      previewUrl: URL.createObjectURL(file),
+    }));
+    this.pendingMedia.update((list) => [...list, ...added]);
+  }
+
+  removePendingMedia(media: PendingMedia) {
+    URL.revokeObjectURL(media.previewUrl);
+    this.pendingMedia.update((list) => list.filter((m) => m !== media));
   }
 
   openReactionPicker(event: MouseEvent, msg: Message) {

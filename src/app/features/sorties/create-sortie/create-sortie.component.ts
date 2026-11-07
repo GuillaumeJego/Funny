@@ -9,7 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Subscription } from 'rxjs';
+import { Subject, Subscription, firstValueFrom } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { GeoService, GeoFullPlace } from '../../../core/services/geo.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -150,6 +150,8 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       is_premium: sortie.is_premium,
       image_url: sortie.image_url ?? '',
       image_source: sortie.image_source,
+      lat: sortie.lat ?? null,
+      lng: sortie.lng ?? null,
     };
     // Une sortie déjà Premium peut le rester, même si l'abonnement de l'organisateur a pris fin.
     if (sortie.is_premium) this.canCreatePremium.set(true);
@@ -169,12 +171,16 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     // On stocke le nom court (ex: "Le Marais", "Paris") + adresse si disponible
     const label = place.address ? `${place.shortName}, ${place.address}` : place.shortName;
     this.sortie.location = label;
+    this.sortie.lat = place.lat;
+    this.sortie.lng = place.lng;
     this.locationQuery.set(place.shortName);
     this.locationSuggestions.set([]);
   }
 
   clearLocation() {
     this.sortie.location = '';
+    this.sortie.lat = null;
+    this.sortie.lng = null;
     this.locationQuery.set('');
     this.locationSuggestions.set([]);
   }
@@ -224,6 +230,15 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
           return;
         }
         this.sortie.image_url = imageUrl ?? undefined;
+      }
+
+      // Adresse tapée sans choisir de suggestion : on cherche sa position pour la carte.
+      if (this.sortie.location && this.sortie.lat == null) {
+        const [place] = await firstValueFrom(this.geo.searchPlaces(this.sortie.location));
+        if (place && Number.isFinite(place.lat)) {
+          this.sortie.lat = place.lat;
+          this.sortie.lng = place.lng;
+        }
       }
 
       if (this.editId()) {

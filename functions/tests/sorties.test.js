@@ -211,3 +211,19 @@ describe('isPremium', () => {
     expect(isPremium(null)).toBe(false);
   });
 });
+
+describe('places et organisateur', () => {
+  it("compte l'organisateur dans les places", async () => {
+    const api = createFakeApi({
+      inscriptions: [
+        { $id: 'orga', sortie_id: 's1', user_id: 'orga', status: 'confirmed' },
+        { $id: 'a', sortie_id: 's1', user_id: 'alice', status: 'pending' },
+        { $id: 'b', sortie_id: 's1', user_id: 'bob', status: 'pending' },
+      ],
+    });
+    // 2 places : l'organisateur et Alice. Bob passe en liste d'attente.
+    const sortie = { $id: 's1', title: 'Volley', max_participants: 2 };
+    expect(await confirmPlace(api, sortie, 'a')).toBe('pending');
+    expect(await confirmPlace(api, sortie, 'b')).toBe('waiting');
+  });
+});

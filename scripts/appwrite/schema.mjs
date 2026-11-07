@@ -116,6 +116,9 @@ export const TABLES = [
       datetime('affinites_jusqua'),
       // Date d'envoi du rappel « c'est bientôt » aux participants (la veille).
       datetime('rappel_envoye'),
+      // Position du lieu (carte des sorties, filtre « à moins de X km ») : vide si inconnue.
+      float('lat'),
+      float('lng'),
     ],
     indexes: [
       { key: 'status_date', type: 'key', columns: ['status', 'date'] },

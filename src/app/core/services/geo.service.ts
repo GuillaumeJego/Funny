@@ -15,6 +15,8 @@ export interface GeoFullPlace {
   address: string; // Adresse complète
   city: string;
   country: string;
+  lat: number;
+  lng: number;
 }
 
 /**
@@ -109,6 +111,8 @@ export class GeoService {
             address: addressLine || r.display_name,
             city,
             country: addr.country ?? '',
+            lat: Number(r.lat),
+            lng: Number(r.lon),
           };
         }),
       ),
