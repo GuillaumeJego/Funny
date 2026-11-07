@@ -20,6 +20,7 @@
     "appwrite:themes": "node scripts/appwrite/themes.mjs",
     "appwrite:apercus": "node scripts/appwrite/premium-previews.mjs",
     "appwrite:demo": "node scripts/appwrite/demo-sorties.mjs",
+    "appwrite:positions": "node scripts/appwrite/geocode-sorties.mjs",
     "test:functions": "vitest run --root functions"
   },
   "private": true,

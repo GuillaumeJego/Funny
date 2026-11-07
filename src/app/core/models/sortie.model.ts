@@ -15,6 +15,9 @@ export interface Sortie {
   created_at?: string;
   /** Fin du délai pour répondre à la question des affinités (posée après la sortie). */
   affinites_jusqua?: string | null;
+  /** Position du lieu (carte, distance) ; absente si l'adresse n'a pas été trouvée. */
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export interface SortieWithRelations extends Sortie {

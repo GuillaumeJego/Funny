@@ -59,6 +59,17 @@ export function cleanSortie(input, now = new Date()) {
     }
   }
 
+  // Position du lieu : gardée seulement si elle est plausible, sinon laissée vide.
+  const lat = Number(sortie.lat);
+  const lng = Number(sortie.lng);
+  const hasPosition =
+    sortie.lat != null &&
+    sortie.lng != null &&
+    Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    Math.abs(lat) <= 90 &&
+    Math.abs(lng) <= 180;
+
   const imageSource = sortie.image_source === 'custom' ? 'custom' : 'default';
   const imageUrl = isText(sortie.image_url) ? sortie.image_url.trim() : '';
 
@@ -73,6 +84,8 @@ export function cleanSortie(input, now = new Date()) {
     is_premium: sortie.is_premium === true,
     image_url: imageUrl,
     image_source: imageSource,
+    lat: hasPosition ? lat : null,
+    lng: hasPosition ? lng : null,
   };
 }
 

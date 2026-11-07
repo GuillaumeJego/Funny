@@ -25,6 +25,8 @@ import { InscriptionService, InscriptionStatus } from '../../core/services/inscr
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
 import { isPremiumMember } from '../../core/utils/premium';
+import { distanceKm } from '../../core/utils/distance';
+import { SortiesMapComponent } from './sorties-map/sorties-map.component';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 export interface SortieGroup {
@@ -35,7 +37,13 @@ export interface SortieGroup {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [ClickableDirective, RouterModule, NavbarFiltersComponent, SortieDrawerComponent],
+  imports: [
+    ClickableDirective,
+    RouterModule,
+    NavbarFiltersComponent,
+    SortieDrawerComponent,
+    SortiesMapComponent,
+  ],
   templateUrl: './dashboard.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './dashboard.component.scss',
@@ -60,7 +68,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly error = signal('');
   /** Petit message au-dessus de la liste (ex. sortie d'une notification introuvable). */
   readonly notice = signal('');
-  readonly viewMode = signal<'grid' | 'list'>('grid');
+  readonly viewMode = signal<'grid' | 'list' | 'map'>('grid');
+  /** Filtre « autour de moi » : rayon en km (0 = partout) et position du membre. */
+  readonly radiusKm = signal(0);
+  readonly myPosition = signal<{ lat: number; lng: number } | null>(null);
+  readonly locating = signal(false);
+  readonly radiusOptions = [5, 10, 20, 50];
   readonly favorisIds = signal<Set<string>>(new Set());
   readonly userId = signal('');
   readonly userRole = signal('user');
@@ -236,6 +249,52 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.favorisIds().has(sortieId);
   }
 
+  /** Choix du rayon « autour de moi » : demande la position du membre la première fois. */
+  async setRadius(km: number) {
+    if (km === 0) {
+      this.radiusKm.set(0);
+      return;
+    }
+    if (!this.myPosition()) {
+      this.locating.set(true);
+      const position = await this.locate();
+      this.locating.set(false);
+      if (!position) {
+        this.radiusKm.set(0);
+        this.notice.set(
+          'Position introuvable : autorise la localisation dans ton navigateur pour filtrer autour de toi.',
+        );
+        return;
+      }
+      this.myPosition.set(position);
+    }
+    this.radiusKm.set(km);
+  }
+
+  private locate(): Promise<{ lat: number; lng: number } | null> {
+    if (!('geolocation' in navigator)) return Promise.resolve(null);
+    return new Promise((resolve) =>
+      navigator.geolocation.getCurrentPosition(
+        (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
+        () => resolve(null),
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },
+      ),
+    );
+  }
+
+  /** Sorties affichées qui n'ont pas de position (absentes de la carte). */
+  readonly sansPosition = computed(
+    () =>
+      this.sortiesFiltrees().filter((s) => !s.locked && (s.lat == null || s.lng == null)).length,
+  );
+
+  /** Distance d'une sortie au membre (null sans position connue). */
+  distanceOf(sortie: SortieWithRelations): number | null {
+    const me = this.myPosition();
+    if (!me || sortie.lat == null || sortie.lng == null) return null;
+    return distanceKm(me, { lat: sortie.lat, lng: sortie.lng });
+  }
+
   onFiltersChanged(filters: Filters) {
     this.filters.set(filters);
   }
@@ -243,6 +302,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly sortiesFiltrees = computed<SortieWithRelations[]>(() => {
     const filters = this.filters();
     const now = new Date();
+    const radius = this.radiusKm();
+    const me = this.myPosition();
     return this.sorties().filter((s) => {
       if (filters.themeIds?.length && !filters.themeIds.includes(s.theme_id ?? '')) return false;
       if (filters.ou && s.location !== filters.ou) return false;
@@ -252,6 +313,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
       if (filters.prix === 'gratuit' && s.price > 0) return false;
       if (filters.prix === 'payant' && s.price === 0) return false;
       if (filters.premium && !s.is_premium) return false;
+      // Autour de moi : les sorties sans position connue sortent du filtre.
+      if (radius && me) {
+        if (s.lat == null || s.lng == null) return false;
+        if (distanceKm(me, { lat: s.lat, lng: s.lng }) > radius) return false;
+      }
       return true;
     });
   });
@@ -275,9 +341,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return Array.from(map.entries()).map(([dateLabel, sorties]) => ({ dateLabel, sorties }));
   }
 
-  async setViewMode(mode: 'grid' | 'list') {
+  async setViewMode(mode: 'grid' | 'list' | 'map') {
     this.viewMode.set(mode);
-    if (this.userId()) {
+    // La carte n'est pas retenue : on revient à la grille ou à la liste au prochain passage.
+    if (mode !== 'map' && this.userId()) {
       await this.profileService.updateMyProfile(this.userId(), { view_mode: mode });
     }
   }
