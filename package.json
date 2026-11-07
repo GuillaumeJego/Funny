@@ -16,6 +16,7 @@
     "appwrite:setup": "node scripts/appwrite/setup.mjs",
     "appwrite:functions": "node scripts/appwrite/functions.mjs",
     "appwrite:admin": "node scripts/appwrite/make-admin.mjs",
+    "appwrite:developpeur": "node scripts/appwrite/make-admin.mjs --developpeur",
     "stripe:setup": "node scripts/stripe/setup.mjs",
     "appwrite:themes": "node scripts/appwrite/themes.mjs",
     "appwrite:apercus": "node scripts/appwrite/premium-previews.mjs",

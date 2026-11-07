@@ -1,4 +1,6 @@
 // Donne le rôle admin à un membre déjà inscrit sur Funny (à faire une fois, pour ton compte).
+// `npm run appwrite:developpeur -- email` lui donne le rôle développeur à la place :
+// ce compte est alors caché de l'onglet Admin et aucun admin ne peut le modifier.
 //
 // Utilisation (PowerShell), avec une clé API à durée courte collée dans le terminal
 // (droits : users.read, rows.read, rows.write, teams.read, teams.write) :
@@ -12,7 +14,9 @@ import { Client, Query, TablesDB, Teams, Users } from 'node-appwrite';
 const endpoint = process.env.APPWRITE_ENDPOINT ?? 'https://appwrite.metanafr.fr/v1';
 const projectId = process.env.APPWRITE_PROJECT_ID;
 const apiKey = process.env.APPWRITE_API_KEY;
-const email = process.argv[2];
+const args = process.argv.slice(2);
+const role = args.includes('--developpeur') ? 'developer' : 'admin';
+const email = args.find((a) => !a.startsWith('--'));
 
 if (!projectId || !apiKey || !email) {
   console.error(
@@ -35,7 +39,7 @@ try {
     databaseId: 'funny',
     tableId: 'member_status',
     rowId: userId,
-    data: { role: 'admin' },
+    data: { role },
   });
   for (const teamId of ['admins', 'abonnes']) {
     const { memberships } = await teams.listMemberships({
@@ -44,7 +48,9 @@ try {
     });
     if (memberships.length === 0) await teams.createMembership({ teamId, roles: [], userId });
   }
-  console.log(`${email} est maintenant admin de Funny.`);
+  console.log(
+    `${email} est maintenant ${role === 'developer' ? 'développeur' : 'admin'} de Funny.`,
+  );
 } catch (error) {
   console.error(`Erreur : ${error.message}`);
   process.exit(1);

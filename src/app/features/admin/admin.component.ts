@@ -241,10 +241,15 @@ export class AdminComponent implements OnInit {
     }
   }
 
+  /** Le compte développeur et son propre compte n'apparaissent pas : aucune action possible dessus. */
+  readonly visibleMembres = computed<Profile[]>(() =>
+    this.membres().filter((m) => m.role !== 'developer' && m.id !== this.currentUserId()),
+  );
+
   readonly filteredMembres = computed<Profile[]>(() => {
-    if (!this.searchQuery().trim()) return this.membres();
+    if (!this.searchQuery().trim()) return this.visibleMembres();
     const q = this.searchQuery().toLowerCase();
-    return this.membres().filter((m) => m.username.toLowerCase().includes(q));
+    return this.visibleMembres().filter((m) => m.username.toLowerCase().includes(q));
   });
 
   getRoleLabel(m: Profile): string {

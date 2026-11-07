@@ -2,6 +2,7 @@
 // Seuls les membres de l'équipe « admins » peuvent l'utiliser.
 import { Permission, Query, Role, fail, handler, isAdmin } from './shared/appwrite.js';
 import { removeExpiredPremium, syncPremium } from './shared/premium.js';
+import { requireEditable } from './shared/protection.js';
 
 const ROLES = ['user', 'user_premium', 'developer', 'admin'];
 
@@ -22,6 +23,7 @@ const STAFF = ['admin', 'developer'];
 async function setRole({ api, userId, input }) {
   const memberId = await requireMember(api, input.userId);
   if (!ROLES.includes(input.role)) fail(400, 'Rôle invalide.');
+  if (memberId === userId) fail(403, 'Impossible de changer ton propre rôle.');
   // Seul un développeur peut nommer un développeur ou changer le rôle d'un développeur.
   const [mine, current] = await Promise.all([
     api.getRow('member_status', userId),
@@ -37,8 +39,9 @@ async function setRole({ api, userId, input }) {
   return { status };
 }
 
-async function setPremium({ api, input }) {
+async function setPremium({ api, userId, input }) {
   const memberId = await requireMember(api, input.userId);
+  await requireEditable(api, userId, memberId);
   const until = input.until ? new Date(input.until) : null;
   if (until && Number.isNaN(until.getTime())) fail(400, 'Date invalide.');
   const status = await upsert(api, 'member_status', memberId, {
@@ -48,15 +51,17 @@ async function setPremium({ api, input }) {
   return { status };
 }
 
-async function setCanViewProfiles({ api, input }) {
+async function setCanViewProfiles({ api, userId, input }) {
   const memberId = await requireMember(api, input.userId);
+  await requireEditable(api, userId, memberId);
   const value = input.value === null ? null : !!input.value;
   const status = await upsert(api, 'member_status', memberId, { can_view_profiles: value });
   return { status };
 }
 
-async function ban({ api, input }) {
+async function ban({ api, userId, input }) {
   const memberId = await requireMember(api, input.userId);
+  await requireEditable(api, userId, memberId);
   const days = Number(input.days);
   if (!Number.isInteger(days) || days < 1 || days > 3650) fail(400, 'Durée invalide.');
   const previous = await api.getRow('moderation', memberId);
@@ -75,8 +80,9 @@ async function ban({ api, input }) {
   return { moderation };
 }
 
-async function unban({ api, input }) {
+async function unban({ api, userId, input }) {
   const memberId = await requireMember(api, input.userId);
+  await requireEditable(api, userId, memberId);
   const moderation = await upsert(
     api,
     'moderation',
