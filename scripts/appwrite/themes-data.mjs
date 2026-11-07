@@ -5,7 +5,7 @@
 // L'identifiant de chaque thème sert aussi de nom de fichier pour ses images :
 // /images/themes/<id>-1.webp, <id>-2.webp, <id>-3.webp (photos 1600 × 900).
 
-export const IMAGES_PER_THEME = 3;
+export const IMAGES_PER_THEME = 8;
 
 export const DEFAULT_THEMES = [
   { id: 'restaurant', name: 'Restaurant', icon: '🍽️' },
