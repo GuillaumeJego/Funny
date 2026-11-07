@@ -28,14 +28,16 @@
           (click)="open(n)"
         >
           <div class="notif-avatar">
-            @if (n.actor?.avatar_url) {
+            @if (n.sortie_image) {
+              <img [src]="n.sortie_image" class="actor-avatar" alt="" />
+            } @else if (n.actor?.avatar_url) {
               <img
                 [src]="n.actor!.avatar_url!"
                 class="actor-avatar"
                 [alt]="$safeNavigationMigration(n.actor?.username)"
               />
             }
-            @if (!n.actor?.avatar_url) {
+            @if (!n.sortie_image && !n.actor?.avatar_url) {
               <div class="actor-placeholder">
                 {{ n.actor?.username ? n.actor!.username.charAt(0).toUpperCase() : '?' }}
               </div>

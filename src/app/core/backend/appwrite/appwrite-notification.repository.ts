@@ -8,6 +8,16 @@ import { RepositoryResult, Unsubscribe } from '../../repositories/repository.typ
 import { AppwriteClientService, DB, attempt } from './appwrite-client';
 import { fromRow } from './rows';
 
+/** Sortie visée par le lien d'une notification (/sorties/<id>… ou ?sortie=<id>). */
+export function sortieIdOf(link: string | null | undefined): string | null {
+  if (!link) return null;
+  return (
+    link.match(/^\/sorties\/([A-Za-z0-9_-]{1,36})/)?.[1] ??
+    link.match(/[?&]sortie=([A-Za-z0-9_-]{1,36})/)?.[1] ??
+    null
+  );
+}
+
 /** Les notifications sont écrites par le serveur ; le membre ne fait que les lire. */
 @Injectable()
 export class AppwriteNotificationRepository extends NotificationRepository {
@@ -35,14 +45,25 @@ export class AppwriteNotificationRepository extends NotificationRepository {
     );
   }
 
-  /** Ajoute le pseudo et la photo du membre à l'origine de chaque notification. */
+  /**
+   * Ajoute le pseudo et la photo du membre à l'origine de chaque notification, et l'image
+   * de la sortie quand la notification en concerne une.
+   */
   private async withActors(notifications: AppNotification[]): Promise<AppNotification[]> {
-    const actorById = await this.appwrite.miniProfiles(notifications.map((n) => n.actor_id ?? ''));
+    const [actorById, sorties] = await Promise.all([
+      this.appwrite.miniProfiles(notifications.map((n) => n.actor_id ?? '')),
+      this.appwrite
+        .sortieInfos(notifications.map((n) => sortieIdOf(n.link)).filter((id) => !!id) as string[])
+        .catch(() => new Map<string, { title: string; image: string | null }>()),
+    ]);
     return notifications.map((n) => {
       const actor = actorById.get(n.actor_id ?? '');
-      return actor
-        ? { ...n, actor: { username: actor.username, avatar_url: actor.avatar_url } }
-        : n;
+      const sortieImage = sorties.get(sortieIdOf(n.link) ?? '')?.image ?? null;
+      return {
+        ...n,
+        ...(actor ? { actor: { username: actor.username, avatar_url: actor.avatar_url } } : {}),
+        ...(sortieImage ? { sortie_image: sortieImage } : {}),
+      };
     });
   }
 
