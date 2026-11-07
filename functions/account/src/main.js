@@ -1,5 +1,5 @@
-// Fonction « account » : création du profil après l'inscription, et suppression
-// du compte avec toutes ses données (droit RGPD).
+// Fonction « account » : création du profil après l'inscription, suppression
+// du compte avec toutes ses données (droit RGPD) et connexions pour les statistiques.
 import {
   Permission,
   Query,
@@ -14,6 +14,7 @@ import {
 import { deleteSortie, promoteFromWaitingList } from './shared/sorties.js';
 import { deleteConversation } from './shared/conversations.js';
 import { stripe } from './shared/stripe.js';
+import { recordVisit } from './shared/stats.js';
 
 const USERNAME = /^[\p{L}\p{N}._-]{3,40}$/u;
 
@@ -137,6 +138,7 @@ async function remove({ api, userId, input }) {
   await deleteAll('affinites', await byUser('affinites', 'from_user', 'to_user'));
   await deleteAll('conversation_reads', await byUser('conversation_reads', 'user_id'));
   await deleteAll('subscriptions', await byUser('subscriptions', 'user_id'));
+  await deleteAll('connexions', await byUser('connexions', 'user_id'));
 
   // Ses conversations : l'autre membre ne peut plus lui écrire, on les efface en entier.
   const conversations = await api.listAllRows('conversations', [
@@ -163,4 +165,9 @@ async function remove({ api, userId, input }) {
   return {};
 }
 
-export default handler({ init, delete: remove }, { unverified: ['init', 'delete'] });
+/** Le membre ouvre l'application : une connexion pour les statistiques de l'admin. */
+async function visit({ api, userId }) {
+  return recordVisit(api, userId);
+}
+
+export default handler({ init, delete: remove, visit }, { unverified: ['init', 'delete'] });

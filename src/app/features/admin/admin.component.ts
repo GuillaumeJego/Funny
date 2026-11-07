@@ -17,12 +17,13 @@ import { ModerationService } from '../../core/services/moderation.service';
 import { Profile } from '../../core/models/profile.model';
 import { Report, reportReasonLabel } from '../../core/models/report.model';
 import { AdminThemesComponent } from './admin-themes/admin-themes.component';
+import { AdminStatsComponent } from './admin-stats/admin-stats.component';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [ClickableDirective, FormsModule, DatePipe, AdminThemesComponent],
+  imports: [ClickableDirective, FormsModule, DatePipe, AdminThemesComponent, AdminStatsComponent],
   templateUrl: './admin.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './admin.component.scss',
@@ -35,6 +36,7 @@ export class AdminComponent implements OnInit {
   router = inject(Router);
 
   readonly loading = signal(true);
+  readonly tab = signal<'gestion' | 'stats'>('gestion');
   readonly saving = signal(false);
   readonly profilePagePremiumOnly = signal(false);
   readonly sortieCreationAccess = signal<'all' | 'premium' | 'admin'>('all');

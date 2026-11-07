@@ -3,13 +3,40 @@
     <h1>Administration</h1>
   </div>
 
+  <div class="admin-tabs" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      class="admin-tab"
+      [class.active]="tab() === 'gestion'"
+      [attr.aria-selected]="tab() === 'gestion'"
+      (click)="tab.set('gestion')"
+    >
+      ⚙️ Gestion
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="admin-tab"
+      [class.active]="tab() === 'stats'"
+      [attr.aria-selected]="tab() === 'stats'"
+      (click)="tab.set('stats')"
+    >
+      📊 Statistiques
+    </button>
+  </div>
+
   @if (loading()) {
     <div class="state-message">
       <div class="spinner"></div>
     </div>
   }
 
-  @if (!loading()) {
+  @if (!loading() && tab() === 'stats') {
+    <app-admin-stats />
+  }
+
+  @if (!loading() && tab() === 'gestion') {
     <!-- ── Signalements ── -->
     <section class="section">
       <h2 class="section-title">

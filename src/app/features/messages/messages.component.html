@@ -71,7 +71,9 @@
             (click)="openChat(conv)"
           >
             <div class="avatar-wrap">
-              @if (conv.sortie_id) {
+              @if (conv.sortie_id && conv.sortie_image) {
+                <img [src]="conv.sortie_image" class="avatar" alt="" />
+              } @else if (conv.sortie_id) {
                 <div class="avatar-placeholder group-avatar" aria-hidden="true">👥</div>
               } @else if (getFriend(conv)?.avatar_url) {
                 <img [src]="getFriend(conv)!.avatar_url!" class="avatar" alt="" />

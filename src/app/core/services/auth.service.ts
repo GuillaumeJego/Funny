@@ -30,6 +30,11 @@ export class AuthService {
     return await this.auth.getUser();
   }
 
+  // Le membre ouvre l'application : une connexion pour les statistiques
+  async recordVisit(): Promise<boolean> {
+    return await this.auth.recordVisit();
+  }
+
   // Une session est-elle ouverte ?
   async hasSession() {
     return await this.auth.hasSession();

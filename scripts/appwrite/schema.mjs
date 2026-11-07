@@ -264,6 +264,25 @@ export const TABLES = [
     indexes: [{ key: 'user_read', type: 'key', columns: ['user_id', 'read'] }],
   },
   {
+    // Connexions des membres (au plus une toutes les 30 minutes), pour les statistiques
+    // de l'admin. Écrites et lues par le serveur seulement (Functions « account » et « admin »).
+    // `day` et `hour` : jour et heure à Paris.
+    id: 'connexions',
+    name: 'Connexions',
+    permissions: [],
+    rowSecurity: false,
+    columns: [
+      str('user_id', ID, { required: true }),
+      datetime('at', { required: true }),
+      str('day', 10, { required: true }),
+      integer('hour', { required: true }),
+    ],
+    indexes: [
+      { key: 'day', type: 'key', columns: ['day'] },
+      { key: 'user_at', type: 'key', columns: ['user_id', 'at'] },
+    ],
+  },
+  {
     // Affinités après une sortie : ce qu'un participant a ressenti pour un autre.
     // Écrites par le serveur (Function « sorties »), lisibles par leur seul auteur :
     // l'autre membre n'apprend un choix que s'il est réciproque (notification).

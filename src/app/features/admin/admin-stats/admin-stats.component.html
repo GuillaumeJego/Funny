@@ -1,0 +1,135 @@
+<section class="section">
+  <h2 class="section-title">📊 Statistiques de connexion</h2>
+  <p class="section-desc">
+    Une connexion = un membre qui ouvre Funny. Revenir dans les 30 minutes ne compte pas une
+    nouvelle fois. Heures de Paris.
+  </p>
+
+  <!-- Période -->
+  <div class="chips" role="group" aria-label="Période">
+    @for (p of periods; track p.value) {
+      <button
+        type="button"
+        class="chip"
+        [class.active]="period() === p.value"
+        [attr.aria-pressed]="period() === p.value"
+        (click)="setPeriod(p.value)"
+      >
+        {{ p.label }}
+      </button>
+    }
+  </div>
+  @if (period() === 'custom') {
+    <div class="custom-range">
+      <label>
+        Du
+        <input type="date" [ngModel]="customFrom()" (ngModelChange)="customFrom.set($event)" />
+      </label>
+      <label>
+        au
+        <input type="date" [ngModel]="customTo()" (ngModelChange)="customTo.set($event)" />
+      </label>
+      <button type="button" class="btn-apply" (click)="load()">Afficher</button>
+    </div>
+  }
+
+  <!-- Population -->
+  <div class="filters">
+    <select [ngModel]="gender()" (ngModelChange)="gender.set($event); load()" aria-label="Genre">
+      @for (o of genderOptions; track o.value) {
+        <option [value]="o.value">{{ o.label }}</option>
+      }
+    </select>
+    <select
+      [ngModel]="relationship()"
+      (ngModelChange)="relationship.set($event); load()"
+      aria-label="Situation"
+    >
+      @for (o of relationshipOptions; track o.value) {
+        <option [value]="o.value">{{ o.label }}</option>
+      }
+    </select>
+  </div>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (stats(); as s) {
+    <div class="tiles" [class.dim]="loading()">
+      <div class="tile">
+        <span class="tile-value">{{ s.total }}</span>
+        <span class="tile-label">connexions</span>
+      </div>
+      <div class="tile">
+        <span class="tile-value">{{ s.unique }}</span>
+        <span class="tile-label">membres différents</span>
+      </div>
+      @if (peakHour() !== null) {
+        <div class="tile">
+          <span class="tile-value">{{ peakHour() }} h</span>
+          <span class="tile-label">heure la plus active</span>
+        </div>
+      }
+    </div>
+
+    <!-- Onglets -->
+    <div class="tabs" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="view() === 'connexions'"
+        [attr.aria-selected]="view() === 'connexions'"
+        (click)="view.set('connexions')"
+      >
+        Connexions par jour
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="view() === 'horaires'"
+        [attr.aria-selected]="view() === 'horaires'"
+        (click)="view.set('horaires')"
+      >
+        Horaires d'activité
+      </button>
+    </div>
+
+    @if (s.total === 0) {
+      <p class="empty">Aucune connexion sur cette période.</p>
+    } @else if (view() === 'connexions') {
+      <div class="legend">
+        <span><i class="dot total"></i>Connexions</span>
+        <span><i class="dot unique"></i>Membres différents</span>
+      </div>
+      <ul class="bars" [class.dim]="loading()">
+        @for (d of dayRows(); track d.day) {
+          <li class="bar-row">
+            <span class="bar-label">{{ d.label }}</span>
+            <span class="bar-track">
+              <span class="bar total" [style.width.%]="d.width"></span>
+              <span class="bar unique" [style.width.%]="d.uniqueWidth"></span>
+            </span>
+            <span class="bar-value">{{ d.total }} · {{ d.unique }}</span>
+          </li>
+        }
+      </ul>
+    } @else {
+      <ul class="bars" [class.dim]="loading()">
+        @for (h of hourRows(); track h.label) {
+          <li class="bar-row">
+            <span class="bar-label">{{ h.label }}</span>
+            <span class="bar-track">
+              <span class="bar total" [style.width.%]="h.width"></span>
+            </span>
+            <span class="bar-value">{{ h.count }}</span>
+          </li>
+        }
+      </ul>
+    }
+  } @else if (loading()) {
+    <p class="empty">Chargement…</p>
+  }
+</section>

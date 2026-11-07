@@ -21,7 +21,11 @@
         [queryParams]="{ sortie: groupSortieId() }"
       >
         <div class="header-avatar">
-          <div class="h-avatar-placeholder" aria-hidden="true">👥</div>
+          @if (friendAvatar()) {
+            <img [src]="friendAvatar()" class="h-avatar-img" alt="" />
+          } @else {
+            <div class="h-avatar-placeholder" aria-hidden="true">👥</div>
+          }
         </div>
         <span class="header-text">
           <span class="header-name">{{ friendName() }}</span>

@@ -26,6 +26,7 @@ const fakeAuth: AuthRepository = {
   logout: async () => ({ error: null }),
   getUser: async () => ({ data: { user: null } }),
   hasSession: async () => false,
+  recordVisit: async () => false,
   deleteAccount: async () => ({ error: null }),
   sendVerification: async () => ({ error: null }),
   confirmVerification: async () => ({ error: null }),
@@ -131,6 +132,10 @@ const fakeAdmin: AdminRepository = {
   unban: async () => ok,
   getOpenReports: async () => empty,
   markReportHandled: async () => ok,
+  getStats: async () => ({
+    data: { days: [], hours: Array(24).fill(0), total: 0, unique: 0 },
+    error: null,
+  }),
 };
 
 const fakeModeration: ModerationRepository = {

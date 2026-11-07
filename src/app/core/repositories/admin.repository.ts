@@ -1,4 +1,5 @@
 import { Report } from '../models/report.model';
+import { ConnexionStats, StatsQuery } from '../models/stats.model';
 import { RepositoryResult } from './repository.types';
 
 /** Actions réservées aux administrateurs : le serveur vérifie l'appartenance à l'équipe admins. */
@@ -16,4 +17,6 @@ export abstract class AdminRepository {
   /** Signalements pas encore traités, du plus récent au plus ancien. */
   abstract getOpenReports(): Promise<RepositoryResult<Report[]>>;
   abstract markReportHandled(reportId: string): Promise<RepositoryResult<null>>;
+  /** Connexions sur une période, filtrées par genre et situation. */
+  abstract getStats(query: StatsQuery): Promise<RepositoryResult<ConnexionStats>>;
 }

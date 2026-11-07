@@ -116,6 +116,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (conversation?.sortie_id) {
       this.groupSortieId.set(conversation.sortie_id);
       this.friendName.set(conversation.sortie_title ?? 'Sortie');
+      this.friendAvatar.set(conversation.sortie_image ?? null);
       this.groupSize.set(conversation.participants?.length ?? 0);
     } else if (!(await this.loadFriend())) {
       this.unavailable.set(true);
