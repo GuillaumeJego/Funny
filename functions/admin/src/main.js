@@ -1,6 +1,6 @@
 // Fonction « admin » : rôles, Premium manuel, accès aux profils et bannissements.
 // Seuls les membres de l'équipe « admins » peuvent l'utiliser.
-import { Permission, Query, Role, fail, handler, isAdmin } from './shared/appwrite.js';
+import { Permission, Query, Role, deleteFile, fail, handler, isAdmin } from './shared/appwrite.js';
 import { removeExpiredPremium, syncPremium } from './shared/premium.js';
 import { requireEditable } from './shared/protection.js';
 import { connexionStats } from './shared/stats.js';
@@ -116,7 +116,32 @@ async function stats({ api, input }) {
   return connexionStats(api, input);
 }
 
-const actions = { setRole, setPremium, setCanViewProfiles, ban, unban, stats };
+/**
+ * Supprime un message signalé (et sa photo ou vidéo). Seuls les messages joints à un
+ * signalement sont concernés : les admins n'agissent pas sur le reste des conversations.
+ */
+async function deleteMessage({ api, input }) {
+  const report = await api.getRow('reports', String(input.reportId ?? ''));
+  if (!report) fail(404, 'Signalement introuvable.');
+  const evidence = JSON.parse(report.evidence || '[]');
+  const entry = evidence.find((m) => m.id === input.messageId);
+  if (!entry) fail(404, 'Message introuvable dans ce signalement.');
+
+  const message = await api.getRow('messages', entry.id);
+  if (message) {
+    if (message.media_file_id) await deleteFile(api, 'chat-media', message.media_file_id);
+    const reactions = await api.listAllRows('message_reactions', [
+      Query.equal('message_id', entry.id),
+    ]);
+    for (const r of reactions) await api.deleteRow('message_reactions', r.$id);
+    await api.deleteRow('messages', entry.id);
+  }
+  entry.deleted = true;
+  await api.updateRow('reports', report.$id, { evidence: JSON.stringify(evidence) });
+  return {};
+}
+
+const actions = { setRole, setPremium, setCanViewProfiles, ban, unban, stats, deleteMessage };
 
 export default handler(
   Object.fromEntries(

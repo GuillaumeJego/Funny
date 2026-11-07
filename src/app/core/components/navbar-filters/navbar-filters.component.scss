@@ -274,3 +274,73 @@
     }
   }
 }
+
+// ─── Où ? : ville et rayon ────────────────────────
+.chip-me {
+  align-self: flex-start;
+}
+
+.town-search {
+  position: relative;
+
+  input {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    font-size: 0.9rem;
+    &:focus {
+      outline: none;
+      border-color: $primary;
+    }
+  }
+}
+
+.town-results {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  background: $bg-white;
+  overflow: hidden;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+
+    span {
+      font-size: 0.75rem;
+      color: $text-light;
+    }
+
+    & + li {
+      border-top: 1px solid $border-color;
+    }
+
+    &:hover {
+      background: rgba($primary, 0.06);
+    }
+  }
+}
+
+.radius {
+  width: 100%;
+  accent-color: $primary;
+}
+
+.radius-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: $text-light;
+  margin-top: -0.25rem;
+}
+
+.btn-apply:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -572,6 +572,80 @@
   white-space: pre-line;
 }
 
+.report-messages {
+  margin-top: 0.6rem;
+
+  summary {
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $primary;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+}
+
+.report-msg {
+  background: $bg-light;
+  border-radius: $border-radius;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.85rem;
+
+  &.from-target {
+    border-left: 3px solid $error;
+  }
+
+  &.deleted {
+    opacity: 0.6;
+  }
+
+  p {
+    margin: 0.2rem 0 0;
+    white-space: pre-line;
+    word-break: break-word;
+  }
+
+  img,
+  video {
+    display: block;
+    max-width: 220px;
+    max-height: 220px;
+    border-radius: $border-radius;
+    margin-top: 0.3rem;
+  }
+}
+
+.report-msg-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: $text-light;
+
+  strong {
+    color: $text-dark;
+  }
+}
+
+.btn-delete-msg {
+  margin-top: 0.3rem;
+  background: none;
+  border: none;
+  color: $error;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+}
+
 .report-meta {
   margin-top: 0.4rem;
   font-size: 0.8rem;

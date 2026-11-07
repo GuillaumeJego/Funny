@@ -53,6 +53,7 @@
           [memberId]="friendId()"
           [username]="friendName()"
           [blocked]="blocked()"
+          [conversationId]="conversationId"
           (blockedChange)="blocked.set($event)"
         />
       </div>
@@ -70,7 +71,7 @@
 
   <!-- Messages -->
   @if (!loading() && !unavailable()) {
-    <div class="messages-area">
+    <div class="messages-area" #messagesArea (scroll)="onMessagesScroll()">
       @for (msg of messages(); track msg.id; let i = $index) {
         <div>
           <!-- Séparateur de jour -->
@@ -130,11 +131,18 @@
                     class="msg-media zoomable"
                     alt="Photo — toucher pour l'agrandir"
                     (click)="openLightbox($event, msg.media_url)"
+                    (load)="mediaLoaded()"
                   />
                 }
                 <!-- Vidéo -->
                 @if (msg.type === 'video' && msg.media_url) {
-                  <video [src]="msg.media_url" class="msg-media" controls playsinline></video>
+                  <video
+                    [src]="msg.media_url"
+                    class="msg-media"
+                    controls
+                    playsinline
+                    (loadedmetadata)="mediaLoaded()"
+                  ></video>
                 }
                 <!-- Texte -->
                 @if (msg.content) {
@@ -183,7 +191,6 @@
           </div>
         </div>
       }
-      <div #messagesEnd></div>
     </div>
   }
 

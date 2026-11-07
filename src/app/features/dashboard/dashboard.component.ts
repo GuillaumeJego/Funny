@@ -14,6 +14,7 @@ import {
   NavbarFiltersComponent,
   Filters,
   matchesPeriod,
+  matchesPlace,
   ThemeOption,
 } from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieService } from '../../core/services/sortie.service';
@@ -28,7 +29,6 @@ import { isPremiumMember } from '../../core/utils/premium';
 import { distanceKm } from '../../core/utils/distance';
 import { SortiesMapComponent } from './sorties-map/sorties-map.component';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
-import { inTown } from '../../core/utils/towns';
 
 export interface SortieGroup {
   dateLabel: string;
@@ -70,11 +70,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   /** Petit message au-dessus de la liste (ex. sortie d'une notification introuvable). */
   readonly notice = signal('');
   readonly viewMode = signal<'grid' | 'list' | 'map'>('grid');
-  /** Filtre « autour de moi » : rayon en km (0 = partout) et position du membre. */
-  /** Position du membre, connue quand le filtre « Autour de moi » est actif. */
+  /** Position du membre, connue quand le filtre « Autour de moi » est actif (pas une ville). */
   readonly myPosition = computed(() => {
-    const autour = this.filters().autour;
-    return autour ? { lat: autour.lat, lng: autour.lng } : null;
+    const { autour, ou } = this.filters();
+    return autour && !ou ? { lat: autour.lat, lng: autour.lng } : null;
   });
   readonly favorisIds = signal<Set<string>>(new Set());
   readonly userId = signal('');
@@ -271,21 +270,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly sortiesFiltrees = computed<SortieWithRelations[]>(() => {
     const filters = this.filters();
     const now = new Date();
-    const autour = filters.autour;
     return this.sorties().filter((s) => {
       if (filters.themeIds?.length && !filters.themeIds.includes(s.theme_id ?? '')) return false;
-      if (filters.ou && !inTown(s.location, filters.ou)) return false;
+      if (!matchesPlace(s, filters)) return false;
       if (!matchesPeriod(s.date, filters, now)) return false;
       // Prix inconnu pour une sortie Premium vue en aperçu : elle sort du filtre de prix.
       if (filters.prix && s.locked) return false;
       if (filters.prix === 'gratuit' && s.price > 0) return false;
       if (filters.prix === 'payant' && s.price === 0) return false;
       if (filters.premium && !s.is_premium) return false;
-      // Autour de moi : les sorties sans position connue sortent du filtre.
-      if (autour) {
-        if (s.lat == null || s.lng == null) return false;
-        if (distanceKm(autour, { lat: s.lat, lng: s.lng }) > autour.km) return false;
-      }
       return true;
     });
   });

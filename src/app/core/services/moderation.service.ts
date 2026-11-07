@@ -9,8 +9,8 @@ export class ModerationService {
   private moderation = inject(ModerationRepository);
   private admin = inject(AdminRepository);
 
-  async report(userId: string, reason: ReportReason, details: string) {
-    return await this.moderation.report(userId, reason, details);
+  async report(userId: string, reason: ReportReason, details: string, conversationId?: string) {
+    return await this.moderation.report(userId, reason, details, conversationId);
   }
 
   async block(userId: string) {
@@ -40,5 +40,9 @@ export class ModerationService {
 
   async markReportHandled(reportId: string) {
     return await this.admin.markReportHandled(reportId);
+  }
+
+  async deleteReportedMessage(reportId: string, messageId: string) {
+    return await this.admin.deleteReportedMessage(reportId, messageId);
   }
 }

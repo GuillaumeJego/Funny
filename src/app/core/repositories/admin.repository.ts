@@ -17,6 +17,11 @@ export abstract class AdminRepository {
   /** Signalements pas encore traités, du plus récent au plus ancien. */
   abstract getOpenReports(): Promise<RepositoryResult<Report[]>>;
   abstract markReportHandled(reportId: string): Promise<RepositoryResult<null>>;
+  /** Supprime un message joint à un signalement (et sa photo ou vidéo). */
+  abstract deleteReportedMessage(
+    reportId: string,
+    messageId: string,
+  ): Promise<RepositoryResult<null>>;
   /** Connexions sur une période, filtrées par genre et situation. */
   abstract getStats(query: StatsQuery): Promise<RepositoryResult<ConnexionStats>>;
 }

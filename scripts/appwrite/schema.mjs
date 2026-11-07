@@ -362,6 +362,9 @@ export const TABLES = [
       str('reason', 60, { required: true }),
       text('details'),
       enumeration('status', ['open', 'handled'], { default: 'open' }),
+      // Signalement fait depuis une conversation : ses derniers messages (JSON), copiés à ce moment.
+      str('conversation_id', ID),
+      text('evidence'),
     ],
     indexes: [{ key: 'status', type: 'key', columns: ['status'] }],
   },

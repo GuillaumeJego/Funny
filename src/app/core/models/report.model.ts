@@ -17,6 +17,19 @@ export function reportReasonLabel(value: string): string {
   return REPORT_REASONS.find((r) => r.value === value)?.label ?? value;
 }
 
+/** Message joint à un signalement fait depuis une conversation. */
+export interface ReportMessage {
+  id: string;
+  sender: MiniProfile | null;
+  sender_id: string;
+  content: string;
+  type: 'text' | 'image' | 'video';
+  /** Photo ou vidéo, chargée pour l'admin ; null si elle a été supprimée. */
+  media_url: string | null;
+  at: string;
+  deleted: boolean;
+}
+
 export interface Report {
   id: string;
   created_at: string;
@@ -25,4 +38,6 @@ export interface Report {
   reporter: MiniProfile | null;
   target: MiniProfile | null;
   target_user_id: string;
+  /** Derniers messages de la conversation au moment du signalement (vide sinon). */
+  messages: ReportMessage[];
 }

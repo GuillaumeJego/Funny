@@ -58,6 +58,12 @@
             [(ngModel)]="details"
             placeholder="Que s'est-il passé ?"
           ></textarea>
+          @if (conversationId()) {
+            <p class="hint">
+              Les derniers messages de cette conversation (avec les photos et vidéos) seront joints
+              pour que les admins puissent juger.
+            </p>
+          }
           <p class="hint">
             En cas de danger immédiat, appelez le 17 (police) ou le 112. Vous pouvez aussi bloquer
             ce membre.

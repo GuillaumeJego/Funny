@@ -87,6 +87,10 @@
           </select>
         </div>
       </div>
+      <label class="check-new">
+        <input type="checkbox" [(ngModel)]="filterNew" />
+        <span class="badge-new">New</span> Nouveaux membres (moins de 2 semaines)
+      </label>
       @if (activeFilterCount() > 0) {
         <button class="reset-btn" (click)="resetFilters()">✕ Effacer les filtres</button>
       }

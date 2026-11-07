@@ -63,6 +63,42 @@
           @if (r.details) {
             <p class="report-details">{{ r.details }}</p>
           }
+          @if (r.messages.length) {
+            <details class="report-messages">
+              <summary>💬 Voir la conversation ({{ r.messages.length }} messages)</summary>
+              <ul>
+                @for (msg of r.messages; track msg.id) {
+                  <li
+                    class="report-msg"
+                    [class.from-target]="msg.sender_id === r.target_user_id"
+                    [class.deleted]="msg.deleted"
+                  >
+                    <div class="report-msg-head">
+                      <strong>{{ msg.sender?.username ?? 'Membre supprimé' }}</strong>
+                      <span>{{ msg.at | date: 'dd/MM à HH:mm' }}</span>
+                    </div>
+                    @if (msg.deleted) {
+                      <em>Message supprimé par un admin</em>
+                    } @else {
+                      @if (msg.media_url) {
+                        @if (msg.type === 'video') {
+                          <video [src]="msg.media_url" controls preload="metadata"></video>
+                        } @else {
+                          <img [src]="msg.media_url" alt="Photo envoyée dans la conversation" />
+                        }
+                      }
+                      @if (msg.content) {
+                        <p>{{ msg.content }}</p>
+                      }
+                      <button type="button" class="btn-delete-msg" (click)="deleteMessage(r, msg)">
+                        🗑️ Supprimer
+                      </button>
+                    }
+                  </li>
+                }
+              </ul>
+            </details>
+          }
           <p class="report-meta">
             Signalé par {{ r.reporter?.username ?? 'un membre supprimé' }}, le
             {{ r.created_at | date: 'dd/MM/yyyy à HH:mm' }}

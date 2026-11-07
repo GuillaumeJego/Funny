@@ -7,6 +7,8 @@ export abstract class ModerationRepository {
     userId: string,
     reason: ReportReason,
     details: string,
+    /** Signalement depuis une conversation : ses derniers messages sont joints. */
+    conversationId?: string,
   ): Promise<RepositoryResult<null>>;
   abstract block(userId: string): Promise<RepositoryResult<null>>;
   abstract unblock(userId: string): Promise<RepositoryResult<null>>;

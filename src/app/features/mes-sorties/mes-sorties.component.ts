@@ -17,13 +17,13 @@ import {
   NavbarFiltersComponent,
   Filters,
   matchesPeriod,
+  matchesPlace,
   ThemeOption,
 } from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieWithRelations } from '../../core/models/sortie.model';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
 import { isPremiumMember } from '../../core/utils/premium';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
-import { inTown } from '../../core/utils/towns';
 
 @Component({
   selector: 'app-mes-sorties',
@@ -122,7 +122,7 @@ export class MesSortiesComponent implements OnInit {
     const f = this.currentFilters();
     return list.filter((s) => {
       if (f.themeIds?.length && !f.themeIds.includes(s.theme_id ?? '')) return false;
-      if (f.ou && !inTown(s.location, f.ou)) return false;
+      if (!matchesPlace(s, f)) return false;
       if (!matchesPeriod(s.date, f, now)) return false;
       if (f.prix === 'gratuit' && s.price > 0) return false;
       if (f.prix === 'payant' && s.price === 0) return false;

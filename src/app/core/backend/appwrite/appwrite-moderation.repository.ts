@@ -11,8 +11,13 @@ type BlockRow = Models.Row & { blocker_id: string; blocked_id: string };
 export class AppwriteModerationRepository extends ModerationRepository {
   private appwrite = inject(AppwriteClientService);
 
-  report(userId: string, reason: ReportReason, details: string): Promise<RepositoryResult<null>> {
-    return this.call('report', { userId, reason, details });
+  report(
+    userId: string,
+    reason: ReportReason,
+    details: string,
+    conversationId?: string,
+  ): Promise<RepositoryResult<null>> {
+    return this.call('report', { userId, reason, details, conversationId });
   }
 
   block(userId: string): Promise<RepositoryResult<null>> {

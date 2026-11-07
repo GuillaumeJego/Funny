@@ -54,6 +54,8 @@ export class MembresComponent implements OnInit {
   readonly filterSmoking = signal('');
   readonly filterVaping = signal('');
   readonly filterAlcohol = signal('');
+  /** Seulement les membres inscrits depuis moins de 2 semaines. */
+  readonly filterNew = signal(false);
 
   async ngOnInit() {
     const { data } = await this.profileService.getAllProfiles();
@@ -71,6 +73,7 @@ export class MembresComponent implements OnInit {
       if (this.filterSmoking() && m.smoking !== this.filterSmoking()) return false;
       if (this.filterVaping() && m.vaping !== this.filterVaping()) return false;
       if (this.filterAlcohol() && m.alcohol !== this.filterAlcohol()) return false;
+      if (this.filterNew() && !isNewMember(m.created_at)) return false;
       return true;
     });
   });
@@ -82,6 +85,7 @@ export class MembresComponent implements OnInit {
       this.filterSmoking(),
       this.filterVaping(),
       this.filterAlcohol(),
+      this.filterNew(),
     ].filter((v) => !!v).length;
   });
 
@@ -91,6 +95,7 @@ export class MembresComponent implements OnInit {
     this.filterSmoking.set('');
     this.filterVaping.set('');
     this.filterAlcohol.set('');
+    this.filterNew.set(false);
   }
 
   goToProfile(id: string) {
