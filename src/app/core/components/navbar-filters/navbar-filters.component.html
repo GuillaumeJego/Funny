@@ -32,25 +32,25 @@
     <span class="filter-label">{{ quandLabel() }}</span>
   </div>
 
-  <!-- Prix -->
+  <!-- Gratuit : un clic active ou désactive -->
   <div
     appClickable
     class="filter-item"
-    [class.active]="filters().prix"
-    (click)="togglePanel('prix')"
+    [class.active]="filters().prix === 'gratuit'"
+    [attr.aria-pressed]="filters().prix === 'gratuit'"
+    (click)="toggleGratuit()"
   >
-    <span class="filter-icon">💰</span>
-    <span class="filter-label">{{
-      filters().prix === 'gratuit' ? 'Gratuit' : filters().prix === 'payant' ? 'Payant' : 'Prix'
-    }}</span>
+    <span class="filter-icon">🆓</span>
+    <span class="filter-label">Gratuit</span>
   </div>
 
-  <!-- Premium -->
+  <!-- Premium : un clic active ou désactive -->
   <div
     appClickable
     class="filter-item"
     [class.active]="filters().premium"
-    (click)="togglePanel('premium')"
+    [attr.aria-pressed]="!!filters().premium"
+    (click)="togglePremium()"
   >
     <span class="filter-icon">⭐</span>
     <span class="filter-label">Premium</span>
@@ -218,57 +218,6 @@
           }
           <button class="btn-apply" (click)="applyDates()">Appliquer</button>
         </div>
-      </div>
-    </div>
-  }
-
-  <!-- ── Panel Prix ── -->
-  @if (openPanel() === 'prix') {
-    <div class="filter-panel" (click)="$event.stopPropagation()">
-      <div class="panel-inner">
-        <label>Tarif</label>
-        <div class="chip-list">
-          <button
-            class="chip"
-            [class.active]="filters().prix === 'gratuit'"
-            (click)="setPrix('gratuit')"
-          >
-            🟢 Gratuit
-          </button>
-          <button
-            class="chip"
-            [class.active]="filters().prix === 'payant'"
-            (click)="setPrix('payant')"
-          >
-            💶 Payant
-          </button>
-        </div>
-        @if (filters().prix) {
-          <div class="panel-actions">
-            <button class="btn-clear" (click)="clearPrix()">✕ Effacer</button>
-          </div>
-        }
-      </div>
-    </div>
-  }
-
-  <!-- ── Panel Premium ── -->
-  @if (openPanel() === 'premium') {
-    <div class="filter-panel" (click)="$event.stopPropagation()">
-      <div class="panel-inner">
-        <label>Sorties réservées aux abonnés</label>
-        <div class="chip-list">
-          <button class="chip" [class.active]="filters().premium" (click)="togglePremium()">
-            ⭐ Afficher uniquement les sorties Premium
-          </button>
-        </div>
-        @if (filters().premium) {
-          <div class="panel-actions">
-            <button class="btn-clear" (click)="togglePremium(); openPanel.set(null)">
-              ✕ Effacer
-            </button>
-          </div>
-        }
       </div>
     </div>
   }
