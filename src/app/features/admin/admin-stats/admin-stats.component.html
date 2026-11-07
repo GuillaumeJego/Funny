@@ -66,6 +66,10 @@
         <span class="tile-label">membres différents</span>
       </div>
       <div class="tile">
+        <span class="tile-value">{{ s.newMembers }}</span>
+        <span class="tile-label">nouveaux membres</span>
+      </div>
+      <div class="tile">
         <span class="tile-value">{{ s.pageViews }}</span>
         <span class="tile-label">pages vues</span>
       </div>
@@ -111,6 +115,7 @@
           <thead>
             <tr>
               <th scope="col">Jour</th>
+              <th scope="col">Nouveaux membres</th>
               <th scope="col">Messages</th>
               <th scope="col">Sorties créées</th>
               <th scope="col">Inscriptions</th>
@@ -121,6 +126,7 @@
             @for (d of activityRows(); track d.day) {
               <tr>
                 <th scope="row">{{ d.label }}</th>
+                <td>{{ d.members }}</td>
                 <td>{{ d.messages }}</td>
                 <td>{{ d.sorties }}</td>
                 <td>{{ d.joins }}</td>

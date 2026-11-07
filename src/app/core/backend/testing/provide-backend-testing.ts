@@ -144,6 +144,7 @@ const fakeAdmin: AdminRepository = {
       messages: 0,
       sorties: 0,
       joins: 0,
+      newMembers: 0,
     },
     error: null,
   }),

@@ -113,12 +113,14 @@ export async function connexionStats(api, input) {
     ),
     Query.lessThan('$createdAt', parisMidnight(addDays(to, 1))),
   ];
-  const [visits, pageRows, messages, sorties, inscriptions] = await Promise.all([
+  const [visits, pageRows, messages, sorties, inscriptions, newProfiles] = await Promise.all([
     api.listAllRows('connexions', dayRange),
     api.listAllRows('pages_vues', dayRange),
     api.listAllRows('messages', createdRange),
     api.listAllRows('sorties', createdRange),
     api.listAllRows('inscriptions', createdRange),
+    // Nouveaux membres : profils créés pendant la période (à l'inscription).
+    api.listAllRows('profiles', createdRange),
   ]);
 
   // L'organisateur est inscrit d'office à sa sortie : ce n'est pas quelqu'un qui « rejoint ».
@@ -144,6 +146,7 @@ export async function connexionStats(api, input) {
         ...messages.map((r) => r.sender_id),
         ...sorties.map((r) => r.created_by),
         ...joins.map((r) => r.user_id),
+        ...newProfiles.map((r) => r.$id),
       ]),
     ];
     const profiles = new Map();
@@ -163,6 +166,7 @@ export async function connexionStats(api, input) {
     messages: messages.filter((r) => keep(r.sender_id)).map(dayOf),
     sorties: sorties.filter((r) => keep(r.created_by)).map(dayOf),
     joins: joins.filter((r) => keep(r.user_id)).map(dayOf),
+    members: newProfiles.filter((r) => keep(r.$id)).map(dayOf),
   };
   const countOn = (list, day) => list.filter((d) => d === day).length;
 
@@ -177,6 +181,7 @@ export async function connexionStats(api, input) {
       messages: countOn(activity.messages, day),
       sorties: countOn(activity.sorties, day),
       joins: countOn(activity.joins, day),
+      members: countOn(activity.members, day),
     });
   }
   const hours = Array.from({ length: 24 }, (_, h) => rows.filter((r) => r.hour === h).length);
@@ -195,5 +200,6 @@ export async function connexionStats(api, input) {
     messages: activity.messages.length,
     sorties: activity.sorties.length,
     joins: activity.joins.length,
+    newMembers: activity.members.length,
   };
 }
