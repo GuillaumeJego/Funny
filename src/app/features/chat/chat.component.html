@@ -245,6 +245,32 @@
         </div>
       }
 
+      <!-- Photos et vidéos choisies, en attente du bouton « Envoyer » -->
+      @if (pendingMedia().length) {
+        <div class="pending-media">
+          @for (media of pendingMedia(); track media.previewUrl) {
+            <div class="pending-item">
+              @if (media.type === 'image') {
+                <img [src]="media.previewUrl" alt="Photo à envoyer" />
+              } @else {
+                <video [src]="media.previewUrl" muted playsinline></video>
+                <span class="pending-video">🎥</span>
+              }
+              <button
+                type="button"
+                class="pending-remove"
+                aria-label="Retirer"
+                [disabled]="sending()"
+                (click)="removePendingMedia(media)"
+              >
+                ✕
+              </button>
+            </div>
+          }
+          <span class="pending-count">{{ pendingMedia().length }}/{{ maxMedia }}</span>
+        </div>
+      }
+
       <div class="input-row">
         <!-- Bouton média -->
         <button class="btn-attach" (click)="triggerFileInput('image')" title="Photo">
@@ -287,19 +313,34 @@
           "
         ></textarea>
 
-        <button class="btn-send" [disabled]="!text().trim() || sending()" (click)="send()">
+        <button
+          class="btn-send"
+          aria-label="Envoyer"
+          [disabled]="(!text().trim() && !pendingMedia().length) || sending()"
+          (click)="send()"
+        >
           @if (!sending()) {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M2 21l21-9L2 3v7l15 2-15 2z" />
             </svg>
           }
           @if (sending()) {
-            <div class="spinner-sm"></div>
+            @if (sendProgress()) {
+              <span class="send-progress">{{ sendProgress() }}</span>
+            } @else {
+              <div class="spinner-sm"></div>
+            }
           }
         </button>
       </div>
 
-      <input #fileInput type="file" style="display: none" (change)="onFileSelected($event)" />
+      <input
+        #fileInput
+        type="file"
+        multiple
+        style="display: none"
+        (change)="onFileSelected($event)"
+      />
     </div>
   }
 

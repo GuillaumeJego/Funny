@@ -118,7 +118,8 @@ export class AppwriteSortieRepository extends SortieRepository {
             'inscriptions',
             'sortie_id',
             sorties.map((s) => s.id),
-            [Query.equal('status', 'pending'), Query.select(['$id', 'sortie_id'])],
+            // Participants : inscrits et organisateur (« confirmed »).
+            [Query.equal('status', ['pending', 'confirmed']), Query.select(['$id', 'sortie_id'])],
           )
         : [],
     ]);

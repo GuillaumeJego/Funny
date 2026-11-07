@@ -29,7 +29,7 @@ export class AppwriteInscriptionRepository extends InscriptionRepository {
   countPending(sortieId: string): Promise<number> {
     return this.appwrite.count('inscriptions', [
       Query.equal('sortie_id', sortieId),
-      Query.equal('status', 'pending'),
+      Query.equal('status', ['pending', 'confirmed']), // l'organisateur compte aussi
     ]);
   }
 

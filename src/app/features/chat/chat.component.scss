@@ -597,3 +597,65 @@
   color: $primary;
   margin: 0 0 0.15rem 0.4rem;
 }
+
+// ─── Photos et vidéos en attente d'envoi ──────────────────
+.pending-media {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.5rem 0.25rem;
+  margin-bottom: 0.35rem;
+}
+
+.pending-item {
+  position: relative;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+
+  img,
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.pending-video {
+  position: absolute;
+  left: 4px;
+  bottom: 2px;
+  font-size: 0.9rem;
+}
+
+.pending-remove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 0.7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pending-count {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: $text-light;
+}
+
+.send-progress {
+  font-size: 0.7rem;
+  font-weight: 700;
+}

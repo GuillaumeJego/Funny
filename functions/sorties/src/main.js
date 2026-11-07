@@ -124,10 +124,10 @@ async function update({ api, userId, input }) {
 
   const taken = await api.countRows('inscriptions', [
     Query.equal('sortie_id', sortie.$id),
-    Query.equal('status', 'pending'),
+    Query.equal('status', ['pending', 'confirmed']), // l'organisateur compte pour une place
   ]);
   if (data.max_participants != null && data.max_participants < taken) {
-    fail(400, `${taken} membres sont déjà inscrits : garde au moins ${taken} places.`);
+    fail(400, `${taken} participants (organisateur compris) : garde au moins ${taken} places.`);
   }
 
   // Nouvelle date : le rappel de la veille repartira pour la nouvelle date.
@@ -189,7 +189,7 @@ async function join({ api, userId, input }) {
 
   const taken = await api.countRows('inscriptions', [
     Query.equal('sortie_id', sortie.$id),
-    Query.equal('status', 'pending'),
+    Query.equal('status', ['pending', 'confirmed']), // l'organisateur compte pour une place
   ]);
   const full = sortie.max_participants != null && taken >= sortie.max_participants;
   let status = full ? 'waiting' : 'pending';

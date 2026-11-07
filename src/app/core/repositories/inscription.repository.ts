@@ -4,6 +4,7 @@ export type InscriptionStatus = 'none' | 'pending' | 'waiting' | 'confirmed';
 
 export abstract class InscriptionRepository {
   abstract getStatus(userId: string, sortieId: string): Promise<InscriptionStatus>;
+  /** Participants : inscrits et organisateur (qui occupe une place). */
   abstract countPending(sortieId: string): Promise<number>;
   /** Identifiants des sorties où le membre a ce statut, dans l'ordre d'inscription. */
   abstract getSortieIds(userId: string, status: 'pending' | 'waiting'): Promise<string[]>;
