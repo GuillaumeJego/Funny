@@ -566,3 +566,34 @@
   background: #fef2f2;
   border-top: 1px solid #fecaca;
 }
+
+// ─── Discussion de groupe (sortie) ────────────────────────
+.group-link {
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  .header-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.header-sub {
+  font-size: 0.75rem;
+  color: $text-light;
+}
+
+.sender-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $primary;
+  margin: 0 0 0.15rem 0.4rem;
+}

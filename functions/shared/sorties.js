@@ -1,5 +1,6 @@
 // Règles partagées par les fonctions « sorties » et « account ».
 import { Query, deleteFile, inBatches, notify, usernameOf } from './appwrite.js';
+import { deleteSortieChat, syncSortieChat } from './conversations.js';
 
 /**
  * Vérifie, après coup, qu'une inscription « pending » tient dans le nombre de places.
@@ -48,6 +49,8 @@ export async function promoteFromWaitingList(api, sortie) {
       link: `/dashboard?sortie=${sortie.$id}`,
     },
   ]);
+  // Il rejoint aussi la discussion de groupe de la sortie.
+  await syncSortieChat(api, sortie);
 }
 
 /**
@@ -115,6 +118,7 @@ export async function deleteSortie(api, sortie, { notifyMembers = true } = {}) {
   if (sortie.image_source === 'custom' && sortie.image_url) {
     await deleteFile(api, 'sorties-images', sortie.image_url);
   }
+  await deleteSortieChat(api, sortie.$id);
   await api.deleteRow('sorties_apercus', sortie.$id);
   await api.deleteRow('sorties', sortie.$id);
 }

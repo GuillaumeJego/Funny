@@ -642,3 +642,31 @@
   font-size: 0.9rem;
   margin: 0.25rem 0 0.5rem;
 }
+
+// Discussion de groupe des participants.
+.btn-chat {
+  width: 100%;
+  padding: 0.9rem;
+  margin-bottom: 0.6rem;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $border-radius;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: $primary-hover;
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+}
+
+.chat-error {
+  font-size: 0.85rem;
+  color: $error;
+  margin: -0.3rem 0 0.6rem;
+}

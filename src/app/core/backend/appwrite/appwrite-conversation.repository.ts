@@ -7,7 +7,7 @@ import { AppwriteClientService, DB } from './appwrite-client';
 import { fromRow } from './rows';
 
 type MessageRow = Models.Row & Omit<NewMessage, 'media_file_id'> & { media_file_id: string | null };
-type ConversationRow = Models.Row & { participant_ids: string[] };
+type ConversationRow = Models.Row & { participant_ids: string[]; sortie_id?: string | null };
 type ReadRow = Models.Row & { conversation_id: string; last_read_at: string };
 type ReactionRow = Models.Row & MessageReaction & { conversation_id: string };
 
@@ -45,11 +45,52 @@ export class AppwriteConversationRepository extends ConversationRepository {
     return data.conversationId;
   }
 
+  async openSortieChat(sortieId: string): Promise<string> {
+    const { data, error } = await this.appwrite.run<{ conversationId: string }>(
+      'sorties',
+      'openChat',
+      { sortieId },
+    );
+    if (error || !data) throw new Error(error?.message ?? 'Discussion impossible.');
+    return data.conversationId;
+  }
+
+  async getConversation(conversationId: string): Promise<Conversation | null> {
+    const row = await this.appwrite.getRowOrNull<ConversationRow>('conversations', conversationId);
+    if (!row) return null;
+    const [profiles, titles] = await Promise.all([
+      this.appwrite.miniProfiles(row.participant_ids),
+      this.sortieTitles([row]),
+    ]);
+    return {
+      id: row.$id,
+      created_at: row.$createdAt,
+      participants: row.participant_ids.map((id) => ({ user_id: id, user: profiles.get(id) })),
+      sortie_id: row.sortie_id ?? null,
+      sortie_title: row.sortie_id ? (titles.get(row.sortie_id) ?? 'Sortie') : null,
+    };
+  }
+
+  /** Titres des sorties des discussions de groupe. */
+  private async sortieTitles(rows: ConversationRow[]): Promise<Map<string, string>> {
+    const ids = rows.map((r) => r.sortie_id).filter((id): id is string => !!id);
+    if (!ids.length) return new Map();
+    const sorties = await this.appwrite.listIn<Models.Row & { title: string }>(
+      'sorties',
+      '$id',
+      ids,
+    );
+    return new Map(sorties.map((s) => [s.$id, s.title]));
+  }
+
   async getForUser(userId: string): Promise<Conversation[]> {
     const rows = await this.appwrite.listAll<ConversationRow>('conversations', [
       Query.contains('participant_ids', userId),
     ]);
-    const profiles = await this.appwrite.miniProfiles(rows.flatMap((r) => r.participant_ids));
+    const [profiles, titles] = await Promise.all([
+      this.appwrite.miniProfiles(rows.flatMap((r) => r.participant_ids)),
+      this.sortieTitles(rows),
+    ]);
     return Promise.all(
       rows.map(async (row) => {
         const page = await this.appwrite.tables.listRows<MessageRow>({
@@ -66,7 +107,11 @@ export class AppwriteConversationRepository extends ConversationRepository {
           id: row.$id,
           created_at: row.$createdAt,
           participants: row.participant_ids.map((id) => ({ user_id: id, user: profiles.get(id) })),
-          last_message: last ? this.toMessage(last) : null,
+          last_message: last
+            ? { ...this.toMessage(last), sender: this.senderOf(profiles, last.sender_id) }
+            : null,
+          sortie_id: row.sortie_id ?? null,
+          sortie_title: row.sortie_id ? (titles.get(row.sortie_id) ?? 'Sortie') : null,
         };
       }),
     );
@@ -272,6 +317,14 @@ export class AppwriteConversationRepository extends ConversationRepository {
       Query.equal('user_id', userId),
     ]);
     return row ?? null;
+  }
+
+  private senderOf(
+    profiles: Map<string, { username: string; avatar_url: string | null }>,
+    id: string,
+  ) {
+    const p = profiles.get(id);
+    return p ? { username: p.username, avatar_url: p.avatar_url } : undefined;
   }
 
   private toMessage(row: MessageRow): Message {

@@ -190,7 +190,12 @@ export const TABLES = [
     name: 'Conversations',
     permissions: [],
     rowSecurity: true,
-    columns: [stringArray('participant_ids', ID, { required: true }), datetime('last_message_at')],
+    columns: [
+      stringArray('participant_ids', ID, { required: true }),
+      datetime('last_message_at'),
+      // Discussion de groupe d'une sortie (vide pour une conversation entre deux amis).
+      str('sortie_id', ID),
+    ],
     indexes: [], // Appwrite n'indexe pas les colonnes « liste »
   },
   {

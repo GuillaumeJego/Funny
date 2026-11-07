@@ -21,6 +21,7 @@ import {
 import { cleanSortie, isSafeDefaultImage, sortieImageFileId } from './shared/sortie-rules.js';
 import { recordAffinity, sendAffinityQuestions } from './shared/affinites.js';
 import { sendReminders } from './shared/rappels.js';
+import { syncSortieChat } from './shared/conversations.js';
 
 /**
  * Qui peut voir une sortie : tout le monde, ou seulement les abonnés si elle est Premium.
@@ -201,6 +202,8 @@ async function join({ api, userId, input }) {
       });
   // Deux inscriptions au même moment ne doivent pas dépasser le nombre de places.
   if (status === 'pending') status = await confirmPlace(api, sortie, inscription.$id);
+  // Un inscrit rejoint la discussion de groupe (la liste d'attente, non).
+  if (status === 'pending') await syncSortieChat(api, sortie);
 
   const actor = await usernameOf(api, userId);
   await notify(api, [
@@ -231,6 +234,8 @@ async function leave({ api, userId, input }) {
     fail(400, "L'organisateur ne peut pas quitter sa sortie.");
 
   await api.updateRow('inscriptions', inscription.$id, { status: 'cancelled' });
+  // Il quitte aussi la discussion de groupe.
+  await syncSortieChat(api, sortie);
   if (inscription.status === 'pending') {
     const actor = await usernameOf(api, userId);
     await notify(api, [
@@ -281,6 +286,17 @@ async function remove({ api, userId, input }) {
   return {};
 }
 
+/** Ouvre la discussion de groupe de la sortie (créée à la première ouverture). */
+async function openChat({ api, userId, input }) {
+  const sortie = await getSortie(api, input.sortieId);
+  const inscription = await getInscription(api, sortie.$id, userId);
+  if (!inscription || !['pending', 'confirmed'].includes(inscription.status)) {
+    fail(403, 'La discussion est réservée aux participants de la sortie.');
+  }
+  const conversation = await syncSortieChat(api, sortie, { create: true });
+  return { conversationId: conversation.$id };
+}
+
 /** Réponse à « avez-vous eu des affinités avec quelqu'un ? » pour un autre participant. */
 async function affinite({ api, userId, input }) {
   const sortie = await getSortie(api, input.sortieId);
@@ -293,7 +309,7 @@ async function affinite({ api, userId, input }) {
 }
 
 export default handler(
-  { create, update, join, leave, like, affinite, delete: remove },
+  { create, update, join, leave, like, affinite, openChat, delete: remove },
   // Chaque heure : rappel la veille des sorties, et question des affinités après.
   {
     onSchedule: async ({ api }) => ({
