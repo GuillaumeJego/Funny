@@ -11,6 +11,8 @@ export interface AppNotification {
   /** Page à ouvrir quand on clique sur la notification (ex. /sorties/<id>/affinites). */
   link?: string | null;
   actor?: { username: string; avatar_url: string | null };
+  /** Image de la sortie concernée, s'il y en a une. */
+  sortie_image?: string | null;
 }
 
 /** Les notifications sont créées par le serveur (Appwrite Functions) ; ici, on les lit. */

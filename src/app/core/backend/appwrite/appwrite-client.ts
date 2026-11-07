@@ -147,6 +147,37 @@ export class AppwriteClientService {
   }
 
   /** Adresse d'affichage d'un fichier lisible sans connexion (photos de profil, sorties). */
+  /**
+   * Titre et image de sorties (discussions de groupe, notifications). Sans image choisie,
+   * la première image du thème, comme sur la carte de la sortie.
+   */
+  async sortieInfos(ids: string[]): Promise<Map<string, { title: string; image: string | null }>> {
+    ids = [...new Set(ids)];
+    if (!ids.length) return new Map();
+    const sorties = await this.listIn<
+      Models.Row & { title: string; image_url: string | null; theme_id: string }
+    >('sorties', '$id', ids);
+    const themeIds = [...new Set(sorties.filter((s) => !s.image_url).map((s) => s.theme_id))];
+    const images = themeIds.length
+      ? await this.listIn<Models.Row & { theme_id: string; image_url: string }>(
+          'theme_images',
+          'theme_id',
+          themeIds,
+          [Query.orderAsc('position')],
+        )
+      : [];
+    const firstImage = new Map<string, string>();
+    for (const image of images) {
+      if (!firstImage.has(image.theme_id)) firstImage.set(image.theme_id, image.image_url);
+    }
+    return new Map(
+      sorties.map((s) => [
+        s.$id,
+        { title: s.title, image: s.image_url || firstImage.get(s.theme_id) || null },
+      ]),
+    );
+  }
+
   fileUrl(bucketId: string, fileId: string): string {
     return this.storage.getFileView({ bucketId, fileId });
   }

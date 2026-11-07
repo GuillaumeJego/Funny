@@ -72,36 +72,10 @@ export class AppwriteConversationRepository extends ConversationRepository {
     };
   }
 
-  /**
-   * Titre et image des sorties des discussions de groupe. Sans image choisie,
-   * la première image du thème, comme sur la carte de la sortie.
-   */
-  private async sortieInfos(
-    rows: ConversationRow[],
-  ): Promise<Map<string, { title: string; image: string | null }>> {
-    const ids = rows.map((r) => r.sortie_id).filter((id): id is string => !!id);
-    if (!ids.length) return new Map();
-    const sorties = await this.appwrite.listIn<
-      Models.Row & { title: string; image_url: string | null; theme_id: string }
-    >('sorties', '$id', ids);
-    const themeIds = [...new Set(sorties.filter((s) => !s.image_url).map((s) => s.theme_id))];
-    const images = themeIds.length
-      ? await this.appwrite.listIn<Models.Row & { theme_id: string; image_url: string }>(
-          'theme_images',
-          'theme_id',
-          themeIds,
-          [Query.orderAsc('position')],
-        )
-      : [];
-    const firstImage = new Map<string, string>();
-    for (const image of images) {
-      if (!firstImage.has(image.theme_id)) firstImage.set(image.theme_id, image.image_url);
-    }
-    return new Map(
-      sorties.map((s) => [
-        s.$id,
-        { title: s.title, image: s.image_url || firstImage.get(s.theme_id) || null },
-      ]),
+  /** Titre et image des sorties des discussions de groupe. */
+  private sortieInfos(rows: ConversationRow[]) {
+    return this.appwrite.sortieInfos(
+      rows.map((r) => r.sortie_id).filter((id): id is string => !!id),
     );
   }
 
