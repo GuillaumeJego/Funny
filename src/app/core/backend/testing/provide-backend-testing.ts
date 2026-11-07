@@ -27,6 +27,7 @@ const fakeAuth: AuthRepository = {
   getUser: async () => ({ data: { user: null } }),
   hasSession: async () => false,
   recordVisit: async () => false,
+  recordPages: async () => false,
   deleteAccount: async () => ({ error: null }),
   sendVerification: async () => ({ error: null }),
   confirmVerification: async () => ({ error: null }),
@@ -133,7 +134,17 @@ const fakeAdmin: AdminRepository = {
   getOpenReports: async () => empty,
   markReportHandled: async () => ok,
   getStats: async () => ({
-    data: { days: [], hours: Array(24).fill(0), total: 0, unique: 0 },
+    data: {
+      days: [],
+      hours: Array(24).fill(0),
+      pages: [],
+      total: 0,
+      unique: 0,
+      pageViews: 0,
+      messages: 0,
+      sorties: 0,
+      joins: 0,
+    },
     error: null,
   }),
 };

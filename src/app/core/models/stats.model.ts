@@ -8,11 +8,29 @@ export interface StatsQuery {
   relationship?: string;
 }
 
-export interface ConnexionStats {
-  /** Par jour : connexions et membres différents. */
-  days: { day: string; total: number; unique: number }[];
-  /** Connexions par heure de la journée (0 à 23, heure de Paris). */
-  hours: number[];
+export interface StatsDay {
+  day: string;
+  /** Connexions et membres différents. */
   total: number;
   unique: number;
+  /** Pages vues, messages envoyés, sorties créées, inscriptions à une sortie. */
+  pages: number;
+  messages: number;
+  sorties: number;
+  joins: number;
+}
+
+export interface ConnexionStats {
+  days: StatsDay[];
+  /** Connexions par heure de la journée (0 à 23, heure de Paris). */
+  hours: number[];
+  /** Pages les plus vues (chemins sans identifiant, ex. « /membres/:id »). */
+  pages: { page: string; count: number }[];
+  total: number;
+  unique: number;
+  pageViews: number;
+  messages: number;
+  sorties: number;
+  /** Inscriptions à une sortie (hors organisateur). */
+  joins: number;
 }

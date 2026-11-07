@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, connexionStats, parisDayHour, recordVisit } from '../shared/stats.js';
+import {
+  addDays,
+  connexionStats,
+  parisDayHour,
+  parisMidnight,
+  recordPageViews,
+  recordVisit,
+} from '../shared/stats.js';
 import { createFakeApi } from './fake-api.js';
 
 const visit = (user_id, day, hour) => ({ user_id, day, hour, at: `${day}T10:00:00Z` });
@@ -41,7 +48,7 @@ describe('connexionStats', () => {
 
   it('compte les connexions et les membres différents par jour et par heure', async () => {
     const stats = await connexionStats(api, { from: '2026-11-05', to: '2026-11-07' });
-    expect(stats.days).toEqual([
+    expect(stats.days.map(({ day, total, unique }) => ({ day, total, unique }))).toEqual([
       { day: '2026-11-05', total: 1, unique: 1 },
       { day: '2026-11-06', total: 3, unique: 2 },
       { day: '2026-11-07', total: 1, unique: 1 },
@@ -72,9 +79,67 @@ describe('connexionStats', () => {
   });
 });
 
+describe('activité et pages', () => {
+  // 23 h 30 UTC le 6 = 0 h 30 le 7 à Paris.
+  const api = createFakeApi({
+    profiles: [
+      { $id: 'alice', gender: 'Femme' },
+      { $id: 'bob', gender: 'Homme' },
+    ],
+    messages: [
+      { sender_id: 'alice', $createdAt: '2026-11-06T10:00:00.000Z' },
+      { sender_id: 'bob', $createdAt: '2026-11-06T23:30:00.000Z' },
+      { sender_id: 'bob', $createdAt: '2026-10-01T10:00:00.000Z' },
+    ],
+    sorties: [{ $id: 's1', created_by: 'alice', $createdAt: '2026-11-06T09:00:00.000Z' }],
+    inscriptions: [
+      {
+        sortie_id: 's1',
+        user_id: 'alice',
+        status: 'confirmed',
+        $createdAt: '2026-11-06T09:00:00.000Z',
+      },
+      {
+        sortie_id: 's1',
+        user_id: 'bob',
+        status: 'pending',
+        $createdAt: '2026-11-07T08:00:00.000Z',
+      },
+    ],
+  });
+
+  it('compte messages, sorties créées et inscriptions (sans l’organisateur), par jour de Paris', async () => {
+    const stats = await connexionStats(api, { from: '2026-11-06', to: '2026-11-07' });
+    expect(stats).toMatchObject({ messages: 2, sorties: 1, joins: 1 });
+    expect(stats.days[0]).toMatchObject({ day: '2026-11-06', messages: 1, sorties: 1, joins: 0 });
+    expect(stats.days[1]).toMatchObject({ day: '2026-11-07', messages: 1, joins: 1 });
+    const hommes = await connexionStats(api, {
+      from: '2026-11-06',
+      to: '2026-11-07',
+      gender: 'Homme',
+    });
+    expect(hommes).toMatchObject({ messages: 1, sorties: 0, joins: 1 });
+  });
+
+  it('additionne les pages vues par membre et par jour', async () => {
+    const now = new Date('2026-11-07T10:00:00Z');
+    await recordPageViews(api, 'alice', { '/dashboard': 2, '/messages': 1 }, now);
+    await recordPageViews(api, 'alice', { '/dashboard': 1, 'pas-une-page': 4 }, now);
+    expect(api.tables.get('pages_vues')).toHaveLength(2);
+    const stats = await connexionStats(api, { from: '2026-11-07', to: '2026-11-07' });
+    expect(stats.pages).toEqual([
+      { page: '/dashboard', count: 3 },
+      { page: '/messages', count: 1 },
+    ]);
+    expect(stats.pageViews).toBe(4);
+  });
+});
+
 describe('dates', () => {
   it('passe au jour suivant à minuit heure de Paris', () => {
     expect(parisDayHour(new Date('2026-11-07T23:30:00Z'))).toEqual({ day: '2026-11-08', hour: 0 });
     expect(addDays('2026-12-31', 1)).toBe('2027-01-01');
+    expect(parisMidnight('2026-11-07')).toBe('2026-11-06T23:00:00.000Z');
+    expect(parisMidnight('2026-07-14')).toBe('2026-07-13T22:00:00.000Z');
   });
 });

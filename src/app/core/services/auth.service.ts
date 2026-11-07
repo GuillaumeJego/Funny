@@ -35,6 +35,11 @@ export class AuthService {
     return await this.auth.recordVisit();
   }
 
+  // Pages consultées, envoyées par lots (statistiques de l'admin)
+  async recordPages(pages: Record<string, number>): Promise<boolean> {
+    return await this.auth.recordPages(pages);
+  }
+
   // Une session est-elle ouverte ?
   async hasSession() {
     return await this.auth.hasSession();

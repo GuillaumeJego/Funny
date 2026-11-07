@@ -14,7 +14,7 @@ import {
 import { deleteSortie, promoteFromWaitingList } from './shared/sorties.js';
 import { deleteConversation } from './shared/conversations.js';
 import { stripe } from './shared/stripe.js';
-import { recordVisit } from './shared/stats.js';
+import { recordPageViews, recordVisit } from './shared/stats.js';
 
 const USERNAME = /^[\p{L}\p{N}._-]{3,40}$/u;
 
@@ -139,6 +139,7 @@ async function remove({ api, userId, input }) {
   await deleteAll('conversation_reads', await byUser('conversation_reads', 'user_id'));
   await deleteAll('subscriptions', await byUser('subscriptions', 'user_id'));
   await deleteAll('connexions', await byUser('connexions', 'user_id'));
+  await deleteAll('pages_vues', await byUser('pages_vues', 'user_id'));
 
   // Ses conversations : l'autre membre ne peut plus lui écrire, on les efface en entier.
   const conversations = await api.listAllRows('conversations', [
@@ -170,4 +171,9 @@ async function visit({ api, userId }) {
   return recordVisit(api, userId);
 }
 
-export default handler({ init, delete: remove, visit }, { unverified: ['init', 'delete'] });
+/** Pages consultées depuis le dernier envoi, pour les statistiques de l'admin. */
+async function pages({ api, userId, input }) {
+  return recordPageViews(api, userId, input.pages);
+}
+
+export default handler({ init, delete: remove, visit, pages }, { unverified: ['init', 'delete'] });

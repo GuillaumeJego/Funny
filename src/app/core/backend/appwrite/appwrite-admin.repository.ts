@@ -73,8 +73,9 @@ export class AppwriteAdminRepository extends AdminRepository {
   async getStats(query: StatsQuery): Promise<RepositoryResult<ConnexionStats>> {
     const { data, error } = await this.appwrite.run<ConnexionStats>('admin', 'stats', { ...query });
     if (error || !data) return { data: null, error };
+    const { days, hours, pages, total, unique, pageViews, messages, sorties, joins } = data;
     return {
-      data: { days: data.days, hours: data.hours, total: data.total, unique: data.unique },
+      data: { days, hours, pages, total, unique, pageViews, messages, sorties, joins },
       error: null,
     };
   }
