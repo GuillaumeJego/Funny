@@ -87,6 +87,10 @@
   .panel-inner {
     padding: 0.85rem 1rem;
 
+    > div + div {
+      margin-top: 1rem;
+    }
+
     label {
       display: block;
       font-size: 0.8rem;
@@ -143,118 +147,16 @@
     }
   }
 
-  // ── Lieu : chips existants ───────────────────────────────
-  .location-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .ou-separator {
+  // ── Lieu : autour de moi, villes ─────────────────────
+  .chip-count {
+    margin-left: 0.25rem;
     font-size: 0.75rem;
-    color: $text-light;
-    text-align: center;
-    margin: 0.6rem 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    &::before,
-    &::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: $border-color;
-    }
+    opacity: 0.65;
   }
 
-  // ── Lieu autocomplete ────────────────────────────────────
-  .location-search {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .location-input {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid $border-color;
-    border-radius: $border-radius;
-    font-size: 0.9rem;
-    color: $text-dark;
-    &:focus {
-      outline: none;
-      border-color: $primary;
-    }
-  }
-
-  .location-spinner {
-    font-size: 0.85rem;
-  }
-
-  .location-active {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.4rem 0.75rem;
-    background: $primary-light;
-    border: 1px solid $primary;
-    border-radius: $border-radius;
-    font-size: 0.85rem;
-    color: $primary;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-  }
-
-  .btn-clear-inline {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: $primary;
-    font-size: 0.9rem;
-    padding: 0;
-    line-height: 1;
-  }
-
-  .location-suggestions {
-    border: 1px solid $border-color;
-    border-radius: $border-radius;
-    overflow: hidden;
-    max-height: 160px;
-    overflow-y: auto;
-  }
-
-  .suggestion-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    cursor: pointer;
-    transition: background 0.15s;
-    border-bottom: 1px solid $border-color;
-
-    &:last-child {
-      border-bottom: none;
-    }
-    &:hover {
-      background: $primary-light;
-    }
-
-    .sug-icon {
-      font-size: 0.85rem;
-    }
-    .sug-city {
-      font-size: 0.9rem;
-      color: $text-dark;
-      font-weight: 500;
-    }
-    .sug-country {
-      font-size: 0.75rem;
-      color: $text-light;
-      margin-left: auto;
-    }
+  .chip:disabled {
+    opacity: 0.6;
+    cursor: wait;
   }
 
   .empty-hint {

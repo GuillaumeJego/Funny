@@ -1,10 +1,7 @@
 import {
   Component,
   HostListener,
-  OnDestroy,
-  OnInit,
   ChangeDetectionStrategy,
-  inject,
   input,
   output,
   signal,
@@ -12,14 +9,15 @@ import {
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
-import { GeoService, GeoPlace } from '../../services/geo.service';
 import { ClickableDirective } from '../../directives/clickable.directive';
+import { townsOf } from '../../utils/towns';
 
 export interface Filters {
   themeIds?: string[];
+  /** Ville choisie dans « Où ? » (voir inTown). */
   ou?: string;
+  /** « Autour de moi » : rayon en km et position du membre. */
+  autour?: { km: number; lat: number; lng: number };
   dateDebut?: string;
   dateFin?: string;
   quickPeriod?: string; // 'past' : sorties passées ; sinon, seulement les sorties à venir
@@ -60,11 +58,11 @@ export interface ThemeOption {
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './navbar-filters.component.scss',
 })
-export class NavbarFiltersComponent implements OnInit, OnDestroy {
-  private geo = inject(GeoService);
-
+export class NavbarFiltersComponent {
   readonly availableThemes = input<ThemeOption[]>([]);
   readonly availableLocations = input<string[]>([]);
+  /** Propose « Autour de moi » (sorties avec position connue). */
+  readonly distanceEnabled = input(false);
   readonly filtersChanged = output<Filters>();
 
   readonly filters = signal<Filters>({});
@@ -76,41 +74,22 @@ export class NavbarFiltersComponent implements OnInit, OnDestroy {
   readonly dateFin = signal('');
   readonly quickPeriod = signal('');
 
-  // Autocomplete lieu
-  readonly locationQuery = signal('');
-  readonly locationSuggestions = signal<GeoPlace[]>([]);
-  readonly locationSearching = signal(false);
-  private locationSearch$ = new Subject<string>();
-  private locationSub!: Subscription;
+  // Où ? : villes des sorties et rayon autour de moi
+  readonly towns = computed(() => townsOf(this.availableLocations()));
+  readonly radiusOptions = [5, 10, 20, 50];
+  readonly locating = signal(false);
+  readonly locateError = signal(false);
 
-  ngOnInit() {
-    this.locationSub = this.locationSearch$
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        switchMap((q) => {
-          this.locationSearching.set(true);
-          return this.geo.searchCities(q);
-        }),
-      )
-      .subscribe((places) => {
-        this.locationSuggestions.set(places);
-        this.locationSearching.set(false);
-      });
-  }
-
-  ngOnDestroy() {
-    this.locationSub?.unsubscribe();
-  }
-
-  onLocationInput() {
-    this.locationSearch$.next(this.locationQuery());
-  }
+  readonly ouLabel = computed<string>(() => {
+    const f = this.filters();
+    if (f.autour) return `< ${f.autour.km} km`;
+    return f.ou || 'Où ?';
+  });
 
   readonly activeCount = computed<number>(() => {
     let n = 0;
     if (this.filters().themeIds?.length) n++;
-    if (this.filters().ou) n++;
+    if (this.filters().ou || this.filters().autour) n++;
     if (this.filters().dateDebut || this.filters().dateFin || this.filters().quickPeriod) n++;
     if (this.filters().prix) n++;
     if (this.filters().premium) n++;
@@ -151,10 +130,7 @@ export class NavbarFiltersComponent implements OnInit, OnDestroy {
         this.dateDebut.set(this.filters().dateDebut ?? '');
         this.dateFin.set(this.filters().dateFin ?? '');
       }
-      if (panel === 'ou') {
-        this.locationQuery.set(this.filters().ou ?? '');
-        this.locationSuggestions.set([]);
-      }
+      if (panel === 'ou') this.locateError.set(false);
     }
   }
 
@@ -190,26 +166,49 @@ export class NavbarFiltersComponent implements OnInit, OnDestroy {
   }
 
   // ── Lieu ──────────────────────────────────────────────────
-  setOuDirect(loc: string) {
-    this.filters.set({ ...this.filters(), ou: loc });
-    this.locationQuery.set(loc);
-    this.locationSuggestions.set([]);
+  /** Une ville à la fois : la choisir remplace le rayon « autour de moi ». */
+  setTown(town: string) {
+    const same = this.filters().ou === town;
+    this.filters.set({ ...this.filters(), ou: same ? undefined : town, autour: undefined });
     this.emit();
     this.openPanel.set(null);
   }
 
-  setOu(place: GeoPlace) {
-    this.filters.set({ ...this.filters(), ou: place.city });
-    this.locationQuery.set(place.city);
-    this.locationSuggestions.set([]);
+  /** Rayon autour de moi : demande la position du membre la première fois. */
+  async setRadius(km: number) {
+    this.locateError.set(false);
+    let position: { lat: number; lng: number } | null = this.filters().autour ?? null;
+    if (!position) {
+      this.locating.set(true);
+      position = await this.locate();
+      this.locating.set(false);
+      if (!position) {
+        this.locateError.set(true);
+        return;
+      }
+    }
+    this.filters.set({
+      ...this.filters(),
+      ou: undefined,
+      autour: { km, lat: position.lat, lng: position.lng },
+    });
     this.emit();
     this.openPanel.set(null);
+  }
+
+  private locate(): Promise<{ lat: number; lng: number } | null> {
+    if (!('geolocation' in navigator)) return Promise.resolve(null);
+    return new Promise((resolve) =>
+      navigator.geolocation.getCurrentPosition(
+        (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
+        () => resolve(null),
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },
+      ),
+    );
   }
 
   clearOu() {
-    this.filters.set({ ...this.filters(), ou: undefined });
-    this.locationQuery.set('');
-    this.locationSuggestions.set([]);
+    this.filters.set({ ...this.filters(), ou: undefined, autour: undefined });
     this.emit();
     this.openPanel.set(null);
   }

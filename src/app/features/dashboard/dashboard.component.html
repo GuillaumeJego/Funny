@@ -2,6 +2,7 @@
   <app-navbar-filters
     [availableThemes]="availableThemes()"
     [availableLocations]="availableLocations()"
+    [distanceEnabled]="true"
     (filtersChanged)="onFiltersChanged($event)"
   />
 
@@ -43,21 +44,6 @@
         <span class="results-count"
           >{{ sortiesFiltrees().length }} sortie{{ sortiesFiltrees().length > 1 ? 's' : '' }}</span
         >
-        <!-- Autour de moi -->
-        <label class="radius-filter">
-          <span aria-hidden="true">📍</span>
-          <select
-            [value]="radiusKm()"
-            [disabled]="locating()"
-            (change)="setRadius(+$any($event.target).value)"
-            aria-label="Distance autour de moi"
-          >
-            <option [value]="0">{{ locating() ? 'Localisation…' : 'Partout' }}</option>
-            @for (km of radiusOptions; track km) {
-              <option [value]="km">À moins de {{ km }} km</option>
-            }
-          </select>
-        </label>
         <div class="view-toggle">
           <button
             class="toggle-btn"
@@ -110,7 +96,7 @@
       @if (viewMode() === 'map') {
         <app-sorties-map
           [sorties]="sortiesFiltrees()"
-          [position]="radiusKm() ? myPosition() : null"
+          [position]="myPosition()"
           (sortieClicked)="openDrawer($event)"
         />
         @if (sansPosition() > 0) {

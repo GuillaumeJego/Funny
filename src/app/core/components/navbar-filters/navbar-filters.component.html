@@ -11,9 +11,14 @@
   </div>
 
   <!-- Où ? -->
-  <div appClickable class="filter-item" [class.active]="filters().ou" (click)="togglePanel('ou')">
+  <div
+    appClickable
+    class="filter-item"
+    [class.active]="filters().ou || filters().autour"
+    (click)="togglePanel('ou')"
+  >
     <span class="filter-icon">📍</span>
-    <span class="filter-label">{{ filters().ou || 'Où ?' }}</span>
+    <span class="filter-label">{{ ouLabel() }}</span>
   </div>
 
   <!-- Quand ? -->
@@ -94,74 +99,54 @@
     </div>
   }
 
-  <!-- ── Panel Où : lieux existants + recherche Nominatim ── -->
+  <!-- ── Panel Où : autour de moi, ou une ville ── -->
   @if (openPanel() === 'ou') {
     <div class="filter-panel" (click)="$event.stopPropagation()">
       <div class="panel-inner">
-        <!-- Lieux déjà en base -->
-        @if (availableLocations().length) {
+        @if (distanceEnabled()) {
           <div>
-            <label>Lieux existants</label>
-            <div class="location-chips">
-              @for (loc of availableLocations(); track loc) {
+            <label>Autour de moi</label>
+            <div class="chip-list">
+              @for (km of radiusOptions; track km) {
                 <button
                   class="chip"
-                  [class.active]="filters().ou === loc"
-                  (click)="setOuDirect(loc)"
+                  [class.active]="filters().autour?.km === km"
+                  [disabled]="locating()"
+                  (click)="setRadius(km)"
                 >
-                  📍 {{ loc }}
+                  &lt; {{ km }} km
                 </button>
               }
             </div>
-            <div class="ou-separator">ou rechercher</div>
-          </div>
-        }
-        <!-- Recherche Nominatim -->
-        @if (!availableLocations().length) {
-          <label>Rechercher une ville</label>
-        }
-        <div class="location-search">
-          <input
-            type="text"
-            class="location-input"
-            [(ngModel)]="locationQuery"
-            (input)="onLocationInput()"
-            placeholder="Ex: Paris, Lyon, Rennes…"
-            autocomplete="off"
-          />
-          @if (locationSearching()) {
-            <span class="location-spinner">⏳</span>
-          }
-        </div>
-        <!-- Ville active (depuis recherche) -->
-        @if (filters().ou && !locationSuggestions().length) {
-          <div class="location-active">
-            <span>📍 {{ filters().ou }}</span>
-            <button class="btn-clear-inline" (click)="clearOu()">✕</button>
-          </div>
-        }
-        <!-- Suggestions Nominatim -->
-        @if (locationSuggestions().length) {
-          <div class="location-suggestions">
-            @for (place of locationSuggestions(); track place) {
-              <div appClickable class="suggestion-item" (click)="setOu(place)">
-                <span class="sug-icon">📍</span>
-                <span class="sug-city">{{ place.city }}</span>
-                <span class="sug-country">{{ place.country }}</span>
+            @if (locating()) {
+              <div class="empty-hint">Localisation…</div>
+            }
+            @if (locateError()) {
+              <div class="empty-hint">
+                Position introuvable : autorise la localisation dans ton navigateur.
               </div>
             }
-            <p class="osm-credit">Adresses : © les contributeurs OpenStreetMap</p>
           </div>
         }
-        @if (
-          locationQuery().length > 1 &&
-          !locationSearching() &&
-          !locationSuggestions().length &&
-          !filters().ou
-        ) {
-          <div class="empty-hint">Aucun résultat</div>
+        @if (towns().length) {
+          <div>
+            <label>Ville</label>
+            <div class="chip-list">
+              @for (town of towns(); track town.name) {
+                <button
+                  class="chip"
+                  [class.active]="filters().ou === town.name"
+                  (click)="setTown(town.name)"
+                >
+                  {{ town.name }} <span class="chip-count">{{ town.count }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        } @else if (!distanceEnabled()) {
+          <div class="empty-hint">Aucun lieu pour l'instant</div>
         }
-        @if (filters().ou) {
+        @if (filters().ou || filters().autour) {
           <div class="panel-actions">
             <button class="btn-clear" (click)="clearOu()">✕ Effacer</button>
           </div>

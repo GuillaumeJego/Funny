@@ -678,23 +678,6 @@
   flex-wrap: wrap;
 }
 
-.radius-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  margin-left: auto;
-  font-size: 0.85rem;
-
-  select {
-    padding: 0.35rem 0.5rem;
-    border: 1px solid $border-color;
-    border-radius: $border-radius;
-    background: $bg-white;
-    color: $text-dark;
-    font-size: 0.85rem;
-  }
-}
-
 .map-note {
   margin-top: 0.5rem;
   font-size: 0.8rem;
