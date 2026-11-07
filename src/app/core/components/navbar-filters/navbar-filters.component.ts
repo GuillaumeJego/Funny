@@ -21,6 +21,7 @@ export interface Filters {
   dateDebut?: string;
   dateFin?: string;
   quickPeriod?: string; // 'past' : sorties passées ; sinon, seulement les sorties à venir
+  /** 'gratuit' : seulement les sorties gratuites. */
   prix?: string;
   premium?: boolean;
 }
@@ -264,23 +265,18 @@ export class NavbarFiltersComponent {
     this.openPanel.set(null);
   }
 
-  // ── Prix ──────────────────────────────────────────────────
-  setPrix(value: string) {
-    this.filters.set({ ...this.filters(), prix: value });
+  // ── Gratuit et Premium : un clic active, un autre désactive ──
+  toggleGratuit() {
+    const on = this.filters().prix !== 'gratuit';
+    this.filters.set({ ...this.filters(), prix: on ? 'gratuit' : undefined });
     this.emit();
     this.openPanel.set(null);
   }
 
-  clearPrix() {
-    this.filters.set({ ...this.filters(), prix: undefined });
-    this.emit();
-    this.openPanel.set(null);
-  }
-
-  // ── Premium ───────────────────────────────────────────────
   togglePremium() {
     this.filters.set({ ...this.filters(), premium: !this.filters().premium });
     this.emit();
+    this.openPanel.set(null);
   }
 
   // ── Reset ─────────────────────────────────────────────────
