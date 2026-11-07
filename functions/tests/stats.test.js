@@ -83,8 +83,8 @@ describe('activité et pages', () => {
   // 23 h 30 UTC le 6 = 0 h 30 le 7 à Paris.
   const api = createFakeApi({
     profiles: [
-      { $id: 'alice', gender: 'Femme' },
-      { $id: 'bob', gender: 'Homme' },
+      { $id: 'alice', gender: 'Femme', $createdAt: '2026-11-06T08:00:00.000Z' },
+      { $id: 'bob', gender: 'Homme', $createdAt: '2026-09-01T08:00:00.000Z' },
     ],
     messages: [
       { sender_id: 'alice', $createdAt: '2026-11-06T10:00:00.000Z' },
@@ -110,15 +110,21 @@ describe('activité et pages', () => {
 
   it('compte messages, sorties créées et inscriptions (sans l’organisateur), par jour de Paris', async () => {
     const stats = await connexionStats(api, { from: '2026-11-06', to: '2026-11-07' });
-    expect(stats).toMatchObject({ messages: 2, sorties: 1, joins: 1 });
-    expect(stats.days[0]).toMatchObject({ day: '2026-11-06', messages: 1, sorties: 1, joins: 0 });
+    expect(stats).toMatchObject({ messages: 2, sorties: 1, joins: 1, newMembers: 1 });
+    expect(stats.days[0]).toMatchObject({
+      day: '2026-11-06',
+      messages: 1,
+      sorties: 1,
+      joins: 0,
+      members: 1,
+    });
     expect(stats.days[1]).toMatchObject({ day: '2026-11-07', messages: 1, joins: 1 });
     const hommes = await connexionStats(api, {
       from: '2026-11-06',
       to: '2026-11-07',
       gender: 'Homme',
     });
-    expect(hommes).toMatchObject({ messages: 1, sorties: 0, joins: 1 });
+    expect(hommes).toMatchObject({ messages: 1, sorties: 0, joins: 1, newMembers: 0 });
   });
 
   it('additionne les pages vues par membre et par jour', async () => {

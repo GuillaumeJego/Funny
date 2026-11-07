@@ -18,6 +18,8 @@ export interface StatsDay {
   messages: number;
   sorties: number;
   joins: number;
+  /** Nouveaux membres inscrits ce jour-là. */
+  members: number;
 }
 
 export interface ConnexionStats {
@@ -33,4 +35,6 @@ export interface ConnexionStats {
   sorties: number;
   /** Inscriptions à une sortie (hors organisateur). */
   joins: number;
+  /** Nouveaux membres inscrits sur Funny pendant la période. */
+  newMembers: number;
 }
