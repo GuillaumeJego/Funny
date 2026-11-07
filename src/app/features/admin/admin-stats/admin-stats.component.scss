@@ -228,3 +228,43 @@
 .dim {
   opacity: 0.5;
 }
+
+.bars.pages .bar-row {
+  grid-template-columns: 10rem 1fr 3rem;
+}
+
+.bars.pages .bar-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.activity {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+
+  th,
+  td {
+    padding: 0.35rem 0.5rem;
+    text-align: right;
+    border-bottom: 1px solid $border-color;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  thead th {
+    color: $text-medium;
+    font-weight: 600;
+  }
+
+  th[scope='row'],
+  thead th:first-child {
+    text-align: left;
+    font-weight: 400;
+    color: $text-medium;
+  }
+}

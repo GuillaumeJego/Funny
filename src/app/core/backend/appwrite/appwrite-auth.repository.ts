@@ -106,6 +106,11 @@ export class AppwriteAuthRepository extends AuthRepository {
     return !error;
   }
 
+  async recordPages(pages: Record<string, number>): Promise<boolean> {
+    const { error } = await this.appwrite.run('account', 'pages', { pages });
+    return !error;
+  }
+
   async deleteAccount(password: string): Promise<{ error: RepositoryError | null }> {
     // Le serveur vérifie le mot de passe, puis supprime aussi le compte Appwrite : la session disparaît avec lui.
     const { error } = await this.appwrite.run('account', 'delete', { password });

@@ -65,6 +65,22 @@
         <span class="tile-value">{{ s.unique }}</span>
         <span class="tile-label">membres différents</span>
       </div>
+      <div class="tile">
+        <span class="tile-value">{{ s.pageViews }}</span>
+        <span class="tile-label">pages vues</span>
+      </div>
+      <div class="tile">
+        <span class="tile-value">{{ s.messages }}</span>
+        <span class="tile-label">messages envoyés</span>
+      </div>
+      <div class="tile">
+        <span class="tile-value">{{ s.sorties }}</span>
+        <span class="tile-label">sorties créées</span>
+      </div>
+      <div class="tile">
+        <span class="tile-value">{{ s.joins }}</span>
+        <span class="tile-label">inscriptions à une sortie</span>
+      </div>
       @if (peakHour() !== null) {
         <div class="tile">
           <span class="tile-value">{{ peakHour() }} h</span>
@@ -75,29 +91,62 @@
 
     <!-- Onglets -->
     <div class="tabs" role="tablist">
-      <button
-        type="button"
-        role="tab"
-        class="tab"
-        [class.active]="view() === 'connexions'"
-        [attr.aria-selected]="view() === 'connexions'"
-        (click)="view.set('connexions')"
-      >
-        Connexions par jour
-      </button>
-      <button
-        type="button"
-        role="tab"
-        class="tab"
-        [class.active]="view() === 'horaires'"
-        [attr.aria-selected]="view() === 'horaires'"
-        (click)="view.set('horaires')"
-      >
-        Horaires d'activité
-      </button>
+      @for (v of views; track v.value) {
+        <button
+          type="button"
+          role="tab"
+          class="tab"
+          [class.active]="view() === v.value"
+          [attr.aria-selected]="view() === v.value"
+          (click)="view.set(v.value)"
+        >
+          {{ v.label }}
+        </button>
+      }
     </div>
 
-    @if (s.total === 0) {
+    @if (view() === 'activite') {
+      <div class="table-wrap" [class.dim]="loading()">
+        <table class="activity">
+          <thead>
+            <tr>
+              <th scope="col">Jour</th>
+              <th scope="col">Messages</th>
+              <th scope="col">Sorties créées</th>
+              <th scope="col">Inscriptions</th>
+              <th scope="col">Pages vues</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of activityRows(); track d.day) {
+              <tr>
+                <th scope="row">{{ d.label }}</th>
+                <td>{{ d.messages }}</td>
+                <td>{{ d.sorties }}</td>
+                <td>{{ d.joins }}</td>
+                <td>{{ d.pages }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else if (view() === 'pages') {
+      @if (pageRows().length === 0) {
+        <p class="empty">Aucune page vue sur cette période.</p>
+      } @else {
+        <ul class="bars pages" [class.dim]="loading()">
+          @for (p of pageRows(); track p.page) {
+            <li class="bar-row">
+              <span class="bar-label" [title]="p.page">{{ p.label }}</span>
+              <span class="bar-track">
+                <span class="bar total" [style.width.%]="p.width"></span>
+              </span>
+              <span class="bar-value">{{ p.count }}</span>
+            </li>
+          }
+        </ul>
+      }
+    } @else if (s.total === 0) {
       <p class="empty">Aucune connexion sur cette période.</p>
     } @else if (view() === 'connexions') {
       <div class="legend">

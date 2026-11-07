@@ -12,6 +12,25 @@ import { ConnexionStats } from '../../../core/models/stats.model';
 import { RELATIONSHIP_OPTIONS } from '../../../core/models/profile.model';
 
 type Period = 'today' | 'yesterday' | 'week' | 'month' | 'custom';
+type View = 'connexions' | 'horaires' | 'activite' | 'pages';
+
+/** Noms lisibles des pages de l'application. */
+const PAGE_LABELS: Record<string, string> = {
+  '/dashboard': 'Sorties (accueil)',
+  '/mes-sorties': 'Mes sorties',
+  '/sorties/creer': 'Créer une sortie',
+  '/sorties/:id/modifier': 'Modifier une sortie',
+  '/sorties/:id/affinites': 'Affinités après une sortie',
+  '/membres': 'Membres',
+  '/membres/:id': "Profil d'un membre",
+  '/amis': 'Amis',
+  '/messages': 'Messages',
+  '/messages/:id': 'Une conversation',
+  '/notifications': 'Notifications',
+  '/profile/edit': 'Modifier mon profil',
+  '/premium': 'Premium',
+  '/admin': 'Admin',
+};
 
 /** Jour local (AAAA-MM-JJ), `offset` jours avant ou après aujourd'hui. */
 function localDay(offset = 0): string {
@@ -60,7 +79,13 @@ export class AdminStatsComponent implements OnInit {
   readonly customTo = signal(localDay());
   readonly gender = signal('');
   readonly relationship = signal('');
-  readonly view = signal<'connexions' | 'horaires'>('connexions');
+  readonly view = signal<View>('connexions');
+  readonly views: { value: View; label: string }[] = [
+    { value: 'connexions', label: 'Connexions' },
+    { value: 'horaires', label: 'Horaires' },
+    { value: 'activite', label: 'Activité' },
+    { value: 'pages', label: 'Pages' },
+  ];
 
   readonly loading = signal(false);
   readonly error = signal('');
@@ -94,6 +119,19 @@ export class AdminStatsComponent implements OnInit {
       }),
       width: (d.total / max) * 100,
       uniqueWidth: (d.unique / max) * 100,
+    }));
+  });
+
+  /** Activité par jour, du plus récent au plus ancien. */
+  readonly activityRows = computed(() => [...this.dayRows()]);
+
+  readonly pageRows = computed(() => {
+    const pages = this.stats()?.pages ?? [];
+    const max = Math.max(1, ...pages.map((p) => p.count));
+    return pages.map((p) => ({
+      ...p,
+      label: PAGE_LABELS[p.page] ?? p.page,
+      width: (p.count / max) * 100,
     }));
   });
 

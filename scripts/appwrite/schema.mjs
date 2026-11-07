@@ -283,6 +283,24 @@ export const TABLES = [
     ],
   },
   {
+    // Pages consultées : une ligne par membre, jour (Paris) et page, avec le nombre de vues.
+    // Écrites et lues par le serveur seulement, pour les statistiques de l'admin.
+    id: 'pages_vues',
+    name: 'Pages consultées',
+    permissions: [],
+    rowSecurity: false,
+    columns: [
+      str('user_id', ID, { required: true }),
+      str('day', 10, { required: true }),
+      str('page', 100, { required: true }),
+      integer('count', { required: true }),
+    ],
+    indexes: [
+      { key: 'day', type: 'key', columns: ['day'] },
+      { key: 'user_day_page', type: 'key', columns: ['user_id', 'day', 'page'] },
+    ],
+  },
+  {
     // Affinités après une sortie : ce qu'un participant a ressenti pour un autre.
     // Écrites par le serveur (Function « sorties »), lisibles par leur seul auteur :
     // l'autre membre n'apprend un choix que s'il est réciproque (notification).
