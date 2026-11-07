@@ -3,6 +3,7 @@
 import { Permission, Query, Role, fail, handler, isAdmin } from './shared/appwrite.js';
 import { removeExpiredPremium, syncPremium } from './shared/premium.js';
 import { requireEditable } from './shared/protection.js';
+import { connexionStats } from './shared/stats.js';
 
 const ROLES = ['user', 'user_premium', 'developer', 'admin'];
 
@@ -110,7 +111,12 @@ async function hourly({ api }) {
   return { lifted: expired.length, premiumRemoved: await removeExpiredPremium(api) };
 }
 
-const actions = { setRole, setPremium, setCanViewProfiles, ban, unban };
+/** Connexions par jour et par heure, pour la page Statistiques. */
+async function stats({ api, input }) {
+  return connexionStats(api, input);
+}
+
+const actions = { setRole, setPremium, setCanViewProfiles, ban, unban, stats };
 
 export default handler(
   Object.fromEntries(

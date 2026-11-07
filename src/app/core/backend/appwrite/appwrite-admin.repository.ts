@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Models, Query } from 'appwrite';
 import { Report } from '../../models/report.model';
+import { ConnexionStats, StatsQuery } from '../../models/stats.model';
 import { AdminRepository } from '../../repositories/admin.repository';
 import { RepositoryResult } from '../../repositories/repository.types';
 import { AppwriteClientService, DB, attempt } from './appwrite-client';
@@ -67,6 +68,15 @@ export class AppwriteAdminRepository extends AdminRepository {
       });
       return null;
     });
+  }
+
+  async getStats(query: StatsQuery): Promise<RepositoryResult<ConnexionStats>> {
+    const { data, error } = await this.appwrite.run<ConnexionStats>('admin', 'stats', { ...query });
+    if (error || !data) return { data: null, error };
+    return {
+      data: { days: data.days, hours: data.hours, total: data.total, unique: data.unique },
+      error: null,
+    };
   }
 
   private async call(action: string, input: Record<string, unknown>) {

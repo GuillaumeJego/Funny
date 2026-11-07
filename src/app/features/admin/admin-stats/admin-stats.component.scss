@@ -1,0 +1,230 @@
+@use 'styles' as *;
+
+.section {
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-lg;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 0.5rem;
+}
+
+.section-desc {
+  font-size: 0.85rem;
+  color: $text-medium;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.chip {
+  padding: 0.35rem 0.85rem;
+  border: 1px solid $border-color;
+  border-radius: 20px;
+  background: $bg-white;
+  color: $text-dark;
+  font-size: 0.85rem;
+  cursor: pointer;
+  &.active {
+    background: $primary;
+    border-color: $primary;
+    color: #fff;
+  }
+}
+
+.custom-range {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  color: $text-medium;
+
+  input {
+    margin-left: 0.25rem;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    font-size: 0.85rem;
+  }
+}
+
+.btn-apply {
+  padding: 0.4rem 0.9rem;
+  border: none;
+  border-radius: $border-radius;
+  background: $primary;
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+
+  select {
+    flex: 1 1 10rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    background: $bg-white;
+    font-size: 0.85rem;
+    color: $text-dark;
+  }
+}
+
+.error {
+  color: $error;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem;
+  border-radius: $border-radius;
+  background: $bg-light;
+
+  .tile-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: $text-dark;
+    font-variant-numeric: tabular-nums;
+  }
+  .tile-label {
+    font-size: 0.75rem;
+    color: $text-medium;
+  }
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid $border-color;
+  margin-bottom: 0.75rem;
+}
+
+.tab {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-size: 0.85rem;
+  color: $text-medium;
+  cursor: pointer;
+  &.active {
+    border-bottom-color: $primary;
+    color: $primary;
+    font-weight: 600;
+  }
+}
+
+.legend {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: $text-medium;
+  margin-bottom: 0.5rem;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  &.total {
+    background: $primary-light;
+  }
+  &.unique {
+    background: $primary;
+  }
+}
+
+.bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr 4rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+  font-size: 0.8rem;
+}
+
+.bar-label {
+  color: $text-medium;
+  white-space: nowrap;
+}
+
+.bar-track {
+  position: relative;
+  height: 14px;
+}
+
+.bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 0 4px 4px 0;
+  &.total {
+    background: $primary-light;
+  }
+  &.unique {
+    top: 3px;
+    bottom: 3px;
+    background: $primary;
+  }
+}
+
+.bars:not(:has(.unique)) .bar.total {
+  background: $primary;
+}
+
+.bar-value {
+  text-align: right;
+  color: $text-dark;
+  font-variant-numeric: tabular-nums;
+}
+
+.empty {
+  font-size: 0.85rem;
+  color: $text-light;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.dim {
+  opacity: 0.5;
+}

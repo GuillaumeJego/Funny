@@ -34,6 +34,30 @@
   }
 }
 
+// ─── Onglets Gestion / Statistiques ──
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-tab {
+  flex: 1;
+  padding: 0.6rem;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  background: $bg-white;
+  font-size: 0.9rem;
+  color: $text-medium;
+  cursor: pointer;
+  &.active {
+    border-color: $primary;
+    background: $primary-light;
+    color: $primary;
+    font-weight: 600;
+  }
+}
+
 // ─── Section ──────────────────────────────────────────────
 .section {
   background: $bg-white;
