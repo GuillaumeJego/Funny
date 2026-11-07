@@ -2,7 +2,7 @@
 
 .messages-page {
   padding: 1.5rem 1rem 6rem;
-  max-width: 900px;
+  max-width: 680px;
   margin: 0 auto;
 }
 
@@ -71,10 +71,11 @@
   padding: 1.5rem;
 }
 
+// Une conversation par ligne, les unes sous les autres (comme Messenger).
 .membres-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .membre-card {
@@ -173,12 +174,6 @@
     font-size: 0.88rem;
     max-width: 280px;
     line-height: 1.6;
-  }
-}
-
-@media (max-width: 480px) {
-  .membres-grid {
-    grid-template-columns: 1fr;
   }
 }
 
