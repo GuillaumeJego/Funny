@@ -36,4 +36,6 @@ export interface Conversation {
   /** Discussion de groupe d'une sortie : son identifiant et son titre. */
   sortie_id?: string | null;
   sortie_title?: string | null;
+  /** Image de la sortie (ou de son thème), affichée comme photo de la discussion. */
+  sortie_image?: string | null;
 }

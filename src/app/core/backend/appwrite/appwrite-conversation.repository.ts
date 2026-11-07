@@ -58,38 +58,60 @@ export class AppwriteConversationRepository extends ConversationRepository {
   async getConversation(conversationId: string): Promise<Conversation | null> {
     const row = await this.appwrite.getRowOrNull<ConversationRow>('conversations', conversationId);
     if (!row) return null;
-    const [profiles, titles] = await Promise.all([
+    const [profiles, sorties] = await Promise.all([
       this.appwrite.miniProfiles(row.participant_ids),
-      this.sortieTitles([row]),
+      this.sortieInfos([row]),
     ]);
     return {
       id: row.$id,
       created_at: row.$createdAt,
       participants: row.participant_ids.map((id) => ({ user_id: id, user: profiles.get(id) })),
       sortie_id: row.sortie_id ?? null,
-      sortie_title: row.sortie_id ? (titles.get(row.sortie_id) ?? 'Sortie') : null,
+      sortie_title: row.sortie_id ? (sorties.get(row.sortie_id)?.title ?? 'Sortie') : null,
+      sortie_image: row.sortie_id ? (sorties.get(row.sortie_id)?.image ?? null) : null,
     };
   }
 
-  /** Titres des sorties des discussions de groupe. */
-  private async sortieTitles(rows: ConversationRow[]): Promise<Map<string, string>> {
+  /**
+   * Titre et image des sorties des discussions de groupe. Sans image choisie,
+   * la première image du thème, comme sur la carte de la sortie.
+   */
+  private async sortieInfos(
+    rows: ConversationRow[],
+  ): Promise<Map<string, { title: string; image: string | null }>> {
     const ids = rows.map((r) => r.sortie_id).filter((id): id is string => !!id);
     if (!ids.length) return new Map();
-    const sorties = await this.appwrite.listIn<Models.Row & { title: string }>(
-      'sorties',
-      '$id',
-      ids,
+    const sorties = await this.appwrite.listIn<
+      Models.Row & { title: string; image_url: string | null; theme_id: string }
+    >('sorties', '$id', ids);
+    const themeIds = [...new Set(sorties.filter((s) => !s.image_url).map((s) => s.theme_id))];
+    const images = themeIds.length
+      ? await this.appwrite.listIn<Models.Row & { theme_id: string; image_url: string }>(
+          'theme_images',
+          'theme_id',
+          themeIds,
+          [Query.orderAsc('position')],
+        )
+      : [];
+    const firstImage = new Map<string, string>();
+    for (const image of images) {
+      if (!firstImage.has(image.theme_id)) firstImage.set(image.theme_id, image.image_url);
+    }
+    return new Map(
+      sorties.map((s) => [
+        s.$id,
+        { title: s.title, image: s.image_url || firstImage.get(s.theme_id) || null },
+      ]),
     );
-    return new Map(sorties.map((s) => [s.$id, s.title]));
   }
 
   async getForUser(userId: string): Promise<Conversation[]> {
     const rows = await this.appwrite.listAll<ConversationRow>('conversations', [
       Query.contains('participant_ids', userId),
     ]);
-    const [profiles, titles] = await Promise.all([
+    const [profiles, sorties] = await Promise.all([
       this.appwrite.miniProfiles(rows.flatMap((r) => r.participant_ids)),
-      this.sortieTitles(rows),
+      this.sortieInfos(rows),
     ]);
     return Promise.all(
       rows.map(async (row) => {
@@ -111,7 +133,8 @@ export class AppwriteConversationRepository extends ConversationRepository {
             ? { ...this.toMessage(last), sender: this.senderOf(profiles, last.sender_id) }
             : null,
           sortie_id: row.sortie_id ?? null,
-          sortie_title: row.sortie_id ? (titles.get(row.sortie_id) ?? 'Sortie') : null,
+          sortie_title: row.sortie_id ? (sorties.get(row.sortie_id)?.title ?? 'Sortie') : null,
+          sortie_image: row.sortie_id ? (sorties.get(row.sortie_id)?.image ?? null) : null,
         };
       }),
     );
