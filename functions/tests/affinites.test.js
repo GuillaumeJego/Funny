@@ -87,6 +87,19 @@ describe('recordAffinity', () => {
       .get('notifications')
       .filter((n) => n.link?.startsWith('/membres'));
     expect(mutualNotifs.map((n) => n.user_id).sort()).toEqual(['alice', 'bob']);
+    expect(mutualNotifs[0].message).toContain('Vous êtes maintenant amis');
+    const friendships = api.tables.get('friendships');
+    expect(friendships).toHaveLength(1);
+    expect(friendships[0].status).toBe('accepted');
+  });
+
+  it("ne rend pas amis deux membres dont l'un a bloqué l'autre", async () => {
+    const api = setup();
+    api.tables.set('blocks', [{ $id: 'b1', blocker_id: 'alice', blocked_id: 'bob' }]);
+    const sortie = await openQuestion(api);
+    await recordAffinity(api, { sortie, fromId: 'alice', toId: 'bob', choice: 'amitie', now: NOW });
+    await recordAffinity(api, { sortie, fromId: 'bob', toId: 'alice', choice: 'amitie', now: NOW });
+    expect(api.tables.get('friendships') ?? []).toHaveLength(0);
   });
 
   it('ne prévient personne si les choix diffèrent', async () => {

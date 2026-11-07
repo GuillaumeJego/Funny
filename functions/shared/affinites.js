@@ -15,6 +15,36 @@ export const ANSWER_WINDOW_MS = 24 * 3600 * 1000;
 /** Au premier passage, on ne rattrape pas les sorties plus anciennes que ça. */
 const CATCH_UP_MS = 48 * 3600 * 1000;
 
+/**
+ * Un choix réciproque (coup de cœur, amitié ou autre sortie) rend les deux membres amis.
+ * Rien ne change si l'un a bloqué l'autre. Renvoie true si l'amitié est en place.
+ */
+export async function makeFriends(api, a, b) {
+  const blocked = await api.findRow('blocks', [
+    Query.or([
+      Query.and([Query.equal('blocker_id', a), Query.equal('blocked_id', b)]),
+      Query.and([Query.equal('blocker_id', b), Query.equal('blocked_id', a)]),
+    ]),
+  ]);
+  if (blocked) return false;
+  const existing = await api.findRow('friendships', [
+    Query.or([
+      Query.and([Query.equal('requester_id', a), Query.equal('receiver_id', b)]),
+      Query.and([Query.equal('requester_id', b), Query.equal('receiver_id', a)]),
+    ]),
+  ]);
+  if (existing?.status === 'accepted') return true;
+  // Demande en attente ou refusée : remplacée par une amitié acceptée.
+  if (existing) await api.deleteRow('friendships', existing.$id);
+  await api.createRow(
+    'friendships',
+    uniqueId(),
+    { requester_id: a, receiver_id: b, status: 'accepted' },
+    [a, b].map((id) => Permission.read(Role.user(id))),
+  );
+  return true;
+}
+
 const MUTUAL = {
   coup_de_coeur: { title: '💘 Coup de cœur réciproque', what: 'un coup de cœur réciproque' },
   amitie: { title: '🤝 Amitié réciproque', what: 'une amitié réciproque' },
@@ -151,23 +181,25 @@ export async function recordAffinity(api, { sortie, fromId, toId, choice, now = 
     if (back) {
       mutual = true;
       const { title, what } = MUTUAL[choice];
-      const [fromName, toName] = await Promise.all([
+      const [fromName, toName, friends] = await Promise.all([
         usernameOf(api, fromId),
         usernameOf(api, toId),
+        makeFriends(api, fromId, toId),
       ]);
+      const end = friends ? ' Vous êtes maintenant amis 🤝' : '';
       await notify(api, [
         {
           user_id: fromId,
           actor_id: toId,
           title,
-          message: `Avec ${toName}, après « ${sortie.title} » : c'est ${what} !`,
+          message: `Avec ${toName}, après « ${sortie.title} » : c'est ${what} !${end}`,
           link: `/membres/${toId}`,
         },
         {
           user_id: toId,
           actor_id: fromId,
           title,
-          message: `Avec ${fromName}, après « ${sortie.title} » : c'est ${what} !`,
+          message: `Avec ${fromName}, après « ${sortie.title} » : c'est ${what} !${end}`,
           link: `/membres/${fromId}`,
         },
       ]);
