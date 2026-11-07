@@ -16,6 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, NavigationExtras } from '@angular/router';
 import { ProfileService } from '../../core/services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
+import { UnreadMessagesService } from '../../core/services/unread-messages.service';
 import { ConversationService } from '../../core/services/conversation.service';
 import { Message } from '../../core/models/message.model';
 import { ModerationService } from '../../core/services/moderation.service';
@@ -37,6 +38,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   private router = inject(Router);
   private auth = inject(AuthService);
   private conversationService = inject(ConversationService);
+  private unread = inject(UnreadMessagesService);
   private profileService = inject(ProfileService);
   private moderationService = inject(ModerationService);
   private zone = inject(NgZone);
@@ -135,6 +137,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     await this.loadMessages();
     this.loading.set(false);
     this.shouldScroll = true;
+    // La conversation est lue : le badge « Messages » se met à jour.
+    this.unread.opened(this.conversationId, this.myId);
   }
 
   /**
@@ -169,6 +173,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.destroyed = true;
     this.stopListening?.();
     this.stopReactions?.();
+    if (this.conversationId && this.myId) this.unread.closed(this.conversationId, this.myId);
   }
 
   async loadMessages() {

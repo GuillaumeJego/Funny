@@ -14,6 +14,13 @@
       </div>
     }
 
+    @if (notice()) {
+      <div class="link-notice" role="status">
+        {{ notice() }}
+        <button type="button" (click)="notice.set('')" aria-label="Fermer">✕</button>
+      </div>
+    }
+
     <!-- Erreur -->
     @if (!loading() && error()) {
       <div class="state-message error">

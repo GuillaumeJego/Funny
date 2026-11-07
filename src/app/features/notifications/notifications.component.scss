@@ -122,3 +122,19 @@
   font-size: 0.75rem;
   color: $text-light;
 }
+
+// Une notification qui mène quelque part (sortie, profil…) s'ouvre d'un clic.
+.notif-item.has-target {
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.notif-go {
+  align-self: center;
+  margin-left: auto;
+  font-size: 1.4rem;
+  color: $text-light;
+}

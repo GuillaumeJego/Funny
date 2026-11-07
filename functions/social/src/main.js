@@ -76,6 +76,7 @@ async function friendRequest({ api, userId, input }) {
       actor_id: userId,
       title: "👥 Demande d'ami",
       message: `${actor} vous a envoyé une demande d'ami`,
+      link: `/membres/${userId}`,
     },
   ]);
   return { friendship };
@@ -96,6 +97,7 @@ async function friendRespond({ api, userId, input }) {
         actor_id: userId,
         title: '🤝 Demande acceptée',
         message: `${actor} a accepté votre demande d'ami`,
+        link: `/membres/${userId}`,
       },
     ]);
   }
@@ -185,6 +187,7 @@ async function report({ api, userId, input }) {
       user_id: m.userId,
       title: '🚩 Nouveau signalement',
       message: `${target} a été signalé. Voir l'espace admin.`,
+      link: '/admin',
     })),
   );
   return {};

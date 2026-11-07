@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ConversationService } from '../../core/services/conversation.service';
 import { FriendshipService } from '../../core/services/friendship.service';
+import { UnreadMessagesService } from '../../core/services/unread-messages.service';
 import { Conversation } from '../../core/models/message.model';
 import { Friendship } from '../../core/models/friendship.model';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
@@ -29,6 +30,8 @@ export class MessagesComponent implements OnInit, OnDestroy {
   private auth = inject(AuthService);
   private conversationService = inject(ConversationService);
   private friendshipService = inject(FriendshipService);
+  /** Messages non lus par conversation (pastille et texte en gras). */
+  readonly unread = inject(UnreadMessagesService).byConversation;
   router = inject(Router);
 
   readonly conversations = signal<Conversation[]>([]);

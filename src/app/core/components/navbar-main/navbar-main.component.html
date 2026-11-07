@@ -11,6 +11,11 @@
         @if (item.route === '/notifications' && unreadCount() > 0) {
           <span class="notif-badge">{{ unreadCount() > 99 ? '99+' : unreadCount() }}</span>
         }
+        @if (item.route === '/messages' && unreadMessagesCount() > 0) {
+          <span class="notif-badge">{{
+            unreadMessagesCount() > 99 ? '99+' : unreadMessagesCount()
+          }}</span>
+        }
         @if (item.route === '/amis' && pendingFriendsCount() > 0) {
           <span class="notif-badge">{{ pendingFriendsCount() }}</span>
         }

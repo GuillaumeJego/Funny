@@ -64,7 +64,12 @@
     @if (conversations().length > 0) {
       <div class="membres-grid">
         @for (conv of conversations(); track conv) {
-          <div appClickable class="membre-card" (click)="openChat(conv)">
+          <div
+            appClickable
+            class="membre-card"
+            [class.has-unread]="unread().has(conv.id)"
+            (click)="openChat(conv)"
+          >
             <div class="avatar-wrap">
               @if (getFriend(conv)?.avatar_url) {
                 <img [src]="getFriend(conv)!.avatar_url!" class="avatar" alt="" />
@@ -79,9 +84,14 @@
               <div class="membre-name">{{ getFriend(conv)?.username || 'Utilisateur' }}</div>
               <div class="membre-bio conv-preview">{{ previewMessage(conv) }}</div>
             </div>
-            <span class="conv-time">{{
-              formatTime(conv.last_message?.created_at || conv.created_at)
-            }}</span>
+            <div class="conv-side">
+              <span class="conv-time">{{
+                formatTime(conv.last_message?.created_at || conv.created_at)
+              }}</span>
+              @if (unread().get(conv.id); as count) {
+                <span class="unread-badge">{{ count > 99 ? '99+' : count }}</span>
+              }
+            </div>
           </div>
         }
       </div>

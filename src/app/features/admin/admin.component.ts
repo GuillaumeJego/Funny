@@ -40,6 +40,9 @@ export class AdminComponent implements OnInit {
   readonly sortieCreationAccess = signal<'all' | 'premium' | 'admin'>('all');
   readonly membres = signal<Profile[]>([]);
   readonly searchQuery = signal('');
+  readonly heartLimit = signal(1);
+  readonly heartDays = signal(30);
+  readonly heartSaved = signal(false);
   readonly currentUserRole = signal('');
   readonly currentUserId = signal('');
   readonly reports = signal<Report[]>([]);
@@ -71,18 +74,36 @@ export class AdminComponent implements OnInit {
     this.currentUserRole.set(profile.role ?? '');
     this.currentUserId.set(user.id);
 
-    const [setting, creationSetting, membres, reports] = await Promise.all([
+    const [setting, creationSetting, membres, reports, heartLimit, heartDays] = await Promise.all([
       this.settingsService.get('profile_page_premium_only'),
       this.settingsService.get('sortie_creation_access'),
       this.profileService.getAllProfiles(),
       this.moderationService.getOpenReports(),
+      this.settingsService.get('coeurs_par_periode'),
+      this.settingsService.get('coeurs_periode_jours'),
     ]);
+    if (Number(heartLimit) > 0) this.heartLimit.set(Number(heartLimit));
+    if (Number(heartDays) > 0) this.heartDays.set(Number(heartDays));
     this.reports.set(reports.data ?? []);
 
     this.profilePagePremiumOnly.set(setting === true);
     this.sortieCreationAccess.set(creationSetting ?? 'all');
     this.membres.set((membres.data ?? []) as Profile[]);
     this.loading.set(false);
+  }
+
+  /** Coups de cœur : combien chaque membre peut en donner, et sur combien de jours. */
+  async saveHeartRules(limit: number, days: number) {
+    const cleanLimit = Math.min(50, Math.max(1, Math.round(Number(limit) || 1)));
+    const cleanDays = Math.min(365, Math.max(1, Math.round(Number(days) || 30)));
+    this.heartLimit.set(cleanLimit);
+    this.heartDays.set(cleanDays);
+    this.heartSaved.set(false);
+    await Promise.all([
+      this.settingsService.set('coeurs_par_periode', cleanLimit),
+      this.settingsService.set('coeurs_periode_jours', cleanDays),
+    ]);
+    this.heartSaved.set(true);
   }
 
   async setSortieCreationAccess(value: 'all' | 'premium' | 'admin') {

@@ -77,7 +77,9 @@ export class ConversationService {
   }
 
   // Écoute les nouveaux messages de toutes ses conversations (liste des conversations)
-  subscribeToAllMessages(callback: () => void): Unsubscribe {
+  subscribeToAllMessages(
+    callback: (message: { conversation_id: string; sender_id: string }) => void,
+  ): Unsubscribe {
     return this.conversations.onAnyNewMessage(callback);
   }
 

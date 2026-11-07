@@ -1,0 +1,120 @@
+<div class="affinites-page">
+  @if (loading()) {
+    <div class="info">Chargement…</div>
+  } @else if (sortie(); as s) {
+    <header class="page-header">
+      <h1>✨ Alors, cette sortie ?</h1>
+      <p class="sortie-title">{{ s.title }}</p>
+      <p class="question">Avez-vous eu des affinités avec quelqu'un ?</p>
+      @if (state() === 'ouverte' && deadline(); as d) {
+        <p class="deadline">⏳ Tu peux répondre jusqu'au {{ formatDate(d) }}.</p>
+      }
+    </header>
+
+    @if (!isParticipant()) {
+      <div class="info">Cette question est réservée aux participants de la sortie.</div>
+    } @else if (state() === 'pas_ouverte') {
+      <div class="info">La question s'ouvrira quelques heures après la sortie.</div>
+    } @else {
+      @if (state() === 'fermee') {
+        <div class="info">Le délai de 24 h pour répondre est passé.</div>
+      }
+      <p class="hint">
+        Un seul choix par personne, et il est définitif. Si l'autre fait le même choix que toi, vous
+        êtes prévenus tous les deux. Sinon, personne ne le saura.
+      </p>
+
+      @for (name of mutualWith(); track $index) {
+        <div class="mutual">🎉 C'est réciproque avec {{ name }} ! Regarde tes notifications.</div>
+      }
+      @if (error()) {
+        <div class="error">{{ error() }}</div>
+      }
+
+      @if (others().length === 0) {
+        <div class="info">Il n'y avait pas d'autre participant.</div>
+      }
+
+      <div class="members">
+        @for (m of others(); track m.id) {
+          <div class="member">
+            <a class="member-head" [routerLink]="['/membres', m.id]">
+              @if (m.avatar_url) {
+                <img [src]="m.avatar_url" [alt]="m.username" class="avatar" />
+              } @else {
+                <span class="avatar placeholder">{{ m.username.charAt(0).toUpperCase() }}</span>
+              }
+              <span class="name">{{ m.username }}</span>
+            </a>
+
+            @if (answers().get(m.id); as answered) {
+              <div class="answered">
+                Ta réponse : {{ choiceOf(answered)?.icon }} {{ choiceOf(answered)?.label }}
+              </div>
+            } @else if (state() === 'ouverte') {
+              <div class="choices">
+                @for (c of choices(); track c.value) {
+                  <button
+                    type="button"
+                    class="choice"
+                    [class.selected]="picks().get(m.id) === c.value"
+                    [class.heart]="c.value === 'coup_de_coeur'"
+                    [disabled]="c.value === 'coup_de_coeur' && heartsLeft() === 0"
+                    (click)="pick(m.id, c.value)"
+                  >
+                    <span class="choice-icon">{{ c.icon }}</span>
+                    {{ c.label }}
+                  </button>
+                }
+              </div>
+              @if (isLooking() && nextHeart(); as next) {
+                <p class="heart-hint">
+                  Coup de cœur déjà utilisé : le prochain sera possible le
+                  {{ formatDate(next, false) }}.
+                </p>
+              }
+              <button
+                type="button"
+                class="validate"
+                [disabled]="!picks().get(m.id) || sending().has(m.id)"
+                (click)="validate(m)"
+              >
+                {{ sending().has(m.id) ? 'Envoi…' : 'Valider' }}
+              </button>
+            } @else {
+              <div class="answered muted">Pas de réponse.</div>
+            }
+          </div>
+        }
+      </div>
+    }
+  } @else {
+    <div class="info">Sortie introuvable.</div>
+  }
+</div>
+
+@if (confirmHeartFor(); as m) {
+  <div class="modal-overlay" (click)="confirmHeartFor.set(null)">
+    <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <h3 class="modal-title">💘 Coup de cœur pour {{ m.username }} ?</h3>
+      <p class="modal-desc">
+        @if (heartsLeft() <= 1) {
+          Attention : après celui-ci, tu ne pourras plus donner d'autre coup de cœur pendant
+          {{ heartDays() }} jours.
+        } @else {
+          Il te restera {{ heartsLeft() - 1 }} coup(s) de cœur pour les {{ heartDays() }} jours à
+          venir.
+        }
+        Ce choix est définitif.
+      </p>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="confirmHeartFor.set(null)">
+          Annuler
+        </button>
+        <button type="button" class="btn-heart" (click)="confirmHeart()">
+          Oui, je donne mon cœur
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -112,6 +112,8 @@ export const TABLES = [
       str('image_url', 500),
       enumeration('image_source', ['default', 'custom'], { default: 'default' }),
       enumeration('status', ['draft', 'published', 'cancelled'], { default: 'published' }),
+      // Fin du délai pour dire « avec qui ça a matché » : posée quand la question est envoyée.
+      datetime('affinites_jusqua'),
     ],
     indexes: [
       { key: 'status_date', type: 'key', columns: ['status', 'date'] },
@@ -206,6 +208,22 @@ export const TABLES = [
     indexes: [{ key: 'conversation', type: 'key', columns: ['conversation_id'] }],
   },
   {
+    // Jusqu'où chaque membre a lu chaque conversation : sert au badge des messages non lus.
+    // Chacun écrit sa propre ligne avec read/update("user:<id>").
+    id: 'conversation_reads',
+    name: 'Messages lus',
+    permissions: [MEMBRES_CREENT],
+    rowSecurity: true,
+    columns: [
+      str('user_id', ID, { required: true }),
+      str('conversation_id', ID, { required: true }),
+      datetime('last_read_at', { required: true }),
+    ],
+    indexes: [
+      { key: 'user_conversation', type: 'unique', columns: ['user_id', 'conversation_id'] },
+    ],
+  },
+  {
     id: 'message_reactions',
     name: 'Réactions',
     permissions: [MEMBRES_CREENT],
@@ -230,8 +248,31 @@ export const TABLES = [
       text('message', { required: true }),
       bool('read', { default: false }),
       str('actor_id', ID),
+      // Page à ouvrir quand on touche la notification (ex. /sorties/<id>/affinites).
+      str('link', 200),
     ],
     indexes: [{ key: 'user_read', type: 'key', columns: ['user_id', 'read'] }],
+  },
+  {
+    // Affinités après une sortie : ce qu'un participant a ressenti pour un autre.
+    // Écrites par le serveur (Function « sorties »), lisibles par leur seul auteur :
+    // l'autre membre n'apprend un choix que s'il est réciproque (notification).
+    id: 'affinites',
+    name: 'Affinités après une sortie',
+    permissions: [],
+    rowSecurity: true, // read("user:<from_user>")
+    columns: [
+      str('sortie_id', ID, { required: true }),
+      str('from_user', ID, { required: true }),
+      str('to_user', ID, { required: true }),
+      enumeration('choice', ['none', 'amitie', 'autre_sortie', 'coup_de_coeur'], {
+        required: true,
+      }),
+    ],
+    indexes: [
+      { key: 'sortie_from_to', type: 'unique', columns: ['sortie_id', 'from_user', 'to_user'] },
+      { key: 'from_choice', type: 'key', columns: ['from_user', 'choice'] },
+    ],
   },
   {
     // Réglages : l'identifiant de la ligne est la clé (ex. sortie_creation_access).

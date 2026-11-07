@@ -116,6 +116,36 @@
         </label>
       </div>
     </section>
+    <!-- ── Coups de cœur ── -->
+    <section class="section">
+      <h2 class="section-title">💘 Coups de cœur</h2>
+      <p class="section-desc">
+        Après une sortie, les célibataires en recherche peuvent donner un coup de cœur. Combien
+        chaque membre peut-il en donner, et sur quelle durée ?
+      </p>
+      <div class="heart-rules">
+        <label>
+          Nombre de coups de cœur
+          <input #limit type="number" min="1" max="50" class="days-input" [value]="heartLimit()" />
+        </label>
+        <label>
+          Par période de (jours)
+          <input #days type="number" min="1" max="365" class="days-input" [value]="heartDays()" />
+        </label>
+        <button
+          type="button"
+          class="heart-save"
+          (click)="saveHeartRules(+limit.value, +days.value)"
+        >
+          Enregistrer
+        </button>
+      </div>
+      @if (heartSaved()) {
+        <p class="heart-saved">
+          ✓ Enregistré : {{ heartLimit() }} coup(s) de cœur tous les {{ heartDays() }} jours.
+        </p>
+      }
+    </section>
     <!-- ── Gestion des accès individuels ── -->
     <section class="section">
       <h2 class="section-title">Accès individuel aux profils</h2>

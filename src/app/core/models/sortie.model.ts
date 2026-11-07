@@ -13,6 +13,8 @@ export interface Sortie {
   image_source: 'default' | 'custom';
   status: 'draft' | 'published' | 'cancelled';
   created_at?: string;
+  /** Fin du délai pour répondre à la question des affinités (posée après la sortie). */
+  affinites_jusqua?: string | null;
 }
 
 export interface SortieWithRelations extends Sortie {

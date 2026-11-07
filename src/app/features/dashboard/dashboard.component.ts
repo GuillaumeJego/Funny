@@ -8,7 +8,7 @@ import {
   computed,
 } from '@angular/core';
 
-import { Router, RouterModule, NavigationStart } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
   NavbarFiltersComponent,
@@ -47,14 +47,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private drawerService = inject(DrawerService);
   private inscriptionService = inject(InscriptionService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   private routerSub!: Subscription;
   private drawerSub!: Subscription;
+  private querySub?: Subscription;
   readonly sorties = signal<SortieWithRelations[]>([]);
   /** Filtres choisis dans la barre : la liste affichée en découle. */
   readonly filters = signal<Filters>({ quickPeriod: 'upcoming' });
   readonly loading = signal(true);
   readonly error = signal('');
+  /** Petit message au-dessus de la liste (ex. sortie d'une notification introuvable). */
+  readonly notice = signal('');
   readonly viewMode = signal<'grid' | 'list'>('grid');
   readonly favorisIds = signal<Set<string>>(new Set());
   readonly userId = signal('');
@@ -69,11 +73,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.routerSub?.unsubscribe();
     this.drawerSub?.unsubscribe();
+    this.querySub?.unsubscribe();
   }
 
   async ngOnInit() {
     this.routerSub = this.router.events.subscribe((event) => {
-      if (event instanceof NavigationStart) {
+      // Rester sur le tableau de bord (ex. ?sortie=… d'une notification) ne ferme pas la fiche.
+      if (event instanceof NavigationStart && !event.url.startsWith('/dashboard')) {
         this.closeDrawer();
       }
     });
@@ -114,6 +120,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     this.availableThemes.set([...themesMap.values()]);
     this.availableLocations.set([...locationsSet].sort());
+
+    // Lien d'une notification : /dashboard?sortie=<id> ouvre directement la fiche de la sortie.
+    this.querySub = this.route.queryParamMap.subscribe((params) => {
+      const id = params.get('sortie');
+      if (id) this.openFromLink(id);
+    });
+  }
+
+  private async openFromLink(id: string) {
+    const sortie =
+      this.sorties().find((s) => s.id === id) ?? (await this.sortieService.getSortie(id));
+    // On retire ?sortie= de l'adresse : la même notification pourra rouvrir la fiche plus tard.
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { sortie: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+    if (sortie) {
+      this.openDrawer(sortie);
+    } else {
+      this.notice.set("Cette sortie n'existe plus ou n'est plus visible.");
+    }
   }
 
   async openDrawer(sortie: SortieWithRelations) {

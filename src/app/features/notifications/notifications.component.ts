@@ -9,13 +9,14 @@ import {
 
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { ClickableDirective } from '../../core/directives/clickable.directive';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService, Notification } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [],
+  imports: [ClickableDirective],
   templateUrl: './notifications.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './notifications.component.scss',
@@ -57,6 +58,15 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.incomingSub?.unsubscribe();
+  }
+
+  targetOf(n: Notification): string | null {
+    return this.notifService.targetOf(n);
+  }
+
+  open(n: Notification) {
+    const target = this.targetOf(n);
+    if (target) this.router.navigateByUrl(target);
   }
 
   formatDate(dateStr: string): string {

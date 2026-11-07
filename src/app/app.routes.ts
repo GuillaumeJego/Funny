@@ -91,6 +91,13 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    // Après une sortie : « avez-vous eu des affinités avec quelqu'un ? »
+    path: 'sorties/:id/affinites',
+    loadComponent: () =>
+      import('./features/sorties/affinites/affinites.component').then((m) => m.AffinitesComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'premium',
     loadComponent: () =>
       import('./features/premium/premium.component').then((m) => m.PremiumComponent),

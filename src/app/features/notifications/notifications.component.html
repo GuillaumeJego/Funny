@@ -20,7 +20,13 @@
   @if (!loading() && notifications().length > 0) {
     <div class="notif-list">
       @for (n of notifications(); track n.id) {
-        <div class="notif-item" [class.unread]="!n.read">
+        <div
+          class="notif-item"
+          [class.unread]="!n.read"
+          [class.has-target]="!!targetOf(n)"
+          appClickable
+          (click)="open(n)"
+        >
           <div class="notif-avatar">
             @if (n.actor?.avatar_url) {
               <img
@@ -43,6 +49,9 @@
             <div class="notif-message">{{ n.message }}</div>
             <div class="notif-date">{{ formatDate(n.created_at) }}</div>
           </div>
+          @if (targetOf(n)) {
+            <span class="notif-go" aria-hidden="true">›</span>
+          }
         </div>
       }
     </div>
