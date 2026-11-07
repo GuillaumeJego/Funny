@@ -4,17 +4,18 @@
 // de démo (et leurs inscriptions, likes et aperçus).
 //
 // Utilisation (PowerShell), avec une clé API à durée courte collée dans le terminal
-// (droits : rows.read et rows.write) :
+// (droits : rows.read, rows.write, et users.read pour retrouver l'organisateur par email) :
 //   $env:APPWRITE_PROJECT_ID = "id-du-projet-funny"
 //   $env:APPWRITE_API_KEY = Read-Host "Colle la clé API Appwrite"
-//   npm run appwrite:demo                 (créer)
+//   npm run appwrite:demo -- ton.email@exemple.fr   (créer, organisées par ce membre)
+//   npm run appwrite:demo                 (créer, organisées par le compte « developer »)
 //   npm run appwrite:demo -- --supprimer  (tout retirer)
 //   Remove-Item Env:APPWRITE_API_KEY
 //
 // Plusieurs comptes « developer » ? Choisir l'organisateur avec
 //   $env:DEMO_ORGANIZER_ID = "identifiant-du-membre"
 
-import { Client, Permission, Query, Role, TablesDB } from 'node-appwrite';
+import { Client, Permission, Query, Role, TablesDB, Users } from 'node-appwrite';
 import { DEMO_SORTIES } from './demo-sorties-data.mjs';
 import { IMAGES_PER_THEME, themeImagePath } from './themes-data.mjs';
 
@@ -31,6 +32,7 @@ const client = new Client().setEndpoint(endpoint).setProject(projectId).setKey(a
 const db = new TablesDB(client);
 const databaseId = 'funny';
 const remove = process.argv.includes('--supprimer');
+const email = process.argv.slice(2).find((arg) => arg.includes('@'));
 
 /** Identifiants fixes : « demo-sortie-01 »… pour ne rien créer deux fois et tout retrouver. */
 const sortieId = (i) => `demo-sortie-${String(i + 1).padStart(2, '0')}`;
@@ -65,6 +67,12 @@ async function listAll(tableId, queries) {
 
 async function findOrganizer() {
   if (process.env.DEMO_ORGANIZER_ID) return process.env.DEMO_ORGANIZER_ID;
+  if (email) {
+    const { users } = await new Users(client).list({ queries: [Query.equal('email', email)] });
+    if (users.length === 0) throw new Error(`Aucun membre avec l'email ${email}.`);
+    console.log(`Organisateur : ${email}`);
+    return users[0].$id;
+  }
   // Le rôle est dans « member_status » (une ligne par membre, même identifiant que son profil).
   const statuses = await listAll('member_status', [Query.equal('role', 'developer')]);
   const developers = await Promise.all(
@@ -78,7 +86,9 @@ async function findOrganizer() {
     }),
   );
   if (developers.length === 0) {
-    throw new Error('Aucun compte « developer » trouvé. Indique-le avec DEMO_ORGANIZER_ID.');
+    throw new Error(
+      'Aucun compte « developer » trouvé. Donne son email : npm run appwrite:demo -- ton.email@exemple.fr',
+    );
   }
   if (developers.length > 1) {
     const names = developers.map((d) => `${d.name} (${d.id})`).join(', ');
