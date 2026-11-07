@@ -22,9 +22,28 @@ export interface Filters {
   ou?: string;
   dateDebut?: string;
   dateFin?: string;
-  quickPeriod?: string; // 'past' | 'upcoming'
+  quickPeriod?: string; // 'past' : sorties passées ; sinon, seulement les sorties à venir
   prix?: string;
   premium?: boolean;
+}
+
+/**
+ * La date d'une sortie passe-t-elle le filtre « Quand ? » ? Par défaut, seules les sorties
+ * à venir s'affichent ; les sorties passées demandent le filtre « Sorties passées », ou une
+ * plage de dates qui commence avant aujourd'hui.
+ */
+export function matchesPeriod(dateIso: string, f: Filters, now = new Date()): boolean {
+  const date = new Date(dateIso);
+  if (f.quickPeriod === 'past') return date < now;
+  if (f.dateDebut && date < new Date(f.dateDebut)) return false;
+  if (f.dateFin) {
+    const fin = new Date(f.dateFin);
+    fin.setHours(23, 59, 59);
+    if (date > fin) return false;
+  }
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const rangeReachesPast = !!f.dateDebut && new Date(f.dateDebut) < today;
+  return rangeReachesPast || date >= now;
 }
 
 export interface ThemeOption {
@@ -48,14 +67,14 @@ export class NavbarFiltersComponent implements OnInit, OnDestroy {
   readonly availableLocations = input<string[]>([]);
   readonly filtersChanged = output<Filters>();
 
-  readonly filters = signal<Filters>({ quickPeriod: 'upcoming' });
+  readonly filters = signal<Filters>({});
   readonly openPanel = signal<string | null>(null);
 
   // État temporaire
   readonly selectedThemeIds = signal<Set<string>>(new Set());
   readonly dateDebut = signal('');
   readonly dateFin = signal('');
-  readonly quickPeriod = signal('upcoming');
+  readonly quickPeriod = signal('');
 
   // Autocomplete lieu
   readonly locationQuery = signal('');
@@ -110,7 +129,6 @@ export class NavbarFiltersComponent implements OnInit, OnDestroy {
 
   readonly quandLabel = computed<string>(() => {
     if (this.filters().quickPeriod === 'past') return '📅 Passées';
-    if (this.filters().quickPeriod === 'upcoming') return '🔜 À venir';
     const d = this.filters().dateDebut;
     const f = this.filters().dateFin;
     if (!d && !f) return 'Quand ?';
@@ -202,8 +220,8 @@ export class NavbarFiltersComponent implements OnInit, OnDestroy {
     const now = new Date();
     const toISO = (d: Date) => d.toISOString().split('T')[0];
 
-    if (period === 'past' || period === 'upcoming') {
-      // Gérés côté dashboard via filters.quickPeriod
+    if (period === 'past') {
+      // Géré par matchesPeriod via filters.quickPeriod
       this.dateDebut.set('');
       this.dateFin.set('');
     } else if (period === 'today') {
@@ -215,9 +233,9 @@ export class NavbarFiltersComponent implements OnInit, OnDestroy {
       this.dateDebut.set(toISO(now));
       this.dateFin.set(toISO(end));
     } else if (period === 'month') {
-      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      // D'aujourd'hui à la fin du mois (les sorties passées ont leur propre filtre).
       const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      this.dateDebut.set(toISO(start));
+      this.dateDebut.set(toISO(now));
       this.dateFin.set(toISO(end));
     }
   }
@@ -227,10 +245,7 @@ export class NavbarFiltersComponent implements OnInit, OnDestroy {
       ...this.filters(),
       dateDebut: this.dateDebut() || undefined,
       dateFin: this.dateFin() || undefined,
-      quickPeriod:
-        this.quickPeriod() === 'past' || this.quickPeriod() === 'upcoming'
-          ? this.quickPeriod()
-          : undefined,
+      quickPeriod: this.quickPeriod() === 'past' ? 'past' : undefined,
     });
     this.emit();
     this.openPanel.set(null);

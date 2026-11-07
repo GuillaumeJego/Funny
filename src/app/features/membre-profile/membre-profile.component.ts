@@ -15,6 +15,7 @@ import { SettingsService } from '../../core/services/settings.service';
 import {
   NavbarFiltersComponent,
   Filters,
+  matchesPeriod,
   ThemeOption,
 } from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
@@ -61,7 +62,7 @@ export class MembreProfileComponent implements OnInit {
 
   readonly activeTab = signal<TabKey>('organisees');
   readonly viewMode = signal<'grid' | 'list'>('list');
-  readonly currentFilters = signal<Filters>({ quickPeriod: 'upcoming' });
+  readonly currentFilters = signal<Filters>({});
   readonly availableThemes = signal<ThemeOption[]>([]);
   readonly availableLocations = signal<string[]>([]);
 
@@ -181,17 +182,7 @@ export class MembreProfileComponent implements OnInit {
     return list.filter((s) => {
       if (f.themeIds?.length && !f.themeIds.includes(s.theme_id ?? '')) return false;
       if (f.ou && s.location !== f.ou) return false;
-      if (f.quickPeriod === 'past' && new Date(s.date) >= now) return false;
-      if (f.quickPeriod === 'upcoming' && new Date(s.date) < now) return false;
-      if (!f.quickPeriod && (f.dateDebut || f.dateFin)) {
-        const d = new Date(s.date);
-        if (f.dateDebut && d < new Date(f.dateDebut)) return false;
-        if (f.dateFin) {
-          const fin = new Date(f.dateFin);
-          fin.setHours(23, 59, 59);
-          if (d > fin) return false;
-        }
-      }
+      if (!matchesPeriod(s.date, f, now)) return false;
       if (f.prix === 'gratuit' && s.price > 0) return false;
       if (f.prix === 'payant' && s.price === 0) return false;
       if (f.premium && !s.is_premium) return false;
