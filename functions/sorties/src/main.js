@@ -20,6 +20,7 @@ import {
 } from './shared/sorties.js';
 import { cleanSortie, isSafeDefaultImage, sortieImageFileId } from './shared/sortie-rules.js';
 import { recordAffinity, sendAffinityQuestions } from './shared/affinites.js';
+import { sendReminders } from './shared/rappels.js';
 
 /**
  * Qui peut voir une sortie : tout le monde, ou seulement les abonnés si elle est Premium.
@@ -127,6 +128,9 @@ async function update({ api, userId, input }) {
   if (data.max_participants != null && data.max_participants < taken) {
     fail(400, `${taken} membres sont déjà inscrits : garde au moins ${taken} places.`);
   }
+
+  // Nouvelle date : le rappel de la veille repartira pour la nouvelle date.
+  if (new Date(sortie.date).getTime() !== new Date(data.date).getTime()) data.rappel_envoye = null;
 
   const updated = await api.updateRow(
     'sorties',
@@ -290,6 +294,11 @@ async function affinite({ api, userId, input }) {
 
 export default handler(
   { create, update, join, leave, like, affinite, delete: remove },
-  // Chaque heure : poser la question des affinités aux participants des sorties finies.
-  { onSchedule: ({ api }) => sendAffinityQuestions(api) },
+  // Chaque heure : rappel la veille des sorties, et question des affinités après.
+  {
+    onSchedule: async ({ api }) => ({
+      ...(await sendReminders(api)),
+      ...(await sendAffinityQuestions(api)),
+    }),
+  },
 );

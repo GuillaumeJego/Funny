@@ -114,6 +114,8 @@ export const TABLES = [
       enumeration('status', ['draft', 'published', 'cancelled'], { default: 'published' }),
       // Fin du délai pour dire « avec qui ça a matché » : posée quand la question est envoyée.
       datetime('affinites_jusqua'),
+      // Date d'envoi du rappel « c'est bientôt » aux participants (la veille).
+      datetime('rappel_envoye'),
     ],
     indexes: [
       { key: 'status_date', type: 'key', columns: ['status', 'date'] },
