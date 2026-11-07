@@ -37,8 +37,9 @@ export class NavbarMainComponent implements OnInit, OnDestroy {
   navItems = [
     { icon: '🏠', label: 'Sorties', route: '/dashboard' },
     { icon: '⭐', label: 'Mes sorties', route: '/mes-sorties' },
-    { icon: '➕', label: 'Créer', route: '/sorties/creer' },
     { icon: '👥', label: 'Membres', route: '/membres' },
+    // Au milieu de la barre, entre Membres et Amis.
+    { icon: '➕', label: 'Créer', route: '/sorties/creer' },
     { icon: '🤝', label: 'Amis', route: '/amis' },
     { icon: '💬', label: 'Messages', route: '/messages' },
     { icon: '🔔', label: 'Notifs', route: '/notifications' },
