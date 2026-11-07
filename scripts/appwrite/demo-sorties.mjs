@@ -65,16 +65,27 @@ async function listAll(tableId, queries) {
 
 async function findOrganizer() {
   if (process.env.DEMO_ORGANIZER_ID) return process.env.DEMO_ORGANIZER_ID;
-  const developers = await listAll('profiles', [Query.equal('role', 'developer')]);
+  // Le rôle est dans « member_status » (une ligne par membre, même identifiant que son profil).
+  const statuses = await listAll('member_status', [Query.equal('role', 'developer')]);
+  const developers = await Promise.all(
+    statuses.map(async (s) => {
+      try {
+        const profile = await db.getRow({ databaseId, tableId: 'profiles', rowId: s.$id });
+        return { id: s.$id, name: profile.username };
+      } catch {
+        return { id: s.$id, name: '(sans profil)' };
+      }
+    }),
+  );
   if (developers.length === 0) {
     throw new Error('Aucun compte « developer » trouvé. Indique-le avec DEMO_ORGANIZER_ID.');
   }
   if (developers.length > 1) {
-    const names = developers.map((d) => `${d.username} (${d.$id})`).join(', ');
+    const names = developers.map((d) => `${d.name} (${d.id})`).join(', ');
     throw new Error(`Plusieurs comptes « developer » : ${names}. Choisis avec DEMO_ORGANIZER_ID.`);
   }
-  console.log(`Organisateur : ${developers[0].username}`);
-  return developers[0].$id;
+  console.log(`Organisateur : ${developers[0].name}`);
+  return developers[0].id;
 }
 
 /** Date à « jour » jours d'aujourd'hui, à « heure » heure de Paris (12.5 = 12 h 30). */
