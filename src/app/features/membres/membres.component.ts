@@ -25,9 +25,10 @@ interface MembreProfile {
   alcohol?: string;
   relationship?: string;
   subscription_end_date?: string;
+  created_at?: string;
 }
 
-import { RELATIONSHIP_OPTIONS } from '../../core/models/profile.model';
+import { RELATIONSHIP_OPTIONS, isNewMember } from '../../core/models/profile.model';
 @Component({
   selector: 'app-membres',
   standalone: true,
@@ -37,6 +38,8 @@ import { RELATIONSHIP_OPTIONS } from '../../core/models/profile.model';
   styleUrl: './membres.component.scss',
 })
 export class MembresComponent implements OnInit {
+  /** Étiquette « New » pendant les 2 semaines qui suivent l'inscription. */
+  readonly isNew = (m: MembreProfile) => isNewMember(m.created_at);
   private profileService = inject(ProfileService);
   private router = inject(Router);
 
