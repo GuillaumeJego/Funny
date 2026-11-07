@@ -16,6 +16,10 @@ export abstract class ConversationRepository {
   abstract open(otherUserId: string): Promise<string>;
   /** Conversations du membre, avec leurs participants et leur dernier message. */
   abstract getForUser(userId: string): Promise<Conversation[]>;
+  /** Ouvre la discussion de groupe d'une sortie (participants seulement) ; renvoie son identifiant. */
+  abstract openSortieChat(sortieId: string): Promise<string>;
+  /** La conversation, avec ses participants (null si elle n'est pas lisible). */
+  abstract getConversation(conversationId: string): Promise<Conversation | null>;
   /** L'autre membre de la conversation, ou null si elle n'est pas lisible. */
   abstract getOtherParticipant(conversationId: string, userId: string): Promise<string | null>;
   abstract getMessages(conversationId: string): Promise<Message[]>;

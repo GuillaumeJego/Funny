@@ -122,10 +122,13 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
   previewMessage(conv: Conversation): string {
     const msg = conv.last_message;
-    if (!msg) return 'Démarrer la conversation…';
-    if (msg.type === 'image') return '📷 Photo';
-    if (msg.type === 'video') return '🎥 Vidéo';
-    return msg.content ?? '';
+    if (!msg) return conv.sortie_id ? 'Discussion du groupe' : 'Démarrer la conversation…';
+    const body =
+      msg.type === 'image' ? '📷 Photo' : msg.type === 'video' ? '🎥 Vidéo' : (msg.content ?? '');
+    // Discussion de groupe : on précise qui a écrit.
+    if (!conv.sortie_id) return body;
+    const who = msg.sender_id === this.myId ? 'Vous' : (msg.sender?.username ?? '');
+    return who ? `${who} : ${body}` : body;
   }
 
   openChat(conv: Conversation) {

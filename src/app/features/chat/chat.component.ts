@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, NavigationExtras } from '@angular/router';
+import { ActivatedRoute, Router, NavigationExtras, RouterLink } from '@angular/router';
 import { ProfileService } from '../../core/services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
 import { UnreadMessagesService } from '../../core/services/unread-messages.service';
@@ -28,7 +28,7 @@ const EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [ClickableDirective, FormsModule, MemberSafetyComponent],
+  imports: [ClickableDirective, FormsModule, MemberSafetyComponent, RouterLink],
   templateUrl: './chat.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './chat.component.scss',
@@ -55,6 +55,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   readonly friendId = signal('');
   /** Le membre connecté a bloqué son interlocuteur. */
   readonly blocked = signal(false);
+  /** Discussion de groupe : la sortie concernée (vide pour une conversation à deux). */
+  readonly groupSortieId = signal('');
+  readonly groupSize = signal(0);
   /** La conversation n'est plus lisible (l'autre membre a bloqué le membre connecté). */
   readonly unavailable = signal(false);
 
@@ -94,33 +97,17 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       return;
     }
 
-    // Récupère le nom/avatar depuis le state de navigation (passé à l'ouverture du chat)
-    const nav = this.router.getCurrentNavigation();
-    const state = nav?.extras?.state ?? history.state;
-    if (state?.friendName) {
-      this.friendName.set(state.friendName);
-      this.friendAvatar.set(state.friendAvatar ?? null);
-    } else if (state?.friendId) {
-      // Sinon : charge le profil de l'ami
-      const { data } = await this.profileService.getProfileById(state.friendId);
-      this.friendName.set(data?.username ?? '');
-      this.friendAvatar.set(data?.avatar_url ?? null);
-    }
-
-    this.friendId.set(
-      (await this.conversationService.getOtherParticipant(this.conversationId, this.myId)) ?? '',
-    );
-    if (!this.friendId()) {
+    // Discussion de groupe d'une sortie, ou conversation entre deux amis ?
+    const conversation = await this.conversationService.getConversation(this.conversationId);
+    if (conversation?.sortie_id) {
+      this.groupSortieId.set(conversation.sortie_id);
+      this.friendName.set(conversation.sortie_title ?? 'Sortie');
+      this.groupSize.set(conversation.participants?.length ?? 0);
+    } else if (!(await this.loadFriend())) {
       this.unavailable.set(true);
       this.loading.set(false);
       return;
     }
-    if (!this.friendName()) {
-      const { data } = await this.profileService.getProfileById(this.friendId());
-      this.friendName.set(data?.username ?? '');
-      this.friendAvatar.set(data?.avatar_url ?? null);
-    }
-    this.blocked.set(await this.moderationService.isBlocked(this.friendId()));
 
     if (this.destroyed) return;
 
@@ -139,6 +126,34 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.shouldScroll = true;
     // La conversation est lue : le badge « Messages » se met à jour.
     this.unread.opened(this.conversationId, this.myId);
+  }
+
+  /** Conversation à deux : l'ami, sa photo, et s'il est bloqué. Faux si elle n'est plus lisible. */
+  private async loadFriend(): Promise<boolean> {
+    // Récupère le nom/avatar depuis le state de navigation (passé à l'ouverture du chat)
+    const nav = this.router.getCurrentNavigation();
+    const state = nav?.extras?.state ?? history.state;
+    if (state?.friendName) {
+      this.friendName.set(state.friendName);
+      this.friendAvatar.set(state.friendAvatar ?? null);
+    } else if (state?.friendId) {
+      // Sinon : charge le profil de l'ami
+      const { data } = await this.profileService.getProfileById(state.friendId);
+      this.friendName.set(data?.username ?? '');
+      this.friendAvatar.set(data?.avatar_url ?? null);
+    }
+
+    this.friendId.set(
+      (await this.conversationService.getOtherParticipant(this.conversationId, this.myId)) ?? '',
+    );
+    if (!this.friendId()) return false;
+    if (!this.friendName()) {
+      const { data } = await this.profileService.getProfileById(this.friendId());
+      this.friendName.set(data?.username ?? '');
+      this.friendAvatar.set(data?.avatar_url ?? null);
+    }
+    this.blocked.set(await this.moderationService.isBlocked(this.friendId()));
+    return true;
   }
 
   /**

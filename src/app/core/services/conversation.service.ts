@@ -27,12 +27,22 @@ export class ConversationService {
     const seen = new Map<string, Conversation>();
     for (const conv of conversations) {
       const other = conv.participants?.find((p: any) => p.user_id !== userId);
-      const key = other?.user_id ?? conv.id;
+      // Une discussion de groupe (sortie) n'est jamais un doublon d'une conversation à deux.
+      const key = conv.sortie_id ? conv.id : (other?.user_id ?? conv.id);
       if (!seen.has(key)) seen.set(key, conv);
     }
     conversations = [...seen.values()];
 
     return conversations;
+  }
+
+  // Discussion de groupe d'une sortie : le serveur vérifie qu'on y participe
+  async openSortieChat(sortieId: string): Promise<string> {
+    return await this.conversations.openSortieChat(sortieId);
+  }
+
+  async getConversation(conversationId: string): Promise<Conversation | null> {
+    return await this.conversations.getConversation(conversationId);
   }
 
   // L'autre membre de la conversation (pour signaler ou bloquer depuis le chat)

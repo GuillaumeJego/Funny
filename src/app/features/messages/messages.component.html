@@ -71,17 +71,25 @@
             (click)="openChat(conv)"
           >
             <div class="avatar-wrap">
-              @if (getFriend(conv)?.avatar_url) {
+              @if (conv.sortie_id) {
+                <div class="avatar-placeholder group-avatar" aria-hidden="true">👥</div>
+              } @else if (getFriend(conv)?.avatar_url) {
                 <img [src]="getFriend(conv)!.avatar_url!" class="avatar" alt="" />
-              }
-              @if (!getFriend(conv)?.avatar_url) {
+              } @else {
                 <div class="avatar-placeholder">
                   {{ getFriend(conv)?.username?.charAt(0)?.toUpperCase() || '?' }}
                 </div>
               }
             </div>
             <div class="membre-info">
-              <div class="membre-name">{{ getFriend(conv)?.username || 'Utilisateur' }}</div>
+              <div class="membre-name">
+                @if (conv.sortie_id) {
+                  {{ conv.sortie_title }}
+                  <span class="group-tag">{{ conv.participants?.length ?? 0 }} participants</span>
+                } @else {
+                  {{ getFriend(conv)?.username || 'Utilisateur' }}
+                }
+              </div>
               <div class="membre-bio conv-preview">{{ previewMessage(conv) }}</div>
             </div>
             <div class="conv-side">

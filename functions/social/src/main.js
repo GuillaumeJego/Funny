@@ -36,6 +36,7 @@ function conversationBetween(api, a, b) {
   return api.findRow('conversations', [
     Query.contains('participant_ids', a),
     Query.contains('participant_ids', b),
+    Query.isNull('sortie_id'), // pas une discussion de groupe de sortie
   ]);
 }
 

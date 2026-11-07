@@ -12,6 +12,7 @@ import {
   usernameOf,
 } from './shared/appwrite.js';
 import { deleteSortie, promoteFromWaitingList } from './shared/sorties.js';
+import { deleteConversation } from './shared/conversations.js';
 import { stripe } from './shared/stripe.js';
 
 const USERNAME = /^[\p{L}\p{N}._-]{3,40}$/u;
@@ -46,27 +47,6 @@ async function init({ api, userId, input }) {
     await api.createRow('member_status', userId, { role: 'user' });
   }
   return { profile };
-}
-
-/** Supprime une conversation entière : messages, réactions, fichiers et équipe. */
-async function deleteConversation(api, conversation) {
-  const messages = await api.listAllRows('messages', [
-    Query.equal('conversation_id', conversation.$id),
-  ]);
-  await inBatches(messages, async (message) => {
-    if (message.media_file_id) await deleteFile(api, 'chat-media', message.media_file_id);
-    await api.deleteRow('messages', message.$id);
-  });
-  const reactions = await api.listAllRows('message_reactions', [
-    Query.equal('conversation_id', conversation.$id),
-  ]);
-  await inBatches(reactions, (reaction) => api.deleteRow('message_reactions', reaction.$id));
-  await api.deleteRow('conversations', conversation.$id);
-  try {
-    await api.call('DELETE', `/teams/${conversation.$id}`);
-  } catch (error) {
-    if (error.code !== 404) throw error;
-  }
 }
 
 /** Arrête tout de suite un abonnement Stripe encore en cours. */
@@ -162,7 +142,17 @@ async function remove({ api, userId, input }) {
   const conversations = await api.listAllRows('conversations', [
     Query.contains('participant_ids', userId),
   ]);
-  for (const conversation of conversations) await deleteConversation(api, conversation);
+  for (const conversation of conversations) {
+    // Discussion de groupe d'une sortie : elle reste aux autres, il en sort simplement.
+    if (conversation.sortie_id) {
+      await api.updateRow('conversations', conversation.$id, {
+        participant_ids: conversation.participant_ids.filter((id) => id !== userId),
+      });
+      await api.removeTeamMember(conversation.$id, userId);
+      continue;
+    }
+    await deleteConversation(api, conversation);
+  }
 
   const profile = await api.getRow('profiles', userId);
   if (profile?.avatar_url) await deleteFile(api, 'avatars', profile.avatar_url);

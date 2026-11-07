@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 
 import { Router } from '@angular/router';
+import { ConversationService } from '../../../core/services/conversation.service';
 import { SortieWithRelations } from '../../../core/models/sortie.model';
 import { SortieService } from '../../../core/services/sortie.service';
 import { InscriptionStatus } from '../../../core/services/inscription.service';
@@ -33,6 +34,9 @@ interface MiniProfile {
 })
 export class SortieDrawerComponent implements OnChanges {
   private router = inject(Router);
+  private conversationService = inject(ConversationService);
+  readonly openingChat = signal(false);
+  readonly chatError = signal('');
   private sortieService = inject(SortieService);
 
   readonly sortie = input<SortieWithRelations | null>(null);
@@ -78,6 +82,21 @@ export class SortieDrawerComponent implements OnChanges {
   goToEdit(sortieId: string) {
     this.close();
     this.router.navigate(['/sorties', sortieId, 'modifier']);
+  }
+
+  /** Ouvre la discussion de groupe de la sortie (créée à la première ouverture). */
+  async openGroupChat(sortieId: string) {
+    this.chatError.set('');
+    this.openingChat.set(true);
+    try {
+      const conversationId = await this.conversationService.openSortieChat(sortieId);
+      this.close();
+      this.router.navigate(['/messages', conversationId]);
+    } catch (error) {
+      this.chatError.set((error as Error).message || 'Discussion impossible pour le moment.');
+    } finally {
+      this.openingChat.set(false);
+    }
   }
 
   goToPremium() {

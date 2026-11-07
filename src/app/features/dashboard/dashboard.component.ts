@@ -13,6 +13,7 @@ import { Subscription } from 'rxjs';
 import {
   NavbarFiltersComponent,
   Filters,
+  matchesPeriod,
   ThemeOption,
 } from '../../core/components/navbar-filters/navbar-filters.component';
 import { SortieService } from '../../core/services/sortie.service';
@@ -54,7 +55,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private querySub?: Subscription;
   readonly sorties = signal<SortieWithRelations[]>([]);
   /** Filtres choisis dans la barre : la liste affichée en découle. */
-  readonly filters = signal<Filters>({ quickPeriod: 'upcoming' });
+  readonly filters = signal<Filters>({});
   readonly loading = signal(true);
   readonly error = signal('');
   /** Petit message au-dessus de la liste (ex. sortie d'une notification introuvable). */
@@ -245,17 +246,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.sorties().filter((s) => {
       if (filters.themeIds?.length && !filters.themeIds.includes(s.theme_id ?? '')) return false;
       if (filters.ou && s.location !== filters.ou) return false;
-      if (filters.quickPeriod === 'past' && new Date(s.date) >= now) return false;
-      if (filters.quickPeriod === 'upcoming' && new Date(s.date) < now) return false;
-      if (!filters.quickPeriod && (filters.dateDebut || filters.dateFin)) {
-        const d = new Date(s.date);
-        if (filters.dateDebut && d < new Date(filters.dateDebut)) return false;
-        if (filters.dateFin) {
-          const fin = new Date(filters.dateFin);
-          fin.setHours(23, 59, 59);
-          if (d > fin) return false;
-        }
-      }
+      if (!matchesPeriod(s.date, filters, now)) return false;
       // Prix inconnu pour une sortie Premium vue en aperçu : elle sort du filtre de prix.
       if (filters.prix && s.locked) return false;
       if (filters.prix === 'gratuit' && s.price > 0) return false;

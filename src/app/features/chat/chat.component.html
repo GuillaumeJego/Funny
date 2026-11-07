@@ -13,19 +13,36 @@
         <polyline points="15 18 9 12 15 6" />
       </svg>
     </button>
-    <div class="header-identity">
-      <div class="header-avatar">
-        @if (friendAvatar()) {
-          <img [src]="friendAvatar()" class="h-avatar-img" alt="" />
-        }
-        @if (!friendAvatar()) {
-          <div class="h-avatar-placeholder">
-            {{ friendName().charAt(0).toUpperCase() || '?' }}
-          </div>
-        }
+    @if (groupSortieId()) {
+      <!-- Discussion de groupe : un clic ouvre la fiche de la sortie -->
+      <a
+        class="header-identity group-link"
+        [routerLink]="['/dashboard']"
+        [queryParams]="{ sortie: groupSortieId() }"
+      >
+        <div class="header-avatar">
+          <div class="h-avatar-placeholder" aria-hidden="true">👥</div>
+        </div>
+        <span class="header-text">
+          <span class="header-name">{{ friendName() }}</span>
+          <span class="header-sub">{{ groupSize() }} participants · voir la sortie</span>
+        </span>
+      </a>
+    } @else {
+      <div class="header-identity">
+        <div class="header-avatar">
+          @if (friendAvatar()) {
+            <img [src]="friendAvatar()" class="h-avatar-img" alt="" />
+          }
+          @if (!friendAvatar()) {
+            <div class="h-avatar-placeholder">
+              {{ friendName().charAt(0).toUpperCase() || '?' }}
+            </div>
+          }
+        </div>
+        <span class="header-name">{{ friendName() || 'Conversation' }}</span>
       </div>
-      <span class="header-name">{{ friendName() || 'Conversation' }}</span>
-    </div>
+    }
     @if (friendId()) {
       <div class="header-actions">
         <app-member-safety
@@ -74,6 +91,10 @@
               </div>
             }
             <div class="bubble-wrap">
+              <!-- Discussion de groupe : qui parle -->
+              @if (groupSortieId() && !isOwn(msg)) {
+                <span class="sender-name">{{ msg.sender?.username }}</span>
+              }
               <!-- Réponse citée -->
               @if (msg.reply_to) {
                 <div class="reply-preview" [class.own-reply]="isOwn(msg)">

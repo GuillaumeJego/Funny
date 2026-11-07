@@ -33,4 +33,7 @@ export interface Conversation {
   created_at: string;
   participants?: ConversationParticipant[];
   last_message?: Message | null;
+  /** Discussion de groupe d'une sortie : son identifiant et son titre. */
+  sortie_id?: string | null;
+  sortie_title?: string | null;
 }

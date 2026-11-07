@@ -114,6 +114,8 @@ export const TABLES = [
       enumeration('status', ['draft', 'published', 'cancelled'], { default: 'published' }),
       // Fin du délai pour dire « avec qui ça a matché » : posée quand la question est envoyée.
       datetime('affinites_jusqua'),
+      // Date d'envoi du rappel « c'est bientôt » aux participants (la veille).
+      datetime('rappel_envoye'),
     ],
     indexes: [
       { key: 'status_date', type: 'key', columns: ['status', 'date'] },
@@ -188,7 +190,12 @@ export const TABLES = [
     name: 'Conversations',
     permissions: [],
     rowSecurity: true,
-    columns: [stringArray('participant_ids', ID, { required: true }), datetime('last_message_at')],
+    columns: [
+      stringArray('participant_ids', ID, { required: true }),
+      datetime('last_message_at'),
+      // Discussion de groupe d'une sortie (vide pour une conversation entre deux amis).
+      str('sortie_id', ID),
+    ],
     indexes: [], // Appwrite n'indexe pas les colonnes « liste »
   },
   {

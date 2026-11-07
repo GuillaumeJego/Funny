@@ -153,6 +153,15 @@
                     </div>
                   </div>
                 }
+                <!-- Discussion de groupe (organisateur et inscrits) -->
+                @if (isOrganizer() || inscriptionStatus() === 'pending') {
+                  <button class="btn-chat" (click)="openGroupChat(s.id)" [disabled]="openingChat()">
+                    💬 {{ openingChat() ? 'Ouverture…' : 'Discussion du groupe' }}
+                  </button>
+                  @if (chatError()) {
+                    <p class="chat-error">{{ chatError() }}</p>
+                  }
+                }
                 <!-- Bouton supprimer (organisateur uniquement) -->
                 @if (isOrganizer()) {
                   <button class="btn-modifier" (click)="goToEdit(s.id)">
