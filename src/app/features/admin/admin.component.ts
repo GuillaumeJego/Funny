@@ -15,7 +15,7 @@ import { ProfileService } from '../../core/services/profile.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { ModerationService } from '../../core/services/moderation.service';
 import { Profile } from '../../core/models/profile.model';
-import { Report, reportReasonLabel } from '../../core/models/report.model';
+import { Report, ReportMessage, reportReasonLabel } from '../../core/models/report.model';
 import { AdminThemesComponent } from './admin-themes/admin-themes.component';
 import { AdminStatsComponent } from './admin-stats/admin-stats.component';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
@@ -202,6 +202,28 @@ export class AdminComponent implements OnInit {
 
   memberById(id: string): Profile | undefined {
     return this.membres().find((m) => m.id === id);
+  }
+
+  /** Supprime le message pour tout le monde (avec sa photo ou vidéo). */
+  async deleteMessage(report: Report, message: ReportMessage) {
+    if (!confirm('Supprimer ce message pour tout le monde ? Cette action est définitive.')) return;
+    const { error } = await this.moderationService.deleteReportedMessage(report.id, message.id);
+    if (error) {
+      alert(error.message);
+      return;
+    }
+    this.reports.update((list) =>
+      list.map((r) =>
+        r.id !== report.id
+          ? r
+          : {
+              ...r,
+              messages: r.messages.map((m) =>
+                m.id === message.id ? { ...m, deleted: true, media_url: null } : m,
+              ),
+            },
+      ),
+    );
   }
 
   async markHandled(report: Report) {

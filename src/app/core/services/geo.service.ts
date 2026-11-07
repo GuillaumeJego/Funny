@@ -9,6 +9,14 @@ export interface GeoPlace {
   country: string;
 }
 
+export interface GeoTown {
+  name: string;
+  /** Code postal et département, pour distinguer deux villes du même nom. */
+  context: string;
+  lat: number;
+  lng: number;
+}
+
 export interface GeoFullPlace {
   displayName: string; // Nom complet du lieu (restaurant, adresse…)
   shortName: string; // Nom court (1ère partie)
@@ -116,6 +124,29 @@ export class GeoService {
           };
         }),
       ),
+      catchError(() => of([])),
+    );
+  }
+
+  /** Villes, avec leur position (filtre « Où ? » : une ville et un rayon). */
+  searchTowns(query: string): Observable<GeoTown[]> {
+    if (!query || query.trim().length < 2) return of([]);
+    return this.search(query).pipe(
+      map((results) => {
+        const seen = new Set<string>();
+        const towns: GeoTown[] = [];
+        for (const r of results) {
+          const addr = r.address ?? {};
+          const name = addr.city || addr.town || addr.village || addr.municipality || r.name || '';
+          if (!name) continue;
+          const context = [addr.postcode, addr.county || addr.state].filter(Boolean).join(', ');
+          const key = `${name}|${context}`.toLowerCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          towns.push({ name, context, lat: Number(r.lat), lng: Number(r.lon) });
+        }
+        return towns.filter((t) => Number.isFinite(t.lat) && Number.isFinite(t.lng));
+      }),
       catchError(() => of([])),
     );
   }

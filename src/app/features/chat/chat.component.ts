@@ -52,7 +52,14 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   private moderationService = inject(ModerationService);
   private zone = inject(NgZone);
 
-  readonly messagesEnd = viewChild.required<ElementRef>('messagesEnd');
+  readonly messagesArea = viewChild<ElementRef<HTMLElement>>('messagesArea');
+  /**
+   * Rester collé au dernier message : vrai à l'ouverture, faux dès que le membre remonte
+   * lire l'historique. Les photos qui finissent de charger ne le font alors pas redescendre.
+   */
+  private stickToBottom = true;
+  /** Premier affichage : on saute directement en bas, sans animation. */
+  private firstScroll = true;
   readonly fileInput = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
 
   readonly messages = signal<Message[]>([]);
@@ -228,9 +235,23 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   scrollToBottom() {
-    try {
-      this.messagesEnd()?.nativeElement?.scrollIntoView({ behavior: 'smooth' });
-    } catch {}
+    const area = this.messagesArea()?.nativeElement;
+    if (!area) return;
+    this.stickToBottom = true;
+    area.scrollTo({ top: area.scrollHeight, behavior: this.firstScroll ? 'auto' : 'smooth' });
+    this.firstScroll = false;
+  }
+
+  onMessagesScroll() {
+    const area = this.messagesArea()?.nativeElement;
+    if (!area) return;
+    this.stickToBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 80;
+  }
+
+  /** Une photo ou une vidéo a pris sa taille : on reste sur le dernier message. */
+  mediaLoaded() {
+    const area = this.messagesArea()?.nativeElement;
+    if (area && this.stickToBottom) area.scrollTop = area.scrollHeight;
   }
 
   isOwn(msg: Message): boolean {

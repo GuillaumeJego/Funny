@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Models, Query } from 'appwrite';
-import { Report } from '../../models/report.model';
+import { Report, ReportMessage } from '../../models/report.model';
 import { ConnexionStats, StatsQuery } from '../../models/stats.model';
 import { AdminRepository } from '../../repositories/admin.repository';
 import { RepositoryResult } from '../../repositories/repository.types';
@@ -11,7 +11,27 @@ type ReportRow = Models.Row & {
   target_user_id: string;
   reason: string;
   details: string | null;
+  evidence?: string | null;
 };
+
+type EvidenceRow = {
+  id: string;
+  sender_id: string;
+  content: string;
+  type: ReportMessage['type'];
+  media_file_id: string | null;
+  at: string;
+  deleted?: boolean;
+};
+
+function parseEvidence(json: string | null | undefined): EvidenceRow[] {
+  try {
+    const value = JSON.parse(json || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
 
 @Injectable()
 export class AppwriteAdminRepository extends AdminRepository {
@@ -43,10 +63,32 @@ export class AppwriteAdminRepository extends AdminRepository {
         Query.equal('status', 'open'),
         Query.orderDesc('$createdAt'),
       ]);
+      const evidence = new Map(rows.map((r) => [r.$id, parseEvidence(r.evidence)]));
       const profiles = await this.appwrite.miniProfiles(
-        rows.flatMap((r) => [r.reporter_id, r.target_user_id]),
+        rows.flatMap((r) => [
+          r.reporter_id,
+          r.target_user_id,
+          ...evidence.get(r.$id)!.map((m) => m.sender_id),
+        ]),
       );
-      return rows.map((row) => ({
+      const messagesOf = (row: ReportRow) =>
+        Promise.all(
+          evidence.get(row.$id)!.map(async (m): Promise<ReportMessage> => ({
+            id: m.id,
+            sender: profiles.get(m.sender_id) ?? null,
+            sender_id: m.sender_id,
+            content: m.content,
+            type: m.type,
+            media_url:
+              m.media_file_id && !m.deleted
+                ? await this.appwrite.privateFileUrl('chat-media', m.media_file_id)
+                : null,
+            at: m.at,
+            deleted: !!m.deleted,
+          })),
+        );
+      const messages = await Promise.all(rows.map(messagesOf));
+      return rows.map((row, i) => ({
         id: row.$id,
         created_at: row.$createdAt,
         reason: row.reason,
@@ -54,6 +96,7 @@ export class AppwriteAdminRepository extends AdminRepository {
         reporter: profiles.get(row.reporter_id) ?? null,
         target: profiles.get(row.target_user_id) ?? null,
         target_user_id: row.target_user_id,
+        messages: messages[i],
       }));
     });
   }
@@ -68,6 +111,10 @@ export class AppwriteAdminRepository extends AdminRepository {
       });
       return null;
     });
+  }
+
+  deleteReportedMessage(reportId: string, messageId: string): Promise<RepositoryResult<null>> {
+    return this.call('deleteMessage', { reportId, messageId });
   }
 
   async getStats(query: StatsQuery): Promise<RepositoryResult<ConnexionStats>> {

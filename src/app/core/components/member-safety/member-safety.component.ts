@@ -26,6 +26,8 @@ export class MemberSafetyComponent {
   readonly memberId = input.required<string>();
   readonly username = input('');
   readonly blocked = input(false);
+  /** Dans une conversation : ses derniers messages sont joints au signalement. */
+  readonly conversationId = input<string | undefined>(undefined);
   /** Émis après un blocage (true) ou un déblocage (false). */
   readonly blockedChange = output<boolean>();
 
@@ -60,7 +62,12 @@ export class MemberSafetyComponent {
     const reason = this.reason();
     if (!reason) return;
     this.busy.set(true);
-    const { error } = await this.moderation.report(this.memberId(), reason, this.details());
+    const { error } = await this.moderation.report(
+      this.memberId(),
+      reason,
+      this.details(),
+      this.conversationId(),
+    );
     this.busy.set(false);
     if (error) {
       this.errorMessage.set(error.message);

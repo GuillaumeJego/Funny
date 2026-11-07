@@ -133,6 +133,7 @@ const fakeAdmin: AdminRepository = {
   unban: async () => ok,
   getOpenReports: async () => empty,
   markReportHandled: async () => ok,
+  deleteReportedMessage: async () => ok,
   getStats: async () => ({
     data: {
       days: [],

@@ -14,7 +14,7 @@
   <div
     appClickable
     class="filter-item"
-    [class.active]="filters().ou || filters().autour"
+    [class.active]="filters().autour"
     (click)="togglePanel('ou')"
   >
     <span class="filter-icon">📍</span>
@@ -99,58 +99,77 @@
     </div>
   }
 
-  <!-- ── Panel Où : autour de moi, ou une ville ── -->
+  <!-- ── Panel Où : autour de moi ou une ville, et un rayon ── -->
   @if (openPanel() === 'ou') {
     <div class="filter-panel" (click)="$event.stopPropagation()">
       <div class="panel-inner">
-        @if (distanceEnabled()) {
-          <div>
-            <label>Autour de moi</label>
-            <div class="chip-list">
-              @for (km of radiusOptions; track km) {
-                <button
-                  class="chip"
-                  [class.active]="filters().autour?.km === km"
-                  [disabled]="locating()"
-                  (click)="setRadius(km)"
-                >
-                  &lt; {{ km }} km
-                </button>
-              }
-            </div>
-            @if (locating()) {
-              <div class="empty-hint">Localisation…</div>
-            }
-            @if (locateError()) {
-              <div class="empty-hint">
-                Position introuvable : autorise la localisation dans ton navigateur.
-              </div>
-            }
+        <button
+          type="button"
+          class="chip chip-me"
+          [class.active]="center() && !center()!.label"
+          [disabled]="locating()"
+          (click)="useMyPosition()"
+        >
+          📍 {{ locating() ? 'Localisation…' : 'Autour de moi' }}
+        </button>
+        @if (locateError()) {
+          <div class="empty-hint">
+            Position introuvable : autorise la localisation dans ton navigateur.
           </div>
         }
-        @if (towns().length) {
-          <div>
-            <label>Ville</label>
-            <div class="chip-list">
-              @for (town of towns(); track town.name) {
-                <button
-                  class="chip"
-                  [class.active]="filters().ou === town.name"
-                  (click)="setTown(town.name)"
-                >
-                  {{ town.name }} <span class="chip-count">{{ town.count }}</span>
-                </button>
+
+        <label for="town-search">Ou une ville</label>
+        <div class="town-search">
+          <input
+            id="town-search"
+            type="search"
+            autocomplete="off"
+            placeholder="Saisir une ville"
+            [ngModel]="townQuery()"
+            (ngModelChange)="onTownQuery($event)"
+          />
+          @if (townResults().length) {
+            <ul class="town-results" role="listbox">
+              @for (t of townResults(); track t.name + t.context) {
+                <li role="option" appClickable (click)="pickTown(t)">
+                  <strong>{{ t.name }}</strong>
+                  @if (t.context) {
+                    <span>{{ t.context }}</span>
+                  }
+                </li>
               }
-            </div>
-          </div>
-        } @else if (!distanceEnabled()) {
-          <div class="empty-hint">Aucun lieu pour l'instant</div>
-        }
-        @if (filters().ou || filters().autour) {
-          <div class="panel-actions">
+            </ul>
+          } @else if (searchingTowns()) {
+            <div class="empty-hint">Recherche…</div>
+          }
+        </div>
+
+        <label for="radius">
+          Distance : <strong>{{ radiusLabel() }}</strong>
+        </label>
+        <input
+          id="radius"
+          class="radius"
+          type="range"
+          min="1"
+          [max]="maxRadius + 1"
+          step="1"
+          [ngModel]="radius()"
+          (ngModelChange)="radius.set(+$event)"
+        />
+        <div class="radius-ends">
+          <span>1 km</span>
+          <span>Toute la France</span>
+        </div>
+
+        <div class="panel-actions">
+          @if (filters().autour) {
             <button class="btn-clear" (click)="clearOu()">✕ Effacer</button>
-          </div>
-        }
+          }
+          <button class="btn-apply" [disabled]="!canApplyPlace()" (click)="applyPlace()">
+            Appliquer
+          </button>
+        </div>
       </div>
     </div>
   }

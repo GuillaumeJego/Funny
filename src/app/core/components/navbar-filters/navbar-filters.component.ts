@@ -6,17 +6,20 @@ import {
   output,
   signal,
   computed,
+  inject,
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { ClickableDirective } from '../../directives/clickable.directive';
-import { townsOf } from '../../utils/towns';
+import { GeoService, GeoTown } from '../../services/geo.service';
+import { distanceKm } from '../../utils/distance';
+import { inTown } from '../../utils/towns';
 
 export interface Filters {
   themeIds?: string[];
-  /** Ville choisie dans « Où ? » (voir inTown). */
+  /** Ville choisie dans « Où ? » ; absente pour « Autour de moi ». */
   ou?: string;
-  /** « Autour de moi » : rayon en km et position du membre. */
+  /** Centre de la recherche (ma position ou la ville) et rayon en km. */
   autour?: { km: number; lat: number; lng: number };
   dateDebut?: string;
   dateFin?: string;
@@ -45,6 +48,24 @@ export function matchesPeriod(dateIso: string, f: Filters, now = new Date()): bo
   return rangeReachesPast || date >= now;
 }
 
+/** Rayon maximum du curseur : au-delà, c'est toute la France (pas de filtre de lieu). */
+export const MAX_RADIUS_KM = 100;
+
+/**
+ * Une sortie passe-t-elle le filtre « Où ? » ? Elle doit être dans le rayon choisi.
+ * Une sortie sans position connue passe seulement si son adresse cite la ville choisie.
+ */
+export function matchesPlace(
+  sortie: { lat?: number | null; lng?: number | null; location?: string | null },
+  f: Filters,
+): boolean {
+  if (!f.autour) return true;
+  if (sortie.lat != null && sortie.lng != null) {
+    return distanceKm(f.autour, { lat: sortie.lat, lng: sortie.lng }) <= f.autour.km;
+  }
+  return !!f.ou && inTown(sortie.location, f.ou);
+}
+
 export interface ThemeOption {
   id: string;
   name: string;
@@ -62,8 +83,6 @@ export interface ThemeOption {
 export class NavbarFiltersComponent {
   readonly availableThemes = input<ThemeOption[]>([]);
   readonly availableLocations = input<string[]>([]);
-  /** Propose « Autour de moi » (sorties avec position connue). */
-  readonly distanceEnabled = input(false);
   readonly filtersChanged = output<Filters>();
 
   readonly filters = signal<Filters>({});
@@ -75,16 +94,27 @@ export class NavbarFiltersComponent {
   readonly dateFin = signal('');
   readonly quickPeriod = signal('');
 
-  // Où ? : villes des sorties et rayon autour de moi
-  readonly towns = computed(() => townsOf(this.availableLocations()));
-  readonly radiusOptions = [5, 10, 20, 50];
+  // Où ? : autour de moi ou une ville, et un rayon (au-delà de 100 km : toute la France)
+  private geo = inject(GeoService);
+  readonly maxRadius = MAX_RADIUS_KM;
+  /** Centre en cours de choix : ma position (label null) ou une ville. */
+  readonly center = signal<{ lat: number; lng: number; label: string | null } | null>(null);
+  readonly radius = signal(20);
+  readonly townQuery = signal('');
+  readonly townResults = signal<GeoTown[]>([]);
+  readonly searchingTowns = signal(false);
   readonly locating = signal(false);
   readonly locateError = signal(false);
+  private searchTimer?: ReturnType<typeof setTimeout>;
+
+  readonly radiusLabel = computed(() =>
+    this.radius() > MAX_RADIUS_KM ? 'Toute la France' : `${this.radius()} km`,
+  );
 
   readonly ouLabel = computed<string>(() => {
     const f = this.filters();
-    if (f.autour) return `< ${f.autour.km} km`;
-    return f.ou || 'Où ?';
+    if (!f.autour) return 'Où ?';
+    return `${f.ou ?? 'Autour de moi'} · ${f.autour.km} km`;
   });
 
   readonly activeCount = computed<number>(() => {
@@ -131,7 +161,7 @@ export class NavbarFiltersComponent {
         this.dateDebut.set(this.filters().dateDebut ?? '');
         this.dateFin.set(this.filters().dateFin ?? '');
       }
-      if (panel === 'ou') this.locateError.set(false);
+      if (panel === 'ou') this.syncPlace();
     }
   }
 
@@ -167,31 +197,68 @@ export class NavbarFiltersComponent {
   }
 
   // ── Lieu ──────────────────────────────────────────────────
-  /** Une ville à la fois : la choisir remplace le rayon « autour de moi ». */
-  setTown(town: string) {
-    const same = this.filters().ou === town;
-    this.filters.set({ ...this.filters(), ou: same ? undefined : town, autour: undefined });
-    this.emit();
-    this.openPanel.set(null);
+  /** À l'ouverture du panneau, on repart du filtre en place. */
+  private syncPlace() {
+    const { autour, ou } = this.filters();
+    this.locateError.set(false);
+    this.townResults.set([]);
+    this.center.set(autour ? { lat: autour.lat, lng: autour.lng, label: ou ?? null } : null);
+    this.townQuery.set(ou ?? '');
+    this.radius.set(autour?.km ?? 20);
   }
 
-  /** Rayon autour de moi : demande la position du membre la première fois. */
-  async setRadius(km: number) {
+  /** « Autour de moi » : demande la position du membre. */
+  async useMyPosition() {
     this.locateError.set(false);
-    let position: { lat: number; lng: number } | null = this.filters().autour ?? null;
+    this.locating.set(true);
+    const position = await this.locate();
+    this.locating.set(false);
     if (!position) {
-      this.locating.set(true);
-      position = await this.locate();
-      this.locating.set(false);
-      if (!position) {
-        this.locateError.set(true);
-        return;
-      }
+      this.locateError.set(true);
+      return;
+    }
+    this.townQuery.set('');
+    this.townResults.set([]);
+    this.center.set({ ...position, label: null });
+  }
+
+  /** Saisie d'une ville : suggestions après une courte pause dans la frappe. */
+  onTownQuery(query: string) {
+    this.townQuery.set(query);
+    if (this.center()?.label) this.center.set(null);
+    clearTimeout(this.searchTimer);
+    if (query.trim().length < 2) {
+      this.townResults.set([]);
+      return;
+    }
+    this.searchTimer = setTimeout(() => {
+      this.searchingTowns.set(true);
+      this.geo.searchTowns(query).subscribe((towns) => {
+        this.searchingTowns.set(false);
+        if (this.townQuery() === query) this.townResults.set(towns.slice(0, 6));
+      });
+    }, 400);
+  }
+
+  pickTown(town: GeoTown) {
+    this.townQuery.set(town.name);
+    this.townResults.set([]);
+    this.center.set({ lat: town.lat, lng: town.lng, label: town.name });
+  }
+
+  /** Il faut un centre, sauf pour « Toute la France ». */
+  readonly canApplyPlace = computed(() => this.radius() > MAX_RADIUS_KM || !!this.center());
+
+  applyPlace() {
+    const center = this.center();
+    if (this.radius() > MAX_RADIUS_KM || !center) {
+      this.clearOu();
+      return;
     }
     this.filters.set({
       ...this.filters(),
-      ou: undefined,
-      autour: { km, lat: position.lat, lng: position.lng },
+      ou: center.label ?? undefined,
+      autour: { km: this.radius(), lat: center.lat, lng: center.lng },
     });
     this.emit();
     this.openPanel.set(null);

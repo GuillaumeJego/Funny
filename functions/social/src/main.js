@@ -9,6 +9,7 @@ import {
   uniqueId,
   usernameOf,
 } from './shared/appwrite.js';
+import { collectEvidence, shareMediaWithAdmins } from './shared/moderation.js';
 
 /** Délai avant de pouvoir redemander en ami un membre qui a refusé : 30 jours. */
 const RETRY_AFTER_DECLINE_MS = 30 * 24 * 3600 * 1000;
@@ -160,6 +161,13 @@ async function report({ api, userId, input }) {
   const details = String(input.details ?? '')
     .trim()
     .slice(0, 2000);
+  // Signalement depuis une conversation : ses derniers messages servent de preuve aux admins.
+  const conversationId = input.conversationId ? String(input.conversationId) : null;
+  const evidence = await collectEvidence(api, conversationId, userId);
+  await shareMediaWithAdmins(api, evidence);
+  const proof = evidence.length
+    ? { conversation_id: conversationId, evidence: JSON.stringify(evidence) }
+    : {};
 
   const open = await api.findRow('reports', [
     Query.equal('reporter_id', userId),
@@ -167,7 +175,7 @@ async function report({ api, userId, input }) {
     Query.equal('status', 'open'),
   ]);
   if (open) {
-    await api.updateRow('reports', open.$id, { reason, details });
+    await api.updateRow('reports', open.$id, { reason, details, ...proof });
     return {};
   }
   await api.createRow('reports', uniqueId(), {
@@ -176,6 +184,7 @@ async function report({ api, userId, input }) {
     reason,
     details,
     status: 'open',
+    ...proof,
   });
 
   const target = await usernameOf(api, targetId);
