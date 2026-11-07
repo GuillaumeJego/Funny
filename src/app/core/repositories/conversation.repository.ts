@@ -25,7 +25,13 @@ export abstract class ConversationRepository {
   /** Prévient à chaque nouveau message de la conversation, avec le message prêt à afficher. */
   abstract onNewMessage(conversationId: string, callback: (message: Message) => void): Unsubscribe;
   /** Prévient à chaque nouveau message, dans n'importe laquelle de ses conversations. */
-  abstract onAnyNewMessage(callback: () => void): Unsubscribe;
+  abstract onAnyNewMessage(
+    callback: (message: { conversation_id: string; sender_id: string }) => void,
+  ): Unsubscribe;
+  /** Nombre de messages reçus et pas encore lus, par conversation (absentes si zéro). */
+  abstract getUnreadCounts(userId: string): Promise<Map<string, number>>;
+  /** Note que le membre a lu la conversation jusqu'à maintenant. */
+  abstract markRead(conversationId: string, userId: string): Promise<void>;
   /** Réactions d'un message (celles qui viennent vraiment de leur auteur). */
   abstract getReactions(messageId: string): Promise<MessageReaction[]>;
   /** Prévient quand une réaction est ajoutée, changée ou retirée : donne le message concerné. */

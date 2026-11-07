@@ -19,6 +19,7 @@ import {
   syncPremiumPreview,
 } from './shared/sorties.js';
 import { cleanSortie, isSafeDefaultImage, sortieImageFileId } from './shared/sortie-rules.js';
+import { recordAffinity, sendAffinityQuestions } from './shared/affinites.js';
 
 /**
  * Qui peut voir une sortie : tout le monde, ou seulement les abonnés si elle est Premium.
@@ -159,6 +160,7 @@ async function update({ api, userId, input }) {
         actor_id: userId,
         title: '📝 Sortie modifiée',
         message: `La ${moved ? 'date' : 'adresse'} de la sortie « ${data.title} » a changé : pensez à vérifier.`,
+        link: `/dashboard?sortie=${sortie.$id}`,
       })),
     );
   }
@@ -204,12 +206,14 @@ async function join({ api, userId, input }) {
           actor_id: userId,
           title: "⏳ Liste d'attente",
           message: `${actor} est en liste d'attente pour « ${sortie.title} »`,
+          link: `/dashboard?sortie=${sortie.$id}`,
         }
       : {
           user_id: sortie.created_by,
           actor_id: userId,
           title: '✅ Nouvelle inscription',
           message: `${actor} a rejoint votre sortie « ${sortie.title} »`,
+          link: `/dashboard?sortie=${sortie.$id}`,
         },
   ]);
   return { status };
@@ -231,6 +235,7 @@ async function leave({ api, userId, input }) {
         actor_id: userId,
         title: '🚪 Désinscription',
         message: `${actor} a quitté votre sortie « ${sortie.title} »`,
+        link: `/dashboard?sortie=${sortie.$id}`,
       },
     ]);
     await promoteFromWaitingList(api, sortie);
@@ -256,6 +261,7 @@ async function like({ api, userId, input }) {
       actor_id: userId,
       title: '❤️ Nouveau like',
       message: `${actor} a aimé votre sortie « ${sortie.title} »`,
+      link: `/dashboard?sortie=${sortie.$id}`,
     },
   ]);
   return { liked: true };
@@ -271,4 +277,19 @@ async function remove({ api, userId, input }) {
   return {};
 }
 
-export default handler({ create, update, join, leave, like, delete: remove });
+/** Réponse à « avez-vous eu des affinités avec quelqu'un ? » pour un autre participant. */
+async function affinite({ api, userId, input }) {
+  const sortie = await getSortie(api, input.sortieId);
+  return recordAffinity(api, {
+    sortie,
+    fromId: userId,
+    toId: String(input.toUserId ?? ''),
+    choice: input.choice,
+  });
+}
+
+export default handler(
+  { create, update, join, leave, like, affinite, delete: remove },
+  // Chaque heure : poser la question des affinités aux participants des sorties finies.
+  { onSchedule: ({ api }) => sendAffinityQuestions(api) },
+);

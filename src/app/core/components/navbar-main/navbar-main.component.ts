@@ -14,6 +14,7 @@ import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { NotificationService } from '../../services/notification.service';
 import { FriendshipService } from '../../services/friendship.service';
+import { UnreadMessagesService } from '../../services/unread-messages.service';
 import { ClickableDirective } from '../../directives/clickable.directive';
 
 @Component({
@@ -31,6 +32,7 @@ export class NavbarMainComponent implements OnInit, OnDestroy {
   private profileService = inject(ProfileService);
   private notifService = inject(NotificationService);
   private friendshipService = inject(FriendshipService);
+  private unreadMessages = inject(UnreadMessagesService);
 
   navItems = [
     { icon: '🏠', label: 'Sorties', route: '/dashboard' },
@@ -47,6 +49,8 @@ export class NavbarMainComponent implements OnInit, OnDestroy {
   /** Notification qui vient d'arriver, affichée quelques secondes en bas de l'écran. */
   readonly toast = this.notifService.toast;
   readonly pendingFriendsCount = signal(0);
+  /** Badge « Messages » : messages reçus pas encore lus, en direct. */
+  readonly unreadMessagesCount = this.unreadMessages.total;
   readonly isAdmin = signal(false);
   private userId = '';
   private incomingSub?: Subscription;
@@ -57,8 +61,9 @@ export class NavbarMainComponent implements OnInit, OnDestroy {
     } = await this.auth.getUser();
     if (user) {
       this.userId = user.id;
-      const [, profile, pendingFriends] = await Promise.all([
+      const [, , profile, pendingFriends] = await Promise.all([
         this.notifService.startListening(user.id),
+        this.unreadMessages.startListening(user.id),
         this.profileService.getMyProfile(user.id),
         this.friendshipService.getPendingReceivedCount(user.id),
       ]);
@@ -73,6 +78,7 @@ export class NavbarMainComponent implements OnInit, OnDestroy {
     // La barre disparaît à la déconnexion : on arrête d'écouter.
     this.incomingSub?.unsubscribe();
     this.notifService.stop();
+    this.unreadMessages.stop();
   }
 
   private async refreshFriendsCount() {
@@ -80,9 +86,17 @@ export class NavbarMainComponent implements OnInit, OnDestroy {
     this.pendingFriendsCount.set(await this.friendshipService.getPendingReceivedCount(this.userId));
   }
 
+  /** La notification ouvre directement ce dont elle parle (sortie, profil…). */
   openToast() {
+    const n = this.notifService.toast();
     this.notifService.hideToast();
-    this.navigate('/notifications');
+    const target = n ? this.notifService.targetOf(n) : null;
+    if (!target) {
+      this.navigate('/notifications');
+      return;
+    }
+    this.drawerService.closeAll();
+    this.router.navigateByUrl(target);
   }
 
   navigate(route: string) {

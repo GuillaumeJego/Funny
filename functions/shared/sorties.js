@@ -45,6 +45,7 @@ export async function promoteFromWaitingList(api, sortie) {
       user_id: next.user_id,
       title: '🎉 Une place s’est libérée',
       message: `Vous êtes maintenant inscrit à la sortie « ${sortie.title} »`,
+      link: `/dashboard?sortie=${sortie.$id}`,
     },
   ]);
 }

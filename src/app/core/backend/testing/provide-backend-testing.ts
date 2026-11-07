@@ -2,6 +2,7 @@ import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 import { AdminRepository } from '../../repositories/admin.repository';
 import { AuthRepository } from '../../repositories/auth.repository';
 import { BillingRepository } from '../../repositories/billing.repository';
+import { AffiniteRepository } from '../../repositories/affinite.repository';
 import { ConversationRepository } from '../../repositories/conversation.repository';
 import { FavoriRepository } from '../../repositories/favori.repository';
 import { FriendshipRepository } from '../../repositories/friendship.repository';
@@ -87,6 +88,8 @@ const fakeConversations: ConversationRepository = {
   onNewMessage: () => () => {},
   getReactions: async () => [],
   onAnyNewMessage: () => () => {},
+  getUnreadCounts: async () => new Map(),
+  markRead: async () => {},
   onReactionChange: () => () => {},
 };
 
@@ -135,6 +138,12 @@ const fakeModeration: ModerationRepository = {
   getBlockedIds: async () => [],
 };
 
+const fakeAffinites: AffiniteRepository = {
+  getMine: async () => [],
+  getHeartDatesSince: async () => [],
+  answer: async () => ({ data: null, error: null }),
+};
+
 const fakeBilling: BillingRepository = {
   checkout: async () => ok,
   portal: async () => ok,
@@ -157,5 +166,6 @@ export function provideBackendTesting(): EnvironmentProviders {
     { provide: AdminRepository, useValue: fakeAdmin },
     { provide: ModerationRepository, useValue: fakeModeration },
     { provide: BillingRepository, useValue: fakeBilling },
+    { provide: AffiniteRepository, useValue: fakeAffinites },
   ]);
 }

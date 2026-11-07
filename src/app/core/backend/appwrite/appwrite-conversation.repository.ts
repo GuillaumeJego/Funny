@@ -8,6 +8,7 @@ import { fromRow } from './rows';
 
 type MessageRow = Models.Row & Omit<NewMessage, 'media_file_id'> & { media_file_id: string | null };
 type ConversationRow = Models.Row & { participant_ids: string[] };
+type ReadRow = Models.Row & { conversation_id: string; last_read_at: string };
 type ReactionRow = Models.Row & MessageReaction & { conversation_id: string };
 
 /** Nombre de messages chargés à l'ouverture d'une conversation. */
@@ -176,12 +177,65 @@ export class AppwriteConversationRepository extends ConversationRepository {
     );
   }
 
-  onAnyNewMessage(callback: () => void): Unsubscribe {
+  onAnyNewMessage(
+    callback: (message: { conversation_id: string; sender_id: string }) => void,
+  ): Unsubscribe {
     // Appwrite n'envoie que les messages des conversations du membre.
-    return this.appwrite.client.subscribe(
+    return this.appwrite.client.subscribe<MessageRow>(
       Channel.tablesdb(DB).table('messages').row().create(),
-      () => callback(),
+      (event) => {
+        const row = event.payload;
+        if (!writtenBy(row, row.sender_id)) return;
+        callback({ conversation_id: row.conversation_id, sender_id: row.sender_id });
+      },
     );
+  }
+
+  async getUnreadCounts(userId: string): Promise<Map<string, number>> {
+    const [conversations, reads] = await Promise.all([
+      this.appwrite.listAll<ConversationRow>('conversations', [
+        Query.contains('participant_ids', userId),
+      ]),
+      this.appwrite.listAll<ReadRow>('conversation_reads', [Query.equal('user_id', userId)]),
+    ]);
+    const lastRead = new Map(reads.map((r) => [r.conversation_id, r.last_read_at]));
+    const counts = new Map<string, number>();
+    await Promise.all(
+      conversations.map(async (c) => {
+        const since = lastRead.get(c.$id);
+        const count = await this.appwrite.count('messages', [
+          Query.equal('conversation_id', c.$id),
+          Query.notEqual('sender_id', userId),
+          ...(since ? [Query.greaterThan('$createdAt', since)] : []),
+        ]);
+        if (count > 0) counts.set(c.$id, count);
+      }),
+    );
+    return counts;
+  }
+
+  async markRead(conversationId: string, userId: string): Promise<void> {
+    const now = new Date().toISOString();
+    const [existing] = await this.appwrite.listAll<ReadRow>('conversation_reads', [
+      Query.equal('user_id', userId),
+      Query.equal('conversation_id', conversationId),
+    ]);
+    if (existing) {
+      await this.appwrite.tables.updateRow({
+        databaseId: DB,
+        tableId: 'conversation_reads',
+        rowId: existing.$id,
+        data: { last_read_at: now },
+      });
+      return;
+    }
+    await this.appwrite.tables.createRow({
+      databaseId: DB,
+      tableId: 'conversation_reads',
+      rowId: ID.unique(),
+      data: { user_id: userId, conversation_id: conversationId, last_read_at: now },
+      permissions: [Permission.read(Role.user(userId)), Permission.update(Role.user(userId))],
+    });
   }
 
   async getReactions(messageId: string): Promise<MessageReaction[]> {

@@ -652,3 +652,22 @@
     color: #3b2a00;
   }
 }
+
+.link-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: rgba($warning, 0.12);
+  border-radius: $border-radius;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+
+  button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: $text-medium;
+  }
+}

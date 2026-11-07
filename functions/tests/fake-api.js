@@ -14,6 +14,10 @@ function matches(row, query) {
       return !values.includes(value);
     case 'lessThan':
       return value != null && value < values[0];
+    case 'greaterThan':
+      return value != null && value > values[0];
+    case 'isNull':
+      return value == null;
     case 'contains':
       return Array.isArray(value) && values.some((v) => value.includes(v));
     case 'or':
@@ -40,8 +44,16 @@ export function createFakeApi(initial = {}, teams = {}) {
     let rows = rowsOf(table).filter((row) =>
       parsed.every(
         (q) =>
-          !['equal', 'notEqual', 'lessThan', 'contains', 'or', 'and'].includes(q.method) ||
-          matches(row, q),
+          ![
+            'equal',
+            'notEqual',
+            'lessThan',
+            'greaterThan',
+            'isNull',
+            'contains',
+            'or',
+            'and',
+          ].includes(q.method) || matches(row, q),
       ),
     );
     const orders = parsed.filter((q) => q.method === 'orderAsc' || q.method === 'orderDesc');

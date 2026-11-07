@@ -8,6 +8,8 @@ export interface AppNotification {
   read: boolean;
   created_at: string;
   actor_id?: string;
+  /** Page à ouvrir quand on clique sur la notification (ex. /sorties/<id>/affinites). */
+  link?: string | null;
   actor?: { username: string; avatar_url: string | null };
 }
 

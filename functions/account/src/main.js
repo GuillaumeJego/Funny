@@ -135,6 +135,7 @@ async function remove({ api, userId, input }) {
         user_id: sortie.created_by,
         title: '👋 Désinscription',
         message: `${username} a quitté la sortie « ${sortie.title} »`,
+        link: `/dashboard?sortie=${sortie.$id}`,
       },
     ]);
     await promoteFromWaitingList(api, sortie);
@@ -153,6 +154,8 @@ async function remove({ api, userId, input }) {
   await deleteAll('blocks', await byUser('blocks', 'blocker_id', 'blocked_id'));
   await deleteAll('reports', await byUser('reports', 'reporter_id', 'target_user_id'));
   await deleteAll('notifications', await byUser('notifications', 'user_id'));
+  await deleteAll('affinites', await byUser('affinites', 'from_user', 'to_user'));
+  await deleteAll('conversation_reads', await byUser('conversation_reads', 'user_id'));
   await deleteAll('subscriptions', await byUser('subscriptions', 'user_id'));
 
   // Ses conversations : l'autre membre ne peut plus lui écrire, on les efface en entier.

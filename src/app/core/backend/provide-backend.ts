@@ -1,5 +1,6 @@
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 import { AdminRepository } from '../repositories/admin.repository';
+import { AffiniteRepository } from '../repositories/affinite.repository';
 import { AuthRepository } from '../repositories/auth.repository';
 import { BillingRepository } from '../repositories/billing.repository';
 import { ConversationRepository } from '../repositories/conversation.repository';
@@ -14,6 +15,7 @@ import { SortieRepository } from '../repositories/sortie.repository';
 import { StorageRepository } from '../repositories/storage.repository';
 import { ThemeRepository } from '../repositories/theme.repository';
 import { AppwriteAdminRepository } from './appwrite/appwrite-admin.repository';
+import { AppwriteAffiniteRepository } from './appwrite/appwrite-affinite.repository';
 import { AppwriteAuthRepository } from './appwrite/appwrite-auth.repository';
 import { AppwriteBillingRepository } from './appwrite/appwrite-billing.repository';
 import { AppwriteConversationRepository } from './appwrite/appwrite-conversation.repository';
@@ -45,5 +47,6 @@ export function provideBackend(): EnvironmentProviders {
     { provide: AdminRepository, useClass: AppwriteAdminRepository },
     { provide: ModerationRepository, useClass: AppwriteModerationRepository },
     { provide: BillingRepository, useClass: AppwriteBillingRepository },
+    { provide: AffiniteRepository, useClass: AppwriteAffiniteRepository },
   ]);
 }

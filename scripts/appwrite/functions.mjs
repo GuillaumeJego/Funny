@@ -35,6 +35,8 @@ const FUNCTIONS = [
     name: 'Sorties',
     timeout: 30,
     // files.read : vérifier que la photo d'une sortie est bien dans notre stockage.
+    // Chaque heure (à la 15e minute) : question des affinités après les sorties finies.
+    schedule: '15 * * * *',
     scopes: ['rows.read', 'rows.write', 'teams.read', 'files.read', 'files.write'],
   },
   {

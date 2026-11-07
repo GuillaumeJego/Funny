@@ -46,10 +46,21 @@ export class NotificationService {
     this.toast.set(null);
   }
 
-  private showToast(n: Notification) {
+  showToast(n: Notification) {
     clearTimeout(this.toastTimer);
     this.toast.set(n);
     this.toastTimer = setTimeout(() => this.toast.set(null), 5000);
+  }
+
+  /**
+   * Page à ouvrir quand on touche la notification : celle indiquée par le serveur, sinon
+   * le profil du membre à l'origine (anciennes notifications), sinon aucune.
+   */
+  targetOf(n: Notification): string | null {
+    // Seulement une page de l'application (« /… »), jamais un autre site (« //… »).
+    if (n.link && n.link.startsWith('/') && !n.link.startsWith('//')) return n.link;
+    if (n.actor_id) return `/membres/${n.actor_id}`;
+    return null;
   }
 
   async getMyNotifications(userId: string) {
