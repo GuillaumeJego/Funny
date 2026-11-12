@@ -141,6 +141,11 @@
   .formfield {
     margin-bottom: 0.35rem;
   }
+
+  // Date et heure : même espace en dessous que les autres champs.
+  &.formrow-dates .formfield {
+    margin-bottom: 1rem;
+  }
 }
 
 .hint {
