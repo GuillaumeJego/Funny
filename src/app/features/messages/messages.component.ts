@@ -17,11 +17,12 @@ import { UnreadMessagesService } from '../../core/services/unread-messages.servi
 import { Conversation } from '../../core/models/message.model';
 import { Friendship } from '../../core/models/friendship.model';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
+import { ProfileLinkDirective } from '../../core/directives/profile-link.directive';
 
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [ClickableDirective, FormsModule],
+  imports: [ProfileLinkDirective, ClickableDirective, FormsModule],
   templateUrl: './messages.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './messages.component.scss',
@@ -102,6 +103,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.router.navigate(['/messages', convId], {
       state: { friendName: p.username, friendAvatar: p.avatar_url, friendId: p.id },
     });
+  }
+
+  getFriendId(conv: Conversation) {
+    return conv.participants?.find((p) => p.user_id !== this.myId)?.user_id ?? null;
   }
 
   getFriend(conv: Conversation) {

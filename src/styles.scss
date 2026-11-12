@@ -116,7 +116,13 @@ a {
 
 // Éléments cliquables qui ne sont pas des boutons (directive appClickable) :
 // contour visible quand on les atteint au clavier.
-.clickable:focus-visible {
+// Photo de profil qui ouvre la fiche du membre (directive appProfileLink).
+.profile-link {
+  cursor: pointer;
+}
+
+.clickable:focus-visible,
+.profile-link:focus-visible {
   outline: 2px solid $accent;
   outline-offset: 2px;
 }

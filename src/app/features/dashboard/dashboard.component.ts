@@ -29,6 +29,7 @@ import { isPremiumMember } from '../../core/utils/premium';
 import { distanceKm } from '../../core/utils/distance';
 import { SortiesMapComponent } from './sorties-map/sorties-map.component';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
+import { ProfileLinkDirective } from '../../core/directives/profile-link.directive';
 
 export interface SortieGroup {
   dateLabel: string;
@@ -39,6 +40,7 @@ export interface SortieGroup {
   selector: 'app-dashboard',
   standalone: true,
   imports: [
+    ProfileLinkDirective,
     ClickableDirective,
     RouterModule,
     NavbarFiltersComponent,

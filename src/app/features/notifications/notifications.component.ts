@@ -12,11 +12,12 @@ import { Subscription } from 'rxjs';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService, Notification } from '../../core/services/notification.service';
+import { ProfileLinkDirective } from '../../core/directives/profile-link.directive';
 
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [ClickableDirective],
+  imports: [ProfileLinkDirective, ClickableDirective],
   templateUrl: './notifications.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './notifications.component.scss',

@@ -22,6 +22,7 @@ import { Message } from '../../core/models/message.model';
 import { ModerationService } from '../../core/services/moderation.service';
 import { MemberSafetyComponent } from '../../core/components/member-safety/member-safety.component';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
+import { ProfileLinkDirective } from '../../core/directives/profile-link.directive';
 
 const EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
 /** Nombre de photos ou vidéos envoyées en une fois. */
@@ -37,7 +38,13 @@ interface PendingMedia {
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [ClickableDirective, FormsModule, MemberSafetyComponent, RouterLink],
+  imports: [
+    ProfileLinkDirective,
+    ClickableDirective,
+    FormsModule,
+    MemberSafetyComponent,
+    RouterLink,
+  ],
   templateUrl: './chat.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './chat.component.scss',
