@@ -1,3 +1,4 @@
+import { MembresTabsComponent } from '../../core/components/membres-tabs/membres-tabs.component';
 import {
   Component,
   OnInit,
@@ -20,7 +21,7 @@ type Tab = 'amis' | 'recues' | 'envoyees';
 @Component({
   selector: 'app-amis',
   standalone: true,
-  imports: [ClickableDirective, FormsModule],
+  imports: [ClickableDirective, FormsModule, MembresTabsComponent],
   templateUrl: './amis.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './amis.component.scss',

@@ -8,7 +8,11 @@ import {
   computed,
 } from '@angular/core';
 
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map } from 'rxjs/operators';
+import { NotificationService } from '../../services/notification.service';
+import { DrawerService } from '../../services/drawer.service';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { isPremiumMember } from '../../utils/premium';
@@ -26,6 +30,20 @@ export class NavbarTopComponent implements OnInit {
   private authService = inject(AuthService);
   private profileService = inject(ProfileService);
   private router = inject(Router);
+  private notifService = inject(NotificationService);
+  private drawerService = inject(DrawerService);
+
+  /** Notifications non lues, tenues à jour en direct par le service. */
+  readonly unreadCount = this.notifService.unreadCount;
+  readonly isAdmin = signal(false);
+  private readonly url = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map((e) => e.urlAfterRedirects),
+    ),
+    { initialValue: this.router.url },
+  );
+  readonly onNotifications = computed(() => this.url().startsWith('/notifications'));
 
   readonly avatarUrl = signal<string | undefined>(undefined);
   readonly menuOpen = signal(false);
@@ -46,6 +64,7 @@ export class NavbarTopComponent implements OnInit {
           this.subscriptionEndDate.set(new Date(data.subscription_end_date));
         }
         this.isPremium.set(isPremiumMember(data));
+        this.isAdmin.set(data.role === 'admin' || data.role === 'developer');
       }
     }
   }
@@ -84,6 +103,19 @@ export class NavbarTopComponent implements OnInit {
   @HostListener('document:keydown.escape')
   closeMenu() {
     this.menuOpen.set(false);
+  }
+
+  openNotifications() {
+    this.menuOpen.set(false);
+    this.unreadCount.set(0);
+    this.drawerService.closeAll();
+    this.router.navigate(['/notifications']);
+  }
+
+  goTo(route: string) {
+    this.menuOpen.set(false);
+    this.drawerService.closeAll();
+    this.router.navigate([route]);
   }
 
   goToMyProfile() {
