@@ -6,9 +6,16 @@
   margin: 0 auto;
 }
 
+.page-header .subtitle {
+  margin: -0.6rem 0 1rem;
+  color: $text-light;
+  font-size: 0.92rem;
+}
+
 .page-header h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: $text-dark;
   margin-bottom: 1rem;
 
@@ -171,8 +178,8 @@
 
 .membres-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
 }
 
 .membre-card {
@@ -182,15 +189,34 @@
   background: $bg-white;
   border: 1px solid $border-color;
   border-radius: $border-radius-lg;
-  padding: 0.75rem 1rem;
+  padding: 0.9rem 1rem;
   transition:
-    box-shadow 0.2s,
+    border-color 0.2s,
     transform 0.15s;
   cursor: pointer;
+  animation: fade-up 0.3s ease-out both;
 
   &:hover {
-    box-shadow: $shadow;
+    border-color: $primary;
     transform: translateY(-1px);
+  }
+
+  .btn-profil {
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 0.45rem 0.8rem;
+    border-radius: 11px;
+    background: $primary;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
   }
 }
 
@@ -200,17 +226,18 @@
 
   .avatar,
   .avatar-placeholder {
-    width: 44px;
-    height: 44px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid $border-color;
   }
 
   .avatar-placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: $primary;
+    background: linear-gradient(135deg, $primary, #16458c);
     color: white;
     font-weight: 700;
     font-size: 1.1rem;
@@ -240,8 +267,8 @@
     flex-shrink: 0;
     padding: 0.05rem 0.4rem;
     border-radius: 999px;
-    background: $success;
-    color: #fff;
+    background: $accent;
+    color: $on-accent;
     font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -249,8 +276,8 @@
   }
 
   .membre-name {
-    font-weight: 600;
-    font-size: 0.95rem;
+    font-weight: 700;
+    font-size: 1rem;
     color: $text-dark;
     white-space: nowrap;
     overflow: hidden;
@@ -258,12 +285,14 @@
   }
 
   .membre-bio {
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     color: $text-light;
-    margin-top: 0.15rem;
-    white-space: nowrap;
+    margin-top: 0.2rem;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
   }
 }
 

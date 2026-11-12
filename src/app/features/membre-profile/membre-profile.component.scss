@@ -85,6 +85,11 @@
   aspect-ratio: 1 / 1;
   background: $bg-light;
   overflow: hidden;
+
+  // Sans photo : un bandeau moins haut avec l'initiale.
+  &.no-photo {
+    aspect-ratio: 16 / 10;
+  }
 }
 
 .hero-img {
@@ -163,8 +168,9 @@
   margin: 0.75rem 1rem 0;
   padding: 0.75rem 1rem;
   border-radius: $border-radius;
-  background: #fef2f2;
-  color: #991b1b;
+  background: rgba($error, 0.12);
+  border: 1px solid rgba($error, 0.35);
+  color: #ffb4b4;
   font-size: 0.88rem;
 }
 
@@ -197,7 +203,7 @@
     color: #fff;
   }
   &.chip-premium {
-    background: rgba(#f5c518, 0.9);
+    background: rgba($accent, 0.9);
     color: #5a3e00;
   }
 }
@@ -253,11 +259,12 @@
 .btn-friend {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
-  padding: 0.55rem 1.1rem;
-  border-radius: $border-radius;
-  font-size: 0.88rem;
-  font-weight: 600;
+  padding: 0.75rem 1.1rem;
+  border-radius: 13px;
+  font-size: 0.92rem;
+  font-weight: 700;
   cursor: pointer;
   border: none;
   transition:
@@ -270,6 +277,7 @@
   }
 
   &.add {
+    flex: 1;
     background: $primary;
     color: #fff;
     &:not(:disabled):hover {
@@ -290,7 +298,8 @@
     }
   }
   &.accept {
-    background: $success;
+    flex: 1;
+    background: $primary;
     color: #fff;
     &:not(:disabled):hover {
       opacity: 0.9;
@@ -310,9 +319,9 @@
     color: $text-medium;
     border: 1px solid $border-color;
     &:hover {
-      background: rgba(red, 0.05);
-      color: red;
-      border-color: red;
+      background: rgba($error, 0.08);
+      color: $error;
+      border-color: $error;
     }
   }
 }
@@ -614,9 +623,9 @@
     box-shadow: 0 8px 28px rgba(0, 0, 0, 0.13);
   }
   &.premium {
-    border-color: #f5c518;
+    border-color: $accent;
     box-shadow:
-      0 0 0 1px #f5c518,
+      0 0 0 1px $accent,
       0 4px 18px rgba(245, 197, 24, 0.25);
   }
 }
@@ -644,7 +653,7 @@
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
-    background: linear-gradient(135deg, #f5c518, #e8a800);
+    background: linear-gradient(135deg, $accent, #e8a800);
     color: #5a3e00;
     font-size: 0.68rem;
     font-weight: 800;
@@ -739,7 +748,7 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   }
   &.premium {
-    border-color: #f5c518;
+    border-color: $accent;
   }
 }
 

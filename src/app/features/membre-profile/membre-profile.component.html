@@ -20,7 +20,7 @@
 @if (!loading() && !accessDenied() && profile(); as p) {
   <div class="profile-page">
     <!-- ── Photo héro plein largeur ── -->
-    <div class="hero-photo">
+    <div class="hero-photo" [class.no-photo]="!p.avatar_url">
       @if (p.avatar_url) {
         <img [src]="p.avatar_url" class="hero-img" alt="" (click)="lightboxOpen.set(true)" />
       }
