@@ -274,6 +274,11 @@
 }
 
 .stat-tile {
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -282,6 +287,13 @@
   background: $bg-white;
   border: 1px solid $border-color;
   border-radius: 16px;
+
+  &:hover {
+    border-color: rgba($primary, 0.6);
+  }
+  &:active {
+    transform: scale(0.97);
+  }
 
   .stat-value {
     font-size: 1.45rem;
@@ -485,6 +497,8 @@
 
 // ─── Section cards ────────────────────────────────────────
 .section-card {
+  // Laisse la place de la barre du haut quand on y arrive depuis un compteur.
+  scroll-margin-top: 72px;
   margin: 0.75rem 1rem;
   background: $bg-white;
   border: 1px solid $border-color;

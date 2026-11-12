@@ -124,18 +124,18 @@
     }
     <!-- ── Compteurs ── -->
     <div class="stat-tiles">
-      <div class="stat-tile">
+      <button type="button" class="stat-tile" (click)="openStat('sorties')">
         <span class="stat-value">{{ totalSorties() }}</span>
         <span class="stat-label">Sortie{{ totalSorties() > 1 ? 's' : '' }}</span>
-      </div>
-      <div class="stat-tile">
+      </button>
+      <button type="button" class="stat-tile" (click)="openStat('amis')">
         <span class="stat-value">{{ friends().length }}</span>
         <span class="stat-label">Ami{{ friends().length > 1 ? 's' : '' }}</span>
-      </div>
-      <div class="stat-tile">
+      </button>
+      <button type="button" class="stat-tile" (click)="openStat('favoris')">
         <span class="stat-value">{{ sortiesLikees().length }}</span>
         <span class="stat-label">Favori{{ sortiesLikees().length > 1 ? 's' : '' }}</span>
-      </div>
+      </button>
     </div>
     <!-- ── Mon espace (mon propre profil) ── -->
     @if (isOwnProfile()) {
@@ -363,7 +363,7 @@
     }
     <!-- ── Amis ── -->
     @if (friends().length > 0 || isOwnProfile()) {
-      <div class="section-card">
+      <div class="section-card" id="profil-amis">
         <div class="section-header">
           <span class="section-title"
             >Amis <span class="friends-count">{{ friends().length }}</span></span
@@ -398,7 +398,7 @@
       </div>
     }
     <!-- ── Mon activité ── -->
-    <div class="section-card sorties-section">
+    <div class="section-card sorties-section" id="profil-sorties">
       <div class="section-header">
         <span class="section-title">{{ isOwnProfile() ? 'Mon activité' : 'Ses sorties' }}</span>
         <div class="view-toggle">

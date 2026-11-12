@@ -7,7 +7,7 @@ import {
   computed,
 } from '@angular/core';
 
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { SortieService } from '../../core/services/sortie.service';
 import { ProfileService } from '../../core/services/profile.service';
@@ -47,6 +47,7 @@ export class MesSortiesComponent implements OnInit {
   private inscriptionService = inject(InscriptionService);
   private favoriService = inject(FavoriService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   readonly activeTab = signal<'creees' | 'rejointes' | 'attente' | 'likees'>('creees');
   readonly viewMode = signal<'grid' | 'list'>('list');
@@ -68,6 +69,15 @@ export class MesSortiesComponent implements OnInit {
   readonly inscriptionStatus = signal<InscriptionStatus>('none');
 
   async ngOnInit() {
+    // ?onglet=likees (depuis le compteur « Favoris » du profil) ouvre directement cet onglet.
+    const onglet = this.route.snapshot.queryParamMap.get('onglet');
+    if (
+      onglet === 'creees' ||
+      onglet === 'rejointes' ||
+      onglet === 'attente' ||
+      onglet === 'likees'
+    )
+      this.activeTab.set(onglet);
     const {
       data: { user },
     } = await this.auth.getUser();
