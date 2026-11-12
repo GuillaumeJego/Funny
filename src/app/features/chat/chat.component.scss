@@ -4,7 +4,7 @@
 .chat-page {
   display: flex;
   flex-direction: column;
-  background: #ece5dd;
+  background: $bg-light;
   position: fixed;
   top: 0;
   left: 0;
@@ -130,8 +130,8 @@
   justify-content: center;
   margin: 0.75rem 0;
   span {
-    background: rgba(0, 0, 0, 0.12);
-    color: #555;
+    background: $bg-elevated;
+    color: $text-light;
     font-size: 0.75rem;
     padding: 0.2rem 0.85rem;
     border-radius: 999px;
@@ -185,7 +185,7 @@
 }
 
 .reply-preview {
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.06);
   border-left: 3px solid $secondary;
   border-radius: 6px 6px 0 0;
   padding: 0.3rem 0.6rem;
@@ -223,18 +223,26 @@
 
 .bubble {
   position: relative;
-  background: #fff;
-  border-radius: 12px 12px 12px 2px;
+  background: $bg-elevated;
+  border-radius: 16px 16px 16px 4px;
   padding: 0.5rem 0.7rem 1.5rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   word-break: break-word;
   // Toujours assez large pour l'heure, même pour un message très court (« slt »).
   min-width: 4.5rem;
 
   &.own {
-    background: #dcf8c6;
-    border-radius: 12px 12px 2px 12px;
+    background: $primary;
+    color: #fff;
+    border-radius: 16px 16px 4px 16px;
+
+    .bubble-text {
+      color: #fff;
+    }
+    .bubble-time {
+      color: rgba(255, 255, 255, 0.75);
+    }
   }
 }
 
@@ -319,7 +327,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  background: #fff;
+  background: $bg-white;
   border: 1px solid $border-color;
   border-radius: 999px;
   padding: 0.12rem 0.45rem;
@@ -377,9 +385,9 @@
 .reaction-picker {
   position: fixed;
   z-index: 1000;
-  background: #fff;
+  background: $bg-elevated;
   border-radius: 999px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   padding: 0.35rem 0.5rem;
@@ -429,7 +437,8 @@
 // ─── Input area ───────────────────────────────────────────
 .input-area {
   flex-shrink: 0;
-  background: #f0f0f0;
+  background: $bg-white;
+  border-top: 1px solid $border-color;
   padding: 0.5rem 0.75rem;
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
@@ -438,7 +447,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #fff;
+  background: $bg-elevated;
   border-radius: 8px 8px 0 0;
   padding: 0.5rem 0.75rem;
   border-left: 4px solid $primary;
@@ -503,8 +512,9 @@
 
 .msg-input {
   flex: 1;
-  background: #fff;
-  border: none;
+  background: $bg-elevated;
+  color: $text-dark;
+  border: 1px solid $border-color;
   border-radius: 20px;
   padding: 0.55rem 0.9rem;
   font-size: 0.92rem;
@@ -537,7 +547,7 @@
     cursor: default;
   }
   &:not(:disabled):hover {
-    background: color.scale(#6366f1, $lightness: -12%);
+    background: $primary-hover;
   }
 }
 

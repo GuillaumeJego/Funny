@@ -293,8 +293,8 @@
     color: $primary;
   }
   &.tag-developer {
-    background: rgba(#8b5cf6, 0.12);
-    color: #7c3aed;
+    background: rgba($accent, 0.15);
+    color: $accent;
   }
   &.tag-allowed {
     background: rgba($success, 0.15);
