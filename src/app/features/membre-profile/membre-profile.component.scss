@@ -104,7 +104,7 @@
   font-size: 5rem;
   font-weight: 800;
   color: #fff;
-  background: linear-gradient(135deg, $primary 0%, color.adjust(#6366f1, $lightness: 20%) 100%);
+  background: linear-gradient(145deg, #16458c 0%, #152744 55%, $bg-light 100%);
 }
 
 .hero-topbar {
@@ -882,7 +882,7 @@
     background: $primary;
     color: #fff;
     &:hover {
-      background: color.adjust(#6366f1, $lightness: -8%);
+      background: $primary-hover;
     }
   }
 }

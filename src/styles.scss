@@ -1,37 +1,54 @@
 // ==========================================
 // VARIABLES GLOBALES - Couleurs de l'app
+// Identité « nuit » : fonds noir et bleu nuit, bleu électrique pour agir,
+// jaune lumineux pour les touches importantes.
 // ==========================================
 
-// --- Couleur principale (boutons, bordures actives, titres sections) ---
-$primary: #6366f1;
-$primary-hover: #4f46e5; // Couleur au survol des boutons principaux
-$primary-light: #e0e7ff; // Fond léger pour éléments primaires
+// --- Couleur principale (boutons, liens, éléments actifs) : bleu électrique ---
+$primary: #257bff;
+$primary-hover: #1667e6; // Couleur au survol des boutons principaux
+$primary-light: #15284a; // Fond léger pour éléments primaires (pastilles, survols)
 
-// --- Couleur secondaire (bouton Annuler, bordures sections) ---
-$secondary: #e5e7eb;
-$secondary-hover: #d1d5db; // Couleur au survol des boutons secondaires
+// --- Touche lumineuse (logo, bouton Créer, prix, onglet actif, Premium) : jaune ---
+$accent: #ffd54a;
+$accent-hover: #ffca1a;
+$on-accent: #151515; // Texte posé sur le jaune
+
+// --- Couleur secondaire (bouton Annuler, fonds discrets) ---
+$secondary: #24324b;
+$secondary-hover: #2e3f5d; // Couleur au survol des boutons secondaires
 
 // --- Couleurs de statut ---
 $success: #22c55e; // Messages de succès (vert)
-$error: #ef4444; // Messages d'erreur (rouge)
+$error: #f05252; // Messages d'erreur (rouge)
 $warning: #f59e0b; // Messages d'avertissement (orange)
 
 // --- Couleurs de texte ---
-$text-dark: #333; // Titres principaux (h1, h2...)
-$text-medium: #555; // Labels, textes secondaires
-$text-light: #888; // Textes grisés (placeholder, loading...)
+$text-dark: #f7f9ff; // Texte principal (titres, contenu)
+$text-medium: #c2cce0; // Labels, textes secondaires
+$text-light: #8e9cb5; // Textes grisés (placeholder, dates, aides)
 
 // --- Couleurs de fond ---
-$bg-light: #f5f5f5; // Fond général de la page
-$bg-white: #ffffff; // Fond des cards et formulaires
+$bg-light: #080d18; // Fond général de la page (noir bleuté)
+$bg-white: #121b2c; // Fond des cards, barres et formulaires (bleu nuit)
+$bg-elevated: #19253b; // Fond d'un élément posé sur une card (champ, pastille)
 
 // --- Bordures ---
-$border-color: #ddd; // Bordure des inputs et selects
-$border-radius: 8px; // Arrondi standard (inputs, boutons)
-$border-radius-lg: 12px; // Arrondi large (cards)
+$border-color: #28344a; // Bordure des inputs, cards et séparateurs
+$border-radius: 12px; // Arrondi standard (inputs, boutons)
+$border-radius-lg: 22px; // Arrondi large (cards)
 
 // --- Ombres ---
-$shadow: 0 4px 20px rgba(0, 0, 0, 0.1); // Ombre des cards
+$shadow: 0 10px 30px rgba(0, 0, 0, 0.35); // Ombre des cards
+
+// --- Police ---
+$font-family:
+  'Inter Variable',
+  system-ui,
+  -apple-system,
+  'Segoe UI',
+  Roboto,
+  sans-serif;
 
 // ==========================================
 // STYLES GLOBAUX
@@ -43,16 +60,64 @@ $shadow: 0 4px 20px rgba(0, 0, 0, 0.1); // Ombre des cards
   box-sizing: border-box;
 }
 
+// Les contrôles natifs (dates, listes, barres de défilement) suivent le thème sombre.
+:root {
+  color-scheme: dark;
+}
+
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: $font-family;
   background-color: $bg-light;
   color: $text-dark;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Champs de saisie : fond sombre et texte clair partout, même sans style dédié.
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='range']),
+select,
+textarea {
+  background-color: $bg-elevated;
+  color: $text-dark;
+  border-color: $border-color;
+
+  &::placeholder {
+    color: $text-light;
+  }
+}
+
+a {
+  color: $primary;
+}
+
+// Contour visible au clavier, en jaune comme le prototype.
+:focus-visible {
+  outline: 2px solid $accent;
+  outline-offset: 2px;
+}
+
+// Animations discrètes : coupées si le téléphone demande moins d'animations.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 // Éléments cliquables qui ne sont pas des boutons (directive appClickable) :
 // contour visible quand on les atteint au clavier.
 .clickable:focus-visible {
-  outline: 2px solid $primary;
+  outline: 2px solid $accent;
   outline-offset: 2px;
 }
 
