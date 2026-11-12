@@ -267,6 +267,25 @@ export class MembreProfileComponent implements OnInit {
     return new Date(dateStr).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   }
 
+  /**
+   * Compteurs du haut : sur mon profil, ils ouvrent mes pages (mes sorties, mes amis,
+   * mes favoris) ; sur celui d'un autre, ils font défiler jusqu'à la bonne section.
+   */
+  openStat(kind: 'sorties' | 'amis' | 'favoris') {
+    if (this.isOwnProfile()) {
+      if (kind === 'amis') this.router.navigate(['/amis']);
+      else
+        this.router.navigate(['/mes-sorties'], {
+          queryParams: kind === 'favoris' ? { onglet: 'likees' } : {},
+        });
+      return;
+    }
+    if (kind !== 'amis') this.activeTab.set(kind === 'favoris' ? 'likees' : 'organisees');
+    document
+      .getElementById(kind === 'amis' ? 'profil-amis' : 'profil-sorties')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   goBack() {
     window.history.back();
   }
