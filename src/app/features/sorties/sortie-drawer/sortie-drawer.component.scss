@@ -10,8 +10,8 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  // navbar top (56px) + navbar filtres (48px) en haut, navbar bottom (65px) en bas
-  padding: 104px 0 65px;
+  // navbar top (56px) + navbar filtres (52px) en haut, navbar bottom (68px) en bas
+  padding: 108px 0 calc(68px + env(safe-area-inset-bottom));
   animation: fadeIn 0.2s ease;
 }
 
@@ -214,7 +214,7 @@
     transform 0.15s;
   &:hover,
   &.active {
-    color: #ef4444;
+    color: $accent;
     transform: scale(1.15);
   }
 }
@@ -290,17 +290,17 @@
 // ─── Bouton rejoindre ─────────────────────────────────────
 .btn-rejoindre {
   width: 100%;
-  padding: 0.9rem;
-  background: $primary;
-  color: #fff;
+  padding: 0.95rem;
+  background: $accent;
+  color: $on-accent;
   border: none;
-  border-radius: $border-radius;
+  border-radius: 13px;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 750;
   cursor: pointer;
   transition: background 0.2s;
   &:hover {
-    background: $primary-hover;
+    background: $accent-hover;
   }
 }
 

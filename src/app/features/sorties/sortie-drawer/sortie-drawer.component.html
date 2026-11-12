@@ -100,9 +100,9 @@
                       width="22"
                       height="22"
                       viewBox="0 0 24 24"
-                      [attr.fill]="isFavori() ? '#ef4444' : 'none'"
+                      [attr.fill]="isFavori() ? '#ffd54a' : 'none'"
                       stroke="currentColor"
-                      [attr.stroke]="isFavori() ? '#ef4444' : 'currentColor'"
+                      [attr.stroke]="isFavori() ? '#ffd54a' : 'currentColor'"
                       stroke-width="2"
                     >
                       <path
@@ -198,7 +198,7 @@
                 @if (!isOrganizer()) {
                   @if (inscriptionStatus() === 'none') {
                     <button class="btn-rejoindre" (click)="rejoindreClicked.emit(s.id)">
-                      ✅ Rejoindre cette sortie
+                      Je participe à cette sortie
                     </button>
                   }
                   @if (inscriptionStatus() === 'pending') {

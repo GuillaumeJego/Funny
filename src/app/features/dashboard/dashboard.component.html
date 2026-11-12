@@ -21,6 +21,19 @@
       </div>
     }
 
+    <!-- Accueil, comme le prototype -->
+    @if (!loading() && !error()) {
+      <section class="intro">
+        <h1>Et si on sortait ? ✨</h1>
+        <p>Des sorties, des rencontres, des souvenirs.</p>
+      </section>
+      <section class="hero">
+        <strong>💛 De nouvelles rencontres t'attendent</strong>
+        <p>Pas besoin de se connaître pour passer un bon moment.</p>
+        <a routerLink="/sorties/creer" class="btn-hero">+ Organiser une sortie</a>
+      </section>
+    }
+
     <!-- Erreur -->
     @if (!loading() && error()) {
       <div class="state-message error">
@@ -40,9 +53,14 @@
     <!-- Toolbar -->
     @if (!loading() && !error() && sorties().length > 0) {
       <div class="toolbar">
-        <span class="results-count"
-          >{{ sortiesFiltrees().length }} sortie{{ sortiesFiltrees().length > 1 ? 's' : '' }}</span
-        >
+        <div class="toolbar-title">
+          <h2>Les prochaines sorties</h2>
+          <span class="results-count"
+            >{{ sortiesFiltrees().length }} sortie{{
+              sortiesFiltrees().length > 1 ? 's' : ''
+            }}</span
+          >
+        </div>
         <div class="view-toggle">
           <button
             class="toggle-btn"
@@ -132,15 +150,16 @@
               <span class="badge-theme">{{ sortie.themes?.icon }} {{ sortie.themes?.name }}</span>
               @if (sortie.locked) {
                 <span class="lock-overlay" aria-hidden="true">🔒</span>
-              } @else {
-                <span class="badge-prix-grid" [class.gratuit]="sortie.price === 0">
-                  {{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}
-                </span>
               }
             </div>
             <div class="card-body">
               <div class="card-header-row">
                 <h3 class="card-title">{{ sortie.title }}</h3>
+                @if (!sortie.locked) {
+                  <span class="card-price">{{
+                    sortie.price === 0 ? 'Gratuit' : sortie.price + ' €'
+                  }}</span>
+                }
               </div>
               @if (sortie.description) {
                 <p class="card-desc">{{ sortie.description }}</p>
@@ -157,10 +176,6 @@
                 } @else {
                   <div class="meta-item">
                     <span class="meta-icon">📍</span><span>{{ sortie.location }}</span>
-                  </div>
-                  <div class="meta-item">
-                    <span class="meta-icon">💶</span
-                    ><span>{{ sortie.price === 0 ? 'Gratuit' : sortie.price + ' €' }}</span>
                   </div>
                 }
                 @if (sortie.max_participants) {
@@ -203,9 +218,9 @@
                         width="18"
                         height="18"
                         viewBox="0 0 24 24"
-                        [attr.fill]="isFavori(sortie.id) ? '#ef4444' : 'none'"
+                        [attr.fill]="isFavori(sortie.id) ? '#ffd54a' : 'none'"
                         stroke="currentColor"
-                        [attr.stroke]="isFavori(sortie.id) ? '#ef4444' : 'currentColor'"
+                        [attr.stroke]="isFavori(sortie.id) ? '#ffd54a' : 'currentColor'"
                         stroke-width="2"
                       >
                         <path
@@ -214,7 +229,7 @@
                       </svg>
                     </button>
                     <button class="btn-join" (click)="$event.stopPropagation(); openDrawer(sortie)">
-                      Rejoindre
+                      Voir la sortie
                     </button>
                   }
                 </div>
@@ -345,9 +360,9 @@
                         width="20"
                         height="20"
                         viewBox="0 0 24 24"
-                        [attr.fill]="isFavori(sortie.id) ? '#ef4444' : 'none'"
+                        [attr.fill]="isFavori(sortie.id) ? '#ffd54a' : 'none'"
                         stroke="currentColor"
-                        [attr.stroke]="isFavori(sortie.id) ? '#ef4444' : 'currentColor'"
+                        [attr.stroke]="isFavori(sortie.id) ? '#ffd54a' : 'currentColor'"
                         stroke-width="2"
                       >
                         <path

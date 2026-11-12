@@ -6,10 +6,87 @@
 
   .dashboard-content {
     padding: 1rem;
-    margin-top: 48px;
+    margin-top: 52px;
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
+  }
+}
+
+// ─── Accueil ──────────────────────────────────────────────
+.intro {
+  margin: 0.5rem 0 1rem;
+
+  h1 {
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: $text-dark;
+    margin: 0 0 0.2rem;
+  }
+
+  p {
+    color: $text-light;
+    margin: 0;
+  }
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 1.1rem 1.1rem 1.2rem;
+  margin-bottom: 1.5rem;
+  border-radius: $border-radius-lg;
+  background: linear-gradient(135deg, #1b4fb8 0%, #16305e 60%, #152744 100%);
+  border: 1px solid rgba($primary, 0.35);
+  animation: fade-up 0.4s ease-out;
+
+  // Petit halo jaune dans le coin
+  &::after {
+    content: '';
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(rgba($accent, 0.35), transparent 70%);
+    pointer-events: none;
+  }
+
+  strong {
+    display: block;
+    font-size: 1.05rem;
+    color: #fff;
+  }
+
+  p {
+    margin: 0.3rem 0 0.9rem;
+    color: #d6e2ff;
+    font-size: 0.9rem;
+  }
+
+  .btn-hero {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    border-radius: 13px;
+    background: $accent;
+    color: $on-accent;
+    font-weight: 750;
+    font-size: 0.88rem;
+    text-decoration: none;
+    transition: background 0.2s;
+
+    &:hover {
+      background: $accent-hover;
+    }
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
 }
 
@@ -70,6 +147,18 @@
   justify-content: space-between;
   margin-bottom: 1rem;
 
+  .toolbar-title {
+    display: flex;
+    flex-direction: column;
+
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 750;
+      color: $text-dark;
+      margin: 0;
+    }
+  }
+
   .results-count {
     font-size: 0.85rem;
     color: $text-light;
@@ -122,6 +211,7 @@
   background: $bg-white;
   border-radius: $border-radius-lg;
   box-shadow: $shadow;
+  animation: fade-up 0.35s ease-out both;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -137,14 +227,10 @@
   }
 
   &.premium {
-    border-color: #f5c518;
-    box-shadow:
-      0 0 0 1px #f5c518,
-      0 4px 18px rgba(245, 197, 24, 0.25);
+    border-color: rgba($accent, 0.7);
+    box-shadow: 0 4px 18px rgba($accent, 0.15);
     &:hover {
-      box-shadow:
-        0 0 0 1px #f5c518,
-        0 8px 28px rgba(245, 197, 24, 0.35);
+      box-shadow: 0 8px 28px rgba($accent, 0.25);
     }
   }
 }
@@ -152,7 +238,7 @@
 .card-image {
   position: relative;
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 16 / 10;
   background: $primary-light;
   overflow: hidden;
 
@@ -175,7 +261,7 @@
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
-    background: linear-gradient(135deg, #f5c518, #e8a800);
+    background: linear-gradient(135deg, $accent, $accent-hover);
     color: #5a3e00;
     font-size: 0.68rem;
     font-weight: 800;
@@ -188,14 +274,15 @@
 
   .badge-theme {
     position: absolute;
-    bottom: 0.5rem;
-    left: 0.5rem;
-    background: rgba(0, 0, 0, 0.55);
+    top: 0.6rem;
+    left: 0.6rem;
+    background: rgba(8, 13, 24, 0.7);
     color: #fff;
     font-size: 0.72rem;
-    padding: 0.2rem 0.5rem;
+    font-weight: 650;
+    padding: 0.3rem 0.65rem;
     border-radius: 20px;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(6px);
   }
 
   .badge-prix-grid {
@@ -227,6 +314,13 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
+}
+
+.card-price {
+  flex-shrink: 0;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: $accent;
 }
 
 .card-title {
@@ -324,20 +418,20 @@
       transform 0.15s;
     &:hover,
     &.active {
-      color: #ef4444;
+      color: $accent;
       transform: scale(1.15);
     }
   }
 
   .btn-join {
     flex-shrink: 0;
-    padding: 0.4rem 0.9rem;
+    padding: 0.55rem 1rem;
     background: $primary;
     color: #fff;
     border: none;
-    border-radius: $border-radius;
-    font-size: 0.82rem;
-    font-weight: 600;
+    border-radius: 13px;
+    font-size: 0.85rem;
+    font-weight: 700;
     cursor: pointer;
     &:hover {
       background: $primary-hover;
@@ -381,13 +475,13 @@
   }
 
   &.premium {
-    border-color: #f5c518;
+    border-color: $accent;
     box-shadow:
-      0 0 0 1px #f5c518,
+      0 0 0 1px $accent,
       0 2px 10px rgba(245, 197, 24, 0.2);
     &:hover {
       box-shadow:
-        0 0 0 1px #f5c518,
+        0 0 0 1px $accent,
         0 4px 16px rgba(245, 197, 24, 0.3);
     }
   }
@@ -555,7 +649,7 @@
     transform 0.15s;
 
   &:hover {
-    color: #ef4444;
+    color: $accent;
     transform: scale(1.15);
   }
 }
@@ -576,7 +670,7 @@
   font-size: 1.6rem;
   font-weight: 300;
   text-decoration: none;
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.45);
+  box-shadow: 0 4px 16px rgba($primary, 0.45);
   transition:
     background 0.2s,
     transform 0.2s;
@@ -648,7 +742,7 @@
   }
 
   .btn-unlock {
-    background: linear-gradient(135deg, #f5c518, $warning);
+    background: linear-gradient(135deg, $accent, $warning);
     color: #3b2a00;
   }
 }
