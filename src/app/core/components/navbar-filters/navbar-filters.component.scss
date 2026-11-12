@@ -5,57 +5,68 @@
   top: 56px;
   left: 0;
   right: 0;
-  height: 48px;
-  background-color: $bg-white;
+  height: 52px;
+  padding: 0 0.75rem;
+  // Fond plein : un flou (backdrop-filter) casserait les panneaux « fixed » ouverts dessous.
+  background: $bg-light;
   border-bottom: 1px solid $border-color;
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  gap: 0.45rem;
+  overflow-x: auto;
+  scrollbar-width: none;
   z-index: 999;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  // Chaque filtre est une pastille, comme les catégories du prototype.
   .filter-item {
+    flex: 0 0 auto;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 0.35rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    background: $bg-white;
+    border: 1px solid $border-color;
     cursor: pointer;
-    padding: 0.4rem 0.4rem;
-    border-radius: $border-radius;
-    transition: all 0.2s;
-    flex: 1;
-    min-width: 0;
+    transition:
+      background 0.2s,
+      border-color 0.2s;
 
     .filter-icon {
-      font-size: 1rem;
+      font-size: 0.9rem;
     }
 
     .filter-label {
-      font-size: 0.62rem;
+      font-size: 0.8rem;
+      font-weight: 600;
       color: $text-medium;
       white-space: nowrap;
+      max-width: 150px;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 100%;
     }
 
     &:hover {
-      background-color: $bg-light;
+      border-color: $primary;
       .filter-label {
-        color: $primary;
+        color: $text-dark;
       }
     }
     &.active {
-      background-color: $primary-light;
+      background: $primary;
+      border-color: $primary;
       .filter-label {
-        color: $primary;
-        font-weight: 600;
+        color: #fff;
       }
     }
     &.filter-reset.has-active {
+      border-color: $error;
       .filter-label {
         color: $error;
-        font-weight: 600;
       }
     }
   }
@@ -63,7 +74,7 @@
   // ── Panel ──────────────────────────────────────────────
   .filter-panel {
     position: fixed;
-    top: 104px;
+    top: 108px;
     left: 0;
     right: 0;
     background: $bg-white;
@@ -261,14 +272,7 @@
   // 🖥️ Desktop
   @media (min-width: 769px) {
     left: 240px;
-    .filter-item {
-      flex-direction: row;
-      gap: 0.5rem;
-      .filter-label {
-        font-size: 0.85rem;
-        max-width: 120px;
-      }
-    }
+    padding: 0 1rem;
     .filter-panel {
       left: 240px;
     }
