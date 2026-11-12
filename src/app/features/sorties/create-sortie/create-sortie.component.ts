@@ -150,6 +150,8 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       lat: sortie.lat ?? null,
       lng: sortie.lng ?? null,
     };
+    this.dateDay = sortie.date.slice(0, 10);
+    this.dateHour = sortie.date.slice(11, 16);
     // Une sortie déjà Premium peut le rester, même si l'abonnement de l'organisateur a pris fin.
     if (sortie.is_premium) this.canCreatePremium.set(true);
     this.locationQuery.set(sortie.location);
@@ -200,12 +202,26 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     this.customImagePreview.set('');
   }
 
+  /** Jour (2026-11-20) et heure (19:30) choisis dans les deux champs séparés. */
+  dateDay = '';
+  dateHour = '';
+  /** On ne propose pas de date passée. */
+  readonly today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10);
+
+  /** Recompose « 2026-11-20T19:30 » dès que le jour et l'heure sont choisis. */
+  syncDate() {
+    this.sortie.date = this.dateDay && this.dateHour ? `${this.dateDay}T${this.dateHour}` : '';
+  }
+
   /** Ce qu'il manque pour publier, en clair ; vide quand tout est prêt. */
   missingFields(): string[] {
     const missing: string[] = [];
     if (!this.sortie.theme_id) missing.push('le thème');
     if (!this.sortie.title?.trim()) missing.push('le nom');
-    if (!this.sortie.date) missing.push('la date');
+    if (!this.dateDay) missing.push('la date');
+    if (!this.dateHour) missing.push("l'heure");
     if (!this.sortie.location && !this.locationQuery().trim()) missing.push('le lieu');
     if (!this.selectedImageUrl() && !this.customImagePreview()) missing.push("l'image");
     return missing;

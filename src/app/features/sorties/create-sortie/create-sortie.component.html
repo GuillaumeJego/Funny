@@ -44,9 +44,23 @@
       />
     </div>
 
-    <div class="formfield">
-      <label for="cs-date">Date et heure *</label>
-      <input id="cs-date" type="datetime-local" [(ngModel)]="sortie.date" />
+    <!-- Deux champs séparés : chaque téléphone (iPhone comme Android) ouvre son propre
+         calendrier, puis son horloge. -->
+    <div class="formrow">
+      <div class="formfield">
+        <label for="cs-date">Date *</label>
+        <input
+          id="cs-date"
+          type="date"
+          [min]="today"
+          [(ngModel)]="dateDay"
+          (ngModelChange)="syncDate()"
+        />
+      </div>
+      <div class="formfield">
+        <label for="cs-time">Heure *</label>
+        <input id="cs-time" type="time" [(ngModel)]="dateHour" (ngModelChange)="syncDate()" />
+      </div>
     </div>
 
     <div class="formfield">
