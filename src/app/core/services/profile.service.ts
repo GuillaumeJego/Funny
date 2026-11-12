@@ -9,6 +9,7 @@ const SELF_EDITABLE_FIELDS = [
   'username',
   'bio',
   'avatar_url',
+  'cover_url',
   'birthdate',
   'gender',
   'city',
@@ -63,6 +64,22 @@ export class ProfileService {
     const urlWithCache = `${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`;
     await this.profiles.update(userId, { avatar_url: urlWithCache });
     return { data: urlWithCache, error: null };
+  }
+
+  // Envoie une photo de couverture et l'enregistre ; renvoie son adresse
+  async uploadCover(userId: string, image: Blob) {
+    const { data: url, error } = await this.storage.uploadCover(userId, image);
+    if (error || !url) return { data: null, error };
+    const urlWithCache = `${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`;
+    await this.profiles.update(userId, { cover_url: urlWithCache });
+    return { data: urlWithCache, error: null };
+  }
+
+  // Retire la photo de couverture : le profil retrouve le bandeau bleu
+  async removeCover(userId: string) {
+    const { error } = await this.storage.deleteCover(userId);
+    if (error) return { error };
+    return await this.profiles.update(userId, { cover_url: null });
   }
 
   // Mise à jour par un administrateur (rôle, abonnement, accès aux profils), vérifiée par le serveur

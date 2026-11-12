@@ -3,6 +3,8 @@ export interface Profile {
   username: string;
   bio?: string;
   avatar_url?: string;
+  /** Photo de couverture (bandeau du profil) ; absente = bandeau bleu. */
+  cover_url?: string | null;
   birthdate?: string;
   gender?: string;
   city?: string;
