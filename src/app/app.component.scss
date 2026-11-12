@@ -2,9 +2,9 @@
 
 main {
   &.with-navbar {
-    // Mobile : espace pour navbar top (56px) + padding bottom pour navbar bottom (64px)
+    // Mobile : espace pour navbar top (56px) + padding bottom pour navbar bottom (68px)
     padding-top: 56px;
-    padding-bottom: 64px;
+    padding-bottom: calc(68px + env(safe-area-inset-bottom));
 
     // Desktop : espace pour navbar top (56px) + sidebar gauche (240px)
     @media (min-width: 769px) {

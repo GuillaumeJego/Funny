@@ -1,3 +1,4 @@
+import { MembresTabsComponent } from '../../core/components/membres-tabs/membres-tabs.component';
 import {
   Component,
   OnInit,
@@ -32,7 +33,7 @@ import { RELATIONSHIP_OPTIONS, isNewMember } from '../../core/models/profile.mod
 @Component({
   selector: 'app-membres',
   standalone: true,
-  imports: [ClickableDirective, FormsModule],
+  imports: [ClickableDirective, FormsModule, MembresTabsComponent],
   templateUrl: './membres.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './membres.component.scss',

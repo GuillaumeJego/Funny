@@ -6,6 +6,15 @@
   padding-bottom: 80px;
 }
 
+.tabs-wrap {
+  padding: 1rem 1rem 0;
+
+  app-membres-tabs {
+    display: block;
+    margin-bottom: -0.25rem;
+  }
+}
+
 .amis-header {
   display: flex;
   align-items: center;

@@ -1,6 +1,8 @@
 <nav class="navbar-top">
-  <!-- Logo / Nom de l'app -->
-  <div class="app-name">Funny</div>
+  <!-- Logo : ramène aux sorties -->
+  <button type="button" class="app-name" (click)="goTo('/dashboard')" aria-label="Funny, accueil">
+    funny<b aria-hidden="true">✦</b>
+  </button>
 
   <!-- Badge abonnement + Avatar -->
   <div class="right-section">
@@ -21,6 +23,25 @@
         <span class="badge-label">Non abonné</span>
       }
     </div>
+
+    <!-- Cloche des notifications -->
+    <button
+      type="button"
+      class="bell-btn"
+      [class.active]="onNotifications()"
+      (click)="openNotifications()"
+      [attr.aria-label]="
+        unreadCount() > 0 ? 'Notifications, ' + unreadCount() + ' non lues' : 'Notifications'
+      "
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" />
+        <path d="M10 20.5a2.2 2.2 0 0 0 4 0" />
+      </svg>
+      @if (unreadCount() > 0) {
+        <span class="notif-badge">{{ unreadCount() > 99 ? '99+' : unreadCount() }}</span>
+      }
+    </button>
 
     <!-- Avatar : ouvre le menu du compte (profil, Premium, déconnexion) -->
     <div class="menu-wrap">
@@ -50,6 +71,14 @@
           <button type="button" role="menuitem" class="menu-item" (click)="goToPremium()">
             ⭐ Premium
           </button>
+          <button type="button" role="menuitem" class="menu-item" (click)="goTo('/amis')">
+            🤝 Mes amis
+          </button>
+          @if (isAdmin()) {
+            <button type="button" role="menuitem" class="menu-item" (click)="goTo('/admin')">
+              🛡️ Administration
+            </button>
+          }
           <div class="menu-separator"></div>
           <button type="button" role="menuitem" class="menu-item logout" (click)="logout()">
             🚪 Se déconnecter
