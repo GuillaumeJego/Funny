@@ -5,7 +5,10 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: $bg-light;
+  padding: 1.5rem 1rem;
+  background:
+    radial-gradient(circle at 85% 0%, rgba($primary, 0.28), transparent 45%),
+    radial-gradient(circle at 0% 100%, rgba($accent, 0.12), transparent 40%), $bg-light;
 
   .login-card {
     background: $bg-white;
@@ -15,9 +18,31 @@
     width: 100%;
     max-width: 400px;
 
+    .brand {
+      text-align: center;
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      color: $text-dark;
+      line-height: 1;
+
+      b {
+        color: $accent;
+        margin-left: 2px;
+      }
+    }
+
+    .tagline {
+      text-align: center;
+      color: $text-light;
+      font-size: 0.9rem;
+      margin: 0.4rem 0 1.5rem;
+    }
+
     h1 {
       text-align: center;
-      margin-bottom: 1.5rem;
+      font-size: 1.4rem;
+      margin-bottom: 1.25rem;
       color: $text-dark;
     }
 
@@ -81,17 +106,18 @@
 
     button {
       width: 100%;
-      padding: 0.75rem;
-      background-color: $primary;
-      color: white;
+      padding: 0.85rem;
+      background-color: $accent;
+      color: $on-accent;
       border: none;
-      border-radius: $border-radius;
+      border-radius: 13px;
       font-size: 1rem;
+      font-weight: 750;
       cursor: pointer;
       margin-bottom: 1rem;
 
-      &:hover {
-        background-color: $primary-hover;
+      &:hover:not(:disabled) {
+        background-color: $accent-hover;
       }
 
       &:disabled {
