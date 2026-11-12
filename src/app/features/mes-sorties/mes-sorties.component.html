@@ -86,7 +86,7 @@
               ? '🎯'
               : activeTab() === 'attente'
                 ? '⏳'
-                : '❤️'
+                : '💛'
         }}</span>
         @if (activeTab() === 'creees') {
           <p>Vous n'avez pas encore créé de sortie.</p>
@@ -98,7 +98,13 @@
           <p>Vous n'êtes en attente sur aucune sortie.</p>
         }
         @if (activeTab() === 'likees') {
-          <p>Vous n'avez pas encore liké de sortie.</p>
+          <p>
+            Vous n'avez pas encore liké de sortie.<br />Touchez ♡ sur une sortie pour la retrouver
+            ici.
+          </p>
+        }
+        @if (activeTab() !== 'attente') {
+          <a routerLink="/dashboard" class="btn-explore">Explorer les sorties</a>
         }
       </div>
     }
@@ -125,15 +131,17 @@
                 <span class="badge-premium">⭐ Premium</span>
               }
               <span class="badge-theme">{{ sortie.themes?.icon }} {{ sortie.themes?.name }}</span>
-              <span class="badge-prix-grid" [class.gratuit]="sortie.price === 0">{{
-                sortie.price === 0 ? 'Gratuit' : sortie.price + ' €'
-              }}</span>
               @if (activeTab() === 'attente') {
                 <span class="badge-attente">#{{ i + 1 }} en attente</span>
               }
             </div>
             <div class="card-body">
-              <h3 class="card-title">{{ sortie.title }}</h3>
+              <div class="card-header-row">
+                <h3 class="card-title">{{ sortie.title }}</h3>
+                <span class="card-price">{{
+                  sortie.price === 0 ? 'Gratuit' : sortie.price + ' €'
+                }}</span>
+              </div>
               @if (sortie.description) {
                 <p class="card-desc">{{ sortie.description }}</p>
               }
@@ -176,9 +184,9 @@
                     width="18"
                     height="18"
                     viewBox="0 0 24 24"
-                    [attr.fill]="isFavori(sortie.id) ? '#ef4444' : 'none'"
+                    [attr.fill]="isFavori(sortie.id) ? '#ffd54a' : 'none'"
                     stroke="currentColor"
-                    [attr.stroke]="isFavori(sortie.id) ? '#ef4444' : 'currentColor'"
+                    [attr.stroke]="isFavori(sortie.id) ? '#ffd54a' : 'currentColor'"
                     stroke-width="2"
                   >
                     <path
@@ -294,9 +302,9 @@
                   width="20"
                   height="20"
                   viewBox="0 0 24 24"
-                  [attr.fill]="isFavori(sortie.id) ? '#ef4444' : 'none'"
+                  [attr.fill]="isFavori(sortie.id) ? '#ffd54a' : 'none'"
                   stroke="currentColor"
-                  [attr.stroke]="isFavori(sortie.id) ? '#ef4444' : 'currentColor'"
+                  [attr.stroke]="isFavori(sortie.id) ? '#ffd54a' : 'currentColor'"
                   stroke-width="2"
                 >
                   <path
