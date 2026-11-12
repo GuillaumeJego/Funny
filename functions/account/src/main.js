@@ -159,6 +159,7 @@ async function remove({ api, userId, input }) {
 
   const profile = await api.getRow('profiles', userId);
   if (profile?.avatar_url) await deleteFile(api, 'avatars', profile.avatar_url);
+  if (profile?.cover_url) await deleteFile(api, 'avatars', profile.cover_url);
   for (const table of ['profiles', 'profiles_private', 'member_status', 'moderation']) {
     await api.deleteRow(table, userId);
   }

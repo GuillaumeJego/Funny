@@ -121,6 +121,8 @@ const fakeThemes: ThemeRepository = {
 
 const fakeStorage: StorageRepository = {
   uploadAvatar: async () => ok,
+  uploadCover: async () => ok,
+  deleteCover: async () => ok,
   uploadSortieImage: async () => ok,
   uploadChatMedia: async () => ok,
 };

@@ -9,6 +9,11 @@
         [currentAvatarUrl]="profile().avatar_url"
         (avatarUpdated)="onAvatarUpdated($event)"
       />
+      <app-cover-upload
+        [userId]="userId()"
+        [currentCoverUrl]="profile().cover_url"
+        (coverUpdated)="onCoverUpdated($event)"
+      />
     }
 
     @if (loading()) {

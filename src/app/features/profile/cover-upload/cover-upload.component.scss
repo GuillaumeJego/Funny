@@ -1,0 +1,94 @@
+@use 'styles' as *;
+
+.cover-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 1.25rem 0 1.75rem;
+}
+
+.cover-label {
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: $text-dark;
+}
+
+.cover-preview {
+  aspect-ratio: 3 / 1;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid $border-color;
+  background:
+    radial-gradient(circle at 70% 30%, rgba($primary, 0.55), transparent 55%),
+    linear-gradient(120deg, #142a63 0%, #1d3f8f 45%, #0e1a33 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.cover-default {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.cover-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.btn-cover,
+.btn-cover-remove,
+.btn-cover-save {
+  padding: 0.6rem 1rem;
+  border-radius: $border-radius;
+  font-size: 0.9rem;
+  font-weight: 650;
+  cursor: pointer;
+  border: 1px solid $border-color;
+  background: $bg-light;
+  color: $text-dark;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.btn-cover {
+  background: $primary;
+  border-color: $primary;
+  color: #fff;
+}
+
+.btn-cover-save {
+  flex: 1;
+  background: $accent;
+  border-color: $accent;
+  color: $on-accent;
+}
+
+.cover-cropper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cropper-hint {
+  font-size: 0.82rem;
+  color: $text-light;
+  margin: 0;
+}
+
+.cover-error {
+  font-size: 0.85rem;
+  color: #ffb4b4;
+  margin: 0;
+}

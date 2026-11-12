@@ -42,6 +42,8 @@ export const TABLES = [
       str('username', 40, { required: true }),
       text('bio'),
       str('avatar_url', 500),
+      // Photo de couverture du profil (bandeau en haut) ; vide = bandeau bleu par défaut.
+      str('cover_url', 500),
       str('gender', CHOIX),
       str('city', 100),
       str('smoking', CHOIX),

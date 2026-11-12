@@ -1,0 +1,59 @@
+<div class="cover-upload">
+  <div class="cover-label">Photo de couverture</div>
+  <div class="cover-preview" [class.has-cover]="!!currentCoverUrl()">
+    @if (currentCoverUrl()) {
+      <img [src]="currentCoverUrl()" alt="Photo de couverture" />
+    } @else {
+      <span class="cover-default">Bandeau bleu par défaut</span>
+    }
+  </div>
+  <div class="cover-actions">
+    <label class="btn-cover" for="coverInput">
+      🖼️ {{ currentCoverUrl() ? 'Changer la couverture' : 'Ajouter une couverture' }}
+    </label>
+    @if (currentCoverUrl()) {
+      <button type="button" class="btn-cover-remove" [disabled]="busy()" (click)="onRemove()">
+        Retirer
+      </button>
+    }
+  </div>
+  <input
+    #coverInput
+    id="coverInput"
+    type="file"
+    accept="image/*"
+    (change)="onFileSelected($event)"
+    hidden
+  />
+
+  @if (showCropper()) {
+    <div class="cover-cropper">
+      <p class="cropper-hint">Déplace le cadre pour choisir la partie à afficher.</p>
+      <image-cropper
+        [imageChangedEvent]="imageChangedEvent()"
+        [maintainAspectRatio]="true"
+        [aspectRatio]="3 / 1"
+        [resizeToWidth]="1200"
+        format="jpeg"
+        [imageQuality]="85"
+        output="base64"
+        (imageCropped)="imageCropped($event)"
+      />
+      <div class="cover-actions">
+        <button type="button" class="btn-cover-remove" (click)="cancel()">Annuler</button>
+        <button
+          type="button"
+          class="btn-cover-save"
+          [disabled]="busy() || !croppedImageUrl()"
+          (click)="onUpload()"
+        >
+          {{ busy() ? 'Envoi…' : 'Valider la couverture' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <p class="cover-error">{{ errorMessage() }}</p>
+  }
+</div>

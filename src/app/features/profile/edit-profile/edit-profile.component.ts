@@ -15,13 +15,21 @@ import { BillingService } from '../../../core/services/billing.service';
 import { Subscription } from '../../../core/models/subscription.model';
 import { Profile, RELATIONSHIP_OPTIONS } from '../../../core/models/profile.model';
 import { AvatarUploadComponent } from '../avatar-upload/avatar-upload.component';
+import { CoverUploadComponent } from '../cover-upload/cover-upload.component';
 import { MetanaCreditComponent } from '../../../core/components/metana-credit/metana-credit.component';
 import { isPremiumMember } from '../../../core/utils/premium';
 
 @Component({
   selector: 'app-edit-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, AvatarUploadComponent, MetanaCreditComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DatePipe,
+    AvatarUploadComponent,
+    CoverUploadComponent,
+    MetanaCreditComponent,
+  ],
   templateUrl: './edit-profile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './edit-profile.component.scss',
@@ -83,6 +91,10 @@ export class EditProfileComponent implements OnInit {
 
   onAvatarUpdated(url: string) {
     this.profile.set({ ...this.profile(), avatar_url: url });
+  }
+
+  onCoverUpdated(url: string | null) {
+    this.profile.set({ ...this.profile(), cover_url: url });
   }
 
   async onSave() {

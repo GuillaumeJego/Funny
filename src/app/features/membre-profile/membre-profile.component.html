@@ -20,8 +20,12 @@
 @if (!loading() && !accessDenied() && profile(); as p) {
   <div class="profile-page">
     <!-- ── Bandeau ── -->
-    <div class="profile-banner">
-      <span class="banner-spark" aria-hidden="true">✦</span>
+    <div class="profile-banner" [class.has-cover]="!!p.cover_url">
+      @if (p.cover_url) {
+        <img [src]="p.cover_url" class="banner-img" alt="" />
+      } @else {
+        <span class="banner-spark" aria-hidden="true">✦</span>
+      }
       <button class="btn-back-hero" (click)="goBack()" aria-label="Retour">
         <svg
           width="20"
