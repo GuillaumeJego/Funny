@@ -2,8 +2,9 @@
 
 .amis-page {
   min-height: 100vh;
-  background: var(--background);
-  padding-bottom: 80px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-bottom: 6rem;
 }
 
 .tabs-wrap {
@@ -19,16 +20,12 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 1rem;
-  background: $bg-white;
-  border-bottom: 1px solid $border-color;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  padding: 1rem 1rem 0.5rem;
 
   h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
     color: $text-dark;
     margin: 0;
   }
@@ -49,7 +46,6 @@
 
 .tabs {
   display: flex;
-  background: $bg-white;
   border-bottom: 2px solid $border-color;
   padding: 0 1rem;
   gap: 4px;
@@ -87,7 +83,7 @@
   font-weight: 700;
 
   &.badge-red {
-    background: #e74c3c;
+    background: $error;
     color: #fff;
   }
 }
@@ -237,11 +233,11 @@
 }
 
 .btn-accept {
-  padding: 4px 10px;
-  background: #27ae60;
+  padding: 6px 12px;
+  background: $primary;
   color: #fff;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
@@ -264,7 +260,7 @@
   font-weight: 600;
   cursor: pointer;
   &:hover {
-    background: #e74c3c;
+    background: $error;
     color: #fff;
   }
   &:disabled {
