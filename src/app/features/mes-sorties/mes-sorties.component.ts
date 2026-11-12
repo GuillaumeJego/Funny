@@ -7,7 +7,7 @@ import {
   computed,
 } from '@angular/core';
 
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { SortieService } from '../../core/services/sortie.service';
 import { ProfileService } from '../../core/services/profile.service';
@@ -28,7 +28,7 @@ import { ClickableDirective } from '../../core/directives/clickable.directive';
 @Component({
   selector: 'app-mes-sorties',
   standalone: true,
-  imports: [ClickableDirective, SortieDrawerComponent, NavbarFiltersComponent],
+  imports: [ClickableDirective, SortieDrawerComponent, NavbarFiltersComponent, RouterLink],
   templateUrl: './mes-sorties.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './mes-sorties.component.scss',

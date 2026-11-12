@@ -10,14 +10,14 @@
   margin-bottom: 1rem;
 
   h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.65rem;
+    font-weight: 800;
     color: $text-dark;
     margin-bottom: 0.25rem;
   }
   .sortie-title {
     font-weight: 600;
-    color: $primary;
+    color: $accent;
     margin-bottom: 0.5rem;
   }
   .question {
@@ -52,8 +52,9 @@
   font-size: 0.9rem;
 }
 .mutual {
-  background: rgba($success, 0.12);
-  color: #15803d;
+  background: rgba($success, 0.15);
+  border: 1px solid rgba($success, 0.4);
+  color: #7ee2a8;
 }
 .error {
   background: rgba($error, 0.1);
@@ -125,8 +126,8 @@
     background: $primary-light;
   }
   &.heart.selected {
-    border-color: #e11d48;
-    background: #ffe4e6;
+    border-color: #f43f5e;
+    background: rgba(#f43f5e, 0.18);
   }
   &:disabled {
     opacity: 0.45;
@@ -145,16 +146,16 @@
 
 .validate {
   width: 100%;
-  padding: 0.6rem;
+  padding: 0.8rem;
   border: none;
-  border-radius: $border-radius;
-  background: $primary;
-  color: #fff;
-  font-weight: 600;
+  border-radius: 13px;
+  background: $accent;
+  color: $on-accent;
+  font-weight: 750;
   cursor: pointer;
 
   &:hover:not(:disabled) {
-    background: $primary-hover;
+    background: $accent-hover;
   }
   &:disabled {
     opacity: 0.5;
