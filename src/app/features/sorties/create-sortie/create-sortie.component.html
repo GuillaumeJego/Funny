@@ -49,17 +49,27 @@
     <div class="formrow formrow-dates">
       <div class="formfield">
         <label for="cs-date">Date *</label>
-        <input
-          id="cs-date"
-          type="date"
-          [min]="today"
-          [(ngModel)]="dateDay"
-          (ngModelChange)="syncDate()"
-        />
+        <div class="picker">
+          <input
+            id="cs-date"
+            type="date"
+            [min]="today"
+            [(ngModel)]="dateDay"
+            (ngModelChange)="syncDate()"
+          />
+          @if (!dateDay) {
+            <span class="picker-placeholder" aria-hidden="true">📅 Choisir</span>
+          }
+        </div>
       </div>
       <div class="formfield">
         <label for="cs-time">Heure *</label>
-        <input id="cs-time" type="time" [(ngModel)]="dateHour" (ngModelChange)="syncDate()" />
+        <div class="picker">
+          <input id="cs-time" type="time" [(ngModel)]="dateHour" (ngModelChange)="syncDate()" />
+          @if (!dateHour) {
+            <span class="picker-placeholder" aria-hidden="true">🕐 Choisir</span>
+          }
+        </div>
       </div>
     </div>
 
