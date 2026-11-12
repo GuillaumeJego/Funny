@@ -146,6 +146,51 @@
   &.formrow-dates .formfield {
     margin-bottom: 1rem;
   }
+
+  // Sans ça, Safari (iPhone) élargit les champs date/heure au-delà de leur colonne.
+  > * {
+    min-width: 0;
+  }
+}
+
+// ─── Champs date et heure ─────────────────────────────────
+.picker {
+  position: relative;
+
+  input[type='date'],
+  input[type='time'] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+    // Même hauteur que les autres champs (Safari les fait plus hauts).
+    height: 3.1rem;
+    line-height: 1.4;
+    text-align: left;
+  }
+
+  input::-webkit-date-and-time-value {
+    text-align: left;
+    margin: 0;
+  }
+}
+
+// Safari sur iPhone laisse ces champs vides tant que rien n'est choisi : on y affiche
+// « Choisir ». Ailleurs (Android, ordinateur), le navigateur affiche déjà jj/mm/aaaa.
+.picker-placeholder {
+  display: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .picker-placeholder {
+    display: block;
+    position: absolute;
+    left: calc(0.8rem + 1px);
+    top: 50%;
+    transform: translateY(-50%);
+    color: $text-light;
+    pointer-events: none;
+  }
 }
 
 .hint {
