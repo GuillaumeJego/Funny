@@ -8,8 +8,9 @@
 }
 
 .page-header h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: $text-dark;
   margin-bottom: 1.5rem;
 }
@@ -298,7 +299,7 @@
   }
   &.tag-allowed {
     background: rgba($success, 0.15);
-    color: color.adjust(#22c55e, $lightness: -15%);
+    color: #7ee2a8;
   }
   &.tag-denied {
     background: rgba($error, 0.12);
@@ -353,8 +354,8 @@
     opacity: 0.7;
   }
   &.active {
-    background: rgba(#f5c518, 0.2);
-    border-color: #f5c518;
+    background: rgba($accent, 0.2);
+    border-color: $accent;
     opacity: 1;
   }
 }
