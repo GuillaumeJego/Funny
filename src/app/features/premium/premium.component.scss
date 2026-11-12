@@ -120,8 +120,8 @@
   text-align: center;
 
   &.selected {
-    border-color: $primary;
-    box-shadow: 0 0 0 3px rgba($primary, 0.15);
+    border-color: $accent;
+    box-shadow: 0 0 0 3px rgba($accent, 0.18);
   }
 
   &.highlight .plan-label::after {
@@ -177,8 +177,8 @@
   right: 0.5rem;
   width: 20px;
   height: 20px;
-  background: $primary;
-  color: #fff;
+  background: $accent;
+  color: $on-accent;
   border-radius: 50%;
   font-size: 0.7rem;
   display: flex;
@@ -191,17 +191,17 @@
 .btn-subscribe {
   width: 100%;
   padding: 1rem;
-  background: $primary;
-  color: #fff;
+  background: $accent;
+  color: $on-accent;
   border: none;
-  border-radius: $border-radius-lg;
+  border-radius: 14px;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 750;
   cursor: pointer;
   transition: background 0.2s;
 
   &:hover:not(:disabled) {
-    background: $primary-hover;
+    background: $accent-hover;
   }
 
   &:disabled {

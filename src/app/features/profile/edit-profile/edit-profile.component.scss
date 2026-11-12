@@ -20,6 +20,13 @@
     h1 {
       text-align: center;
       color: $text-dark;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+    }
+
+    app-avatar-upload {
+      display: block;
       margin-bottom: 2rem;
     }
 
@@ -27,13 +34,12 @@
       margin-bottom: 2rem;
 
       h2 {
-        color: $primary;
-        font-size: 1rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        color: $text-dark;
+        font-size: 1.1rem;
+        font-weight: 750;
         margin-bottom: 1rem;
         padding-bottom: 0.5rem;
-        border-bottom: 2px solid $secondary;
+        border-bottom: 1px solid $border-color;
       }
     }
 
@@ -108,10 +114,11 @@
       }
 
       .btn-primary {
-        background-color: $primary;
-        color: white;
+        background-color: $accent;
+        color: $on-accent;
+        font-weight: 750;
         &:hover:not(:disabled) {
-          background-color: $primary-hover;
+          background-color: $accent-hover;
         }
       }
 
@@ -224,21 +231,21 @@
 
 // ─── Supprimer mon compte ─────────────────────────────────
 .edit-profile-container .edit-profile-card section.danger-section h2 {
-  color: #991b1b;
-  border-bottom-color: #fecaca;
+  color: #ffb4b4;
+  border-bottom-color: rgba($error, 0.35);
 }
 
 .danger-section {
   margin-top: 2rem;
   padding: 1rem;
-  border: 1px solid #fecaca;
+  border: 1px solid rgba($error, 0.35);
   border-radius: $border-radius-lg;
-  background: #fef2f2;
+  background: rgba($error, 0.08);
 
   h2 {
     font-size: 1rem;
     font-weight: 700;
-    color: #991b1b;
+    color: #ffb4b4;
     margin-bottom: 0.4rem;
   }
 
