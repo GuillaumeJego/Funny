@@ -49,7 +49,7 @@
         <!-- ══ CAS NORMAL ══ -->
         @if (!isPremiumLocked()) {
           <div class="drawer-content">
-            <!-- Image -->
+            <!-- Image avec thème, titre et lieu par-dessus -->
             <div class="drawer-image">
               @if (s.resolvedImageUrl) {
                 <img [src]="s.resolvedImageUrl" [alt]="s.title" />
@@ -59,85 +59,136 @@
                   {{ s.themes?.icon || '🎯' }}
                 </div>
               }
-              @if (s.is_premium) {
-                <span class="badge-premium-img">⭐ Premium</span>
-              }
-              <span class="badge-theme-img">{{ s.themes?.icon }} {{ s.themes?.name }}</span>
+              <div class="image-shade"></div>
+              <button
+                class="btn-heart"
+                [class.active]="isFavori()"
+                (click)="favoriToggled.emit(s.id)"
+                title="Favoris"
+                aria-label="Ajouter aux favoris"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  [attr.fill]="isFavori() ? '#ffd54a' : 'none'"
+                  [attr.stroke]="isFavori() ? '#ffd54a' : 'currentColor'"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                  />
+                </svg>
+              </button>
+              <div class="hero-text">
+                <div class="hero-chips">
+                  @if (s.themes) {
+                    <span class="badge-theme-img">{{ s.themes.icon }} {{ s.themes.name }}</span>
+                  }
+                  @if (s.is_premium) {
+                    <span class="badge-premium-img">⭐ Premium</span>
+                  }
+                </div>
+                <h2 class="sortie-title">{{ s.title }}</h2>
+                <div class="hero-location">
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
+                    <circle cx="12" cy="9.5" r="2.5" />
+                  </svg>
+                  <span>{{ s.location }}</span>
+                </div>
+              </div>
+            </div>
+            <!-- Infos en tuiles -->
+            <div class="info-grid">
+              <div class="info-tile">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="16" rx="2" />
+                  <path d="M3 10h18M8 3v4M16 3v4" />
+                </svg>
+                <div>
+                  <div class="tile-label">Date</div>
+                  <div class="tile-value">{{ formatDay(s.date) }}</div>
+                </div>
+              </div>
+              <div class="info-tile">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </svg>
+                <div>
+                  <div class="tile-label">Heure</div>
+                  <div class="tile-value">{{ formatHour(s.date) }}</div>
+                </div>
+              </div>
+              <div class="info-tile">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M17 6.5A7 7 0 1 0 17 17.5M4 10h9M4 14h9" />
+                </svg>
+                <div>
+                  <div class="tile-label">Participation</div>
+                  <div class="tile-value">{{ s.price === 0 ? 'Gratuit' : s.price + ' €' }}</div>
+                </div>
+              </div>
+              <div class="info-tile">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="9" cy="8" r="3.5" />
+                  <path
+                    d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"
+                  />
+                </svg>
+                <div>
+                  <div class="tile-label">Participants</div>
+                  <div class="tile-value">
+                    @if (s.max_participants) {
+                      {{ s.inscriptionsCount ?? 0 }} / {{ s.max_participants }} personnes
+                    } @else {
+                      {{ s.inscriptionsCount ?? 0 }} inscrit{{
+                        (s.inscriptionsCount ?? 0) > 1 ? 's' : ''
+                      }}
+                    }
+                  </div>
+                </div>
+              </div>
             </div>
             <!-- Onglets -->
-            <div class="drawer-tabs">
+            <div class="drawer-tabs" role="tablist">
               <button
                 class="dtab"
+                role="tab"
                 [class.active]="activeTab() === 'details'"
+                [attr.aria-selected]="activeTab() === 'details'"
                 (click)="switchTab('details')"
               >
-                Détails
+                À propos
               </button>
               <button
                 class="dtab"
+                role="tab"
                 [class.active]="activeTab() === 'membres'"
+                [attr.aria-selected]="activeTab() === 'membres'"
                 (click)="switchTab('membres')"
               >
-                Membres
-                @if (s.inscriptionsCount) {
-                  <span class="dtab-count">{{ s.inscriptionsCount }}</span>
-                }
+                Participants · {{ s.inscriptionsCount ?? 0 }}
               </button>
             </div>
-            <!-- Corps — Détails -->
+            <!-- Corps — À propos -->
             @if (activeTab() === 'details') {
               <div class="drawer-body">
-                <!-- Titre + actions -->
-                <div class="title-row">
-                  <h2 class="sortie-title">{{ s.title }}</h2>
-                  <button
-                    class="btn-heart"
-                    [class.active]="isFavori()"
-                    (click)="favoriToggled.emit(s.id)"
-                    title="Favoris"
-                  >
-                    <svg
-                      width="22"
-                      height="22"
-                      viewBox="0 0 24 24"
-                      [attr.fill]="isFavori() ? '#ffd54a' : 'none'"
-                      stroke="currentColor"
-                      [attr.stroke]="isFavori() ? '#ffd54a' : 'currentColor'"
-                      stroke-width="2"
-                    >
-                      <path
-                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-                <!-- Description -->
                 @if (s.description) {
                   <p class="sortie-desc">{{ s.description }}</p>
                 }
-                <!-- Infos -->
-                <div class="info-list">
-                  <div class="info-item">
-                    <span class="info-icon">📅</span>
-                    <span>{{ formatDate(s.date) }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-icon">📍</span>
-                    <span>{{ s.location }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-icon">💶</span>
-                    <span>{{ s.price === 0 ? 'Gratuit' : s.price + ' €' }}</span>
-                  </div>
-                  @if (s.max_participants) {
-                    <div class="info-item">
-                      <span class="info-icon">👥</span>
-                      <span>{{ s.inscriptionsCount }} / {{ s.max_participants }} participants</span>
-                    </div>
-                  }
-                </div>
                 <!-- Organisateur -->
                 @if (s.profiles) {
+                  <h3 class="section-title">Organisé par</h3>
                   <div
                     class="organizer"
                     appClickable
@@ -151,22 +202,24 @@
                         {{ s.profiles.username.charAt(0).toUpperCase() }}
                       </div>
                     }
-                    <div>
-                      <div class="organizer-label">Organisé par</div>
+                    <div class="organizer-text">
                       <div class="organizer-name">{{ s.profiles.username }}</div>
+                      <div class="organizer-label">Voir son profil</div>
                     </div>
+                    <span class="chevron" aria-hidden="true">›</span>
                   </div>
                 }
-                <!-- Discussion de groupe (organisateur et inscrits) -->
-                @if (isOrganizer() || inscriptionStatus() === 'pending') {
-                  <button class="btn-chat" (click)="openGroupChat(s.id)" [disabled]="openingChat()">
-                    💬 {{ openingChat() ? 'Ouverture…' : 'Discussion du groupe' }}
-                  </button>
-                  @if (chatError()) {
-                    <p class="chat-error">{{ chatError() }}</p>
-                  }
+                <div class="trust-card">
+                  <div class="trust-title">🛡️ Une sortie en toute confiance</div>
+                  <p>
+                    Discute avec le groupe avant l'événement et retrouve toutes les informations au
+                    même endroit.
+                  </p>
+                </div>
+                @if (chatError()) {
+                  <p class="chat-error">{{ chatError() }}</p>
                 }
-                <!-- Bouton supprimer (organisateur uniquement) -->
+                <!-- Organisateur : modifier / supprimer -->
                 @if (isOrganizer()) {
                   <button class="btn-modifier" (click)="goToEdit(s.id)">
                     ✏️ Modifier la sortie
@@ -198,32 +251,12 @@
                     </div>
                   }
                 }
-                <!-- Boutons rejoindre / quitter / liste d'attente (non-organisateur) -->
-                @if (!isOrganizer()) {
-                  @if (inscriptionStatus() === 'none') {
-                    <button class="btn-rejoindre" (click)="rejoindreClicked.emit(s.id)">
-                      Je participe à cette sortie
-                    </button>
-                  }
-                  @if (inscriptionStatus() === 'pending') {
-                    <button class="btn-quitter" (click)="quitterClicked.emit(s.id)">
-                      ❌ Quitter cette sortie
-                    </button>
-                  }
-                  @if (inscriptionStatus() === 'waiting') {
-                    <div class="waiting-block">
-                      <div class="waiting-badge">⏳ Vous êtes sur liste d'attente</div>
-                      <button class="btn-quitter-attente" (click)="quitterClicked.emit(s.id)">
-                        Quitter la liste d'attente
-                      </button>
-                    </div>
-                  }
-                }
               </div>
             }
             <!-- Corps — Membres -->
             @if (activeTab() === 'membres') {
               <div class="drawer-body membres-tab">
+                <p class="membres-intro">Fais connaissance avec les personnes déjà inscrites.</p>
                 @if (membresLoading()) {
                   <div class="membres-loading">Chargement…</div>
                 }
@@ -255,6 +288,7 @@
                           @if (m.isOrganizer) {
                             <span class="m-badge-org">Organisateur</span>
                           }
+                          <span class="chevron" aria-hidden="true">›</span>
                         </div>
                       }
                     </div>
@@ -285,6 +319,7 @@
                               </div>
                             }
                             <span class="m-name">{{ m.username }}</span>
+                            <span class="chevron" aria-hidden="true">›</span>
                           </div>
                         }
                       </div>
@@ -314,6 +349,7 @@
                             </div>
                           }
                           <span class="m-name">{{ m.username }}</span>
+                          <span class="chevron" aria-hidden="true">›</span>
                         </div>
                       }
                     </div>
@@ -321,6 +357,51 @@
                 }
               </div>
             }
+            <!-- Barre d'action en bas -->
+            <div class="action-bar">
+              @if (isOrganizer() || inscriptionStatus() === 'pending') {
+                <button
+                  class="btn-chat"
+                  [class.wide]="isOrganizer()"
+                  (click)="openGroupChat(s.id)"
+                  [disabled]="openingChat()"
+                  title="Discussion du groupe"
+                  aria-label="Discussion du groupe"
+                >
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-5A8 8 0 1 1 21 12z" />
+                  </svg>
+                  @if (isOrganizer()) {
+                    <span>{{ openingChat() ? 'Ouverture…' : 'Discussion du groupe' }}</span>
+                  }
+                </button>
+              }
+              @if (!isOrganizer()) {
+                @if (inscriptionStatus() === 'none') {
+                  <button class="btn-rejoindre" (click)="rejoindreClicked.emit(s.id)">
+                    Je participe
+                  </button>
+                }
+                @if (inscriptionStatus() === 'pending') {
+                  <button class="btn-rejoindre joined" (click)="quitterClicked.emit(s.id)">
+                    ✓ Je participe · <span class="cancel">Annuler</span>
+                  </button>
+                }
+                @if (inscriptionStatus() === 'waiting') {
+                  <button class="btn-quitter-attente" (click)="quitterClicked.emit(s.id)">
+                    ⏳ Liste d'attente · <span class="cancel">Quitter</span>
+                  </button>
+                }
+              }
+            </div>
           </div>
         }
       }

@@ -151,6 +151,23 @@ export class SortieDrawerComponent implements OnChanges {
     return `${jour.charAt(0).toUpperCase() + jour.slice(1)} à ${heure}`;
   }
 
+  /** « Ven. 13 nov. » */
+  formatDay(dateStr: string): string {
+    const d = new Date(dateStr);
+    const jour = d.toLocaleDateString('fr-FR', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+    return jour.charAt(0).toUpperCase() + jour.slice(1);
+  }
+
+  /** « 18h30 » */
+  formatHour(dateStr: string): string {
+    const d = new Date(dateStr);
+    return `${d.getHours()}h${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+
   getInitial(username: string): string {
     return username.charAt(0).toUpperCase();
   }
