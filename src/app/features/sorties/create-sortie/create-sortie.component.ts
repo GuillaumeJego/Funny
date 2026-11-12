@@ -52,9 +52,6 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   /** Identifiant de la sortie en cours de modification (vide pour une création). */
   readonly editId = signal('');
 
-  readonly currentStep = signal(1);
-  totalSteps = 4;
-
   /** Formulaire lié par ngModel : ses champs changent sur place, à chaque saisie. */
   sortie: Partial<Sortie> = {
     title: '',
@@ -203,17 +200,27 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     this.customImagePreview.set('');
   }
 
-  nextStep() {
-    if (this.currentStep() < this.totalSteps) this.currentStep.set(this.currentStep() + 1);
-  }
-
-  prevStep() {
-    if (this.currentStep() > 1) this.currentStep.set(this.currentStep() - 1);
+  /** Ce qu'il manque pour publier, en clair ; vide quand tout est prêt. */
+  missingFields(): string[] {
+    const missing: string[] = [];
+    if (!this.sortie.theme_id) missing.push('le thème');
+    if (!this.sortie.title?.trim()) missing.push('le nom');
+    if (!this.sortie.date) missing.push('la date');
+    if (!this.sortie.location && !this.locationQuery().trim()) missing.push('le lieu');
+    if (!this.selectedImageUrl() && !this.customImagePreview()) missing.push("l'image");
+    return missing;
   }
 
   async onSubmit() {
-    this.saving.set(true);
     this.errorMessage.set('');
+    const missing = this.missingFields();
+    if (missing.length) {
+      this.errorMessage.set(`Il manque encore : ${missing.join(', ')}.`);
+      return;
+    }
+    // Lieu tapé sans choisir de suggestion : on garde le texte saisi.
+    if (!this.sortie.location) this.sortie.location = this.locationQuery().trim();
+    this.saving.set(true);
 
     try {
       // Upload image personnalisée si besoin

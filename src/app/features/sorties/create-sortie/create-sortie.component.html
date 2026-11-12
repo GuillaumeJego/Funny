@@ -11,231 +11,182 @@
 }
 
 @if (!accessDenied()) {
-  <div class="create-sortie-container">
-    <div class="create-sortie-card">
-      <!-- Header -->
-      <div class="header">
-        <button class="btn-back" (click)="goToDashboard()">← Retour</button>
-        <h1>{{ editId() ? 'Modifier la sortie' : 'Créer une sortie' }}</h1>
-        <div class="steps">Étape {{ currentStep() }}/{{ totalSteps }}</div>
-      </div>
-      <!-- Barre de progression -->
-      <div class="progress-bar">
-        <div class="progress" [style.width.%]="(currentStep() / totalSteps) * 100"></div>
-      </div>
-      <!-- ÉTAPE 1 : Informations générales -->
-      @if (currentStep() === 1) {
-        <div class="step">
-          <h2>📝 Informations générales</h2>
-          <div class="form-group">
-            <label>Thème *</label>
-            @if (themes().length === 0) {
-              <p class="no-images" role="alert">
-                Aucun thème n'est encore disponible : un administrateur doit en ajouter avant qu'on
-                puisse créer une sortie.
-              </p>
-            }
-            <select [(ngModel)]="sortie.theme_id" (change)="onThemeSelected()">
-              <option value="">Choisir un thème</option>
-              @for (theme of themes(); track theme.id) {
-                <option [value]="theme.id">{{ theme.icon }} {{ theme.name }}</option>
-              }
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Titre de la sortie *</label>
-            <input
-              type="text"
-              [(ngModel)]="sortie.title"
-              placeholder="Ex: Soirée pizza entre amis"
-            />
-          </div>
-          <div class="form-group">
-            <label>Description</label>
-            <textarea
-              [(ngModel)]="sortie.description"
-              placeholder="Décrivez votre sortie..."
-              rows="4"
-            ></textarea>
-          </div>
-          @if (canCreatePremium()) {
-            <div class="form-group">
-              <label>Réservé aux abonnés ?</label>
-              <div class="toggle-group">
-                <label class="toggle">
-                  <input type="checkbox" [(ngModel)]="sortie.is_premium" />
-                  <span class="slider"></span>
-                </label>
-                <span>{{ sortie.is_premium ? '⭐ Abonnés uniquement' : '🌍 Tout le monde' }}</span>
-              </div>
-            </div>
+  <!-- Dès qu'on corrige un champ, l'ancien message « il manque » disparaît. -->
+  <div class="create-page" (input)="errorMessage.set('')" (change)="errorMessage.set('')">
+    <button class="btn-back" type="button" (click)="goToDashboard()">← Retour</button>
+    <h1>{{ editId() ? '✏️ Modifier la sortie' : '✨ Créer une sortie' }}</h1>
+    <p class="intro">Une idée suffit pour réunir du monde !</p>
+
+    <div class="formfield">
+      <label for="cs-theme">Thème *</label>
+      @if (themes().length === 0) {
+        <p class="no-images" role="alert">
+          Aucun thème n'est encore disponible : un administrateur doit en ajouter avant qu'on puisse
+          créer une sortie.
+        </p>
+      }
+      <select id="cs-theme" [(ngModel)]="sortie.theme_id" (change)="onThemeSelected()">
+        <option value="">Choisir un thème</option>
+        @for (theme of themes(); track theme.id) {
+          <option [value]="theme.id">{{ theme.icon }} {{ theme.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="formfield">
+      <label for="cs-title">Nom de la sortie *</label>
+      <input
+        id="cs-title"
+        type="text"
+        maxlength="100"
+        [(ngModel)]="sortie.title"
+        placeholder="Ex : Café et papotage"
+      />
+    </div>
+
+    <div class="formfield">
+      <label for="cs-date">Date et heure *</label>
+      <input id="cs-date" type="datetime-local" [(ngModel)]="sortie.date" />
+    </div>
+
+    <div class="formfield">
+      <label for="cs-location">Lieu *</label>
+      <div class="location-autocomplete">
+        <div class="location-search-row">
+          <input
+            id="cs-location"
+            type="text"
+            [(ngModel)]="locationQuery"
+            (input)="onLocationInput()"
+            placeholder="Ex : Saint-Malo centre"
+            autocomplete="off"
+          />
+          @if (sortie.location) {
+            <button
+              class="btn-clear-loc"
+              type="button"
+              aria-label="Effacer le lieu"
+              (click)="clearLocation()"
+            >
+              ✕
+            </button>
           }
         </div>
-      }
-      <!-- ÉTAPE 2 : Date, lieu et participants -->
-      @if (currentStep() === 2) {
-        <div class="step">
-          <h2>📍 Lieu et date</h2>
-          <div class="form-group">
-            <label>Date et heure *</label>
-            <input type="datetime-local" [(ngModel)]="sortie.date" />
-          </div>
-          <div class="form-group">
-            <label>Lieu *</label>
-            <div class="location-autocomplete">
-              <div class="location-search-row">
-                <input
-                  type="text"
-                  [(ngModel)]="locationQuery"
-                  (input)="onLocationInput()"
-                  placeholder="Rechercher une ville…"
-                  autocomplete="off"
-                  class="location-field"
-                />
-                @if (sortie.location) {
-                  <button class="btn-clear-loc" type="button" (click)="clearLocation()">✕</button>
-                }
-              </div>
-              @if (sortie.location) {
-                <div class="location-selected">📍 {{ sortie.location }}</div>
-              }
-              @if (locationSuggestions().length) {
-                <div class="location-suggestions">
-                  @for (place of locationSuggestions(); track place) {
-                    <div appClickable class="suggestion-item" (click)="selectLocation(place)">
-                      <span>📍</span>
-                      <div class="sug-details">
-                        <span class="sug-name">{{ place.shortName }}</span>
-                        @if (place.address) {
-                          <span class="sug-address">{{ place.address }}</span>
-                        }
-                      </div>
-                      <span class="sug-country">{{ place.country }}</span>
-                    </div>
+        @if (sortie.location) {
+          <div class="location-selected">📍 {{ sortie.location }}</div>
+        }
+        @if (locationSuggestions().length) {
+          <div class="location-suggestions">
+            @for (place of locationSuggestions(); track place) {
+              <div appClickable class="suggestion-item" (click)="selectLocation(place)">
+                <span>📍</span>
+                <div class="sug-details">
+                  <span class="sug-name">{{ place.shortName }}</span>
+                  @if (place.address) {
+                    <span class="sug-address">{{ place.address }}</span>
                   }
-                  <p class="osm-credit">Adresses : © les contributeurs OpenStreetMap</p>
                 </div>
-              }
-              @if (locationSearching()) {
-                <div class="location-searching">⏳ Recherche…</div>
-              }
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Prix (€) *</label>
-            <input type="number" [(ngModel)]="sortie.price" min="0" placeholder="0 = gratuit" />
-          </div>
-          <div class="form-group">
-            <label>Nombre de places maximum (toi compris)</label>
-            <input
-              type="number"
-              [(ngModel)]="sortie.max_participants"
-              min="1"
-              placeholder="Laisser vide = illimité"
-            />
-          </div>
-        </div>
-      }
-      <!-- ÉTAPE 3 : Image -->
-      @if (currentStep() === 3) {
-        <div class="step">
-          <h2>🖼️ Image de la sortie</h2>
-          <!-- Images par défaut -->
-          @if (themeImages().length > 0) {
-            <div>
-              <h3>Images par défaut</h3>
-              <div class="images-grid">
-                @for (img of themeImages(); track img.id) {
-                  <button
-                    type="button"
-                    class="image-option"
-                    [class.selected]="selectedImageUrl() === img.image_url"
-                    [attr.aria-pressed]="selectedImageUrl() === img.image_url"
-                    (click)="selectDefaultImage(img.image_url)"
-                  >
-                    <img [src]="img.image_url" alt="Image par défaut du thème" loading="lazy" />
-                  </button>
-                }
+                <span class="sug-country">{{ place.country }}</span>
               </div>
-            </div>
-          }
-          @if (themeImages().length === 0) {
-            <div class="no-images">
-              <p>Aucune image par défaut pour ce thème.</p>
-            </div>
-          }
-          <!-- Image personnalisée -->
-          <div class="custom-image">
-            <h3>Ou uploader votre image</h3>
-            <app-sortie-image-upload (imageReady)="onImageReady($event)" />
-          </div>
-          @if (!selectedImageUrl() && !customImagePreview()) {
-            <div class="warning">⚠️ Veuillez choisir une image</div>
-          }
-        </div>
-      }
-      <!-- ÉTAPE 4 : Récapitulatif -->
-      @if (currentStep() === 4) {
-        <div class="step">
-          <h2>✅ Récapitulatif</h2>
-          <div class="recap">
-            <div class="recap-item">
-              <span class="label">Titre</span>
-              <span>{{ sortie.title }}</span>
-            </div>
-            <div class="recap-item">
-              <span class="label">Date</span>
-              <span>{{ sortie.date | date: 'dd/MM/yyyy HH:mm' }}</span>
-            </div>
-            <div class="recap-item">
-              <span class="label">Lieu</span>
-              <span>{{ sortie.location }}</span>
-            </div>
-            <div class="recap-item">
-              <span class="label">Prix</span>
-              <span>{{ sortie.price === 0 ? 'Gratuit' : sortie.price + '€' }}</span>
-            </div>
-            <div class="recap-item">
-              <span class="label">Places</span>
-              <span>{{ sortie.max_participants || 'Illimité' }}</span>
-            </div>
-            <div class="recap-item">
-              <span class="label">Accès</span>
-              <span>{{ sortie.is_premium ? '⭐ Abonnés' : '🌍 Tout le monde' }}</span>
-            </div>
-          </div>
-          @if (selectedImageUrl() || customImagePreview()) {
-            <div class="recap-image">
-              <img [src]="selectedImageUrl() || customImagePreview()" alt="Image de la sortie" />
-            </div>
-          }
-        </div>
-      }
-      <!-- Messages -->
-      @if (successMessage()) {
-        <div class="success">{{ successMessage() }}</div>
-      }
-      @if (errorMessage()) {
-        <div class="error">{{ errorMessage() }}</div>
-      }
-      <!-- Navigation -->
-      <div class="navigation">
-        @if (currentStep() > 1) {
-          <button class="btn-secondary" (click)="prevStep()">← Précédent</button>
-        }
-        @if (currentStep() < totalSteps) {
-          <button class="btn-primary" (click)="nextStep()">Suivant →</button>
-        }
-        @if (currentStep() === totalSteps) {
-          <button class="btn-primary" (click)="onSubmit()" [disabled]="saving()">
-            @if (editId()) {
-              {{ saving() ? 'Enregistrement...' : '💾 Enregistrer les modifications' }}
-            } @else {
-              {{ saving() ? 'Création...' : '🎉 Créer la sortie' }}
             }
-          </button>
+            <p class="osm-credit">Adresses : © les contributeurs OpenStreetMap</p>
+          </div>
+        }
+        @if (locationSearching()) {
+          <div class="location-searching">⏳ Recherche…</div>
         }
       </div>
     </div>
+
+    <div class="formrow">
+      <div class="formfield">
+        <label for="cs-max">Participants max</label>
+        <input
+          id="cs-max"
+          type="number"
+          [(ngModel)]="sortie.max_participants"
+          min="1"
+          placeholder="Illimité"
+        />
+      </div>
+      <div class="formfield">
+        <label for="cs-price">Prix (€)</label>
+        <input id="cs-price" type="number" [(ngModel)]="sortie.price" min="0" placeholder="0" />
+      </div>
+    </div>
+    <p class="hint">Toi compris pour les places. Prix à 0 = sortie gratuite.</p>
+
+    <div class="formfield">
+      <label for="cs-description">Description</label>
+      <textarea
+        id="cs-description"
+        [(ngModel)]="sortie.description"
+        placeholder="Décris l'ambiance et le programme…"
+        rows="4"
+      ></textarea>
+    </div>
+
+    <div class="formfield">
+      <span class="label">Image de la sortie *</span>
+      <!-- Une image envoyée à l'instant a déjà son aperçu dans le bloc d'envoi. -->
+      @if (selectedImageUrl() || (customImagePreview() && !customImageFile)) {
+        <img
+          class="cover-preview"
+          [src]="selectedImageUrl() || customImagePreview()"
+          alt="Image choisie pour la sortie"
+        />
+      }
+      @if (themeImages().length > 0) {
+        <div class="images-row">
+          @for (img of themeImages(); track img.id) {
+            <button
+              type="button"
+              class="image-option"
+              [class.selected]="selectedImageUrl() === img.image_url"
+              [attr.aria-pressed]="selectedImageUrl() === img.image_url"
+              (click)="selectDefaultImage(img.image_url)"
+            >
+              <img [src]="img.image_url" alt="Image par défaut du thème" loading="lazy" />
+            </button>
+          }
+        </div>
+      } @else if (!sortie.theme_id) {
+        <p class="hint">Choisis d'abord un thème pour voir ses images.</p>
+      }
+      <div class="custom-image">
+        <app-sortie-image-upload (imageReady)="onImageReady($event)" />
+      </div>
+    </div>
+
+    @if (canCreatePremium()) {
+      <div class="formfield toggle-group">
+        <label class="toggle">
+          <input
+            type="checkbox"
+            [(ngModel)]="sortie.is_premium"
+            aria-label="Réservée aux abonnés"
+          />
+          <span class="slider"></span>
+        </label>
+        <span>{{
+          sortie.is_premium ? '⭐ Réservée aux abonnés' : '🌍 Ouverte à tout le monde'
+        }}</span>
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="success" role="status">{{ successMessage() }}</div>
+    }
+    @if (errorMessage()) {
+      <div class="error" role="alert">{{ errorMessage() }}</div>
+    }
+
+    <button class="btn-publish" type="button" (click)="onSubmit()" [disabled]="saving()">
+      @if (editId()) {
+        {{ saving() ? 'Enregistrement…' : 'Enregistrer les modifications' }}
+      } @else {
+        {{ saving() ? 'Publication…' : 'Publier ma sortie' }}
+      }
+    </button>
   </div>
 }
