@@ -24,11 +24,18 @@ import { SortieWithRelations } from '../../core/models/sortie.model';
 import { SortieDrawerComponent } from '../sorties/sortie-drawer/sortie-drawer.component';
 import { isPremiumMember } from '../../core/utils/premium';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
+import { ProfileLinkDirective } from '../../core/directives/profile-link.directive';
 
 @Component({
   selector: 'app-mes-sorties',
   standalone: true,
-  imports: [ClickableDirective, SortieDrawerComponent, NavbarFiltersComponent, RouterLink],
+  imports: [
+    ProfileLinkDirective,
+    ClickableDirective,
+    SortieDrawerComponent,
+    NavbarFiltersComponent,
+    RouterLink,
+  ],
   templateUrl: './mes-sorties.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './mes-sorties.component.scss',

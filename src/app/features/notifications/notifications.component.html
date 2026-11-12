@@ -27,7 +27,7 @@
           appClickable
           (click)="open(n)"
         >
-          <div class="notif-avatar">
+          <div class="notif-avatar" [appProfileLink]="n.sortie_image ? null : n.actor_id">
             @if (n.sortie_image) {
               <img [src]="n.sortie_image" class="actor-avatar" alt="" />
             } @else if (n.actor?.avatar_url) {

@@ -187,7 +187,7 @@
               </div>
               <div class="card-footer">
                 @if (sortie.profiles) {
-                  <div class="organizer">
+                  <div class="organizer" [appProfileLink]="sortie.created_by">
                     @if (sortie.profiles.avatar_url) {
                       <img [src]="sortie.profiles.avatar_url" class="avatar" alt="" />
                     }
@@ -339,7 +339,7 @@
                 @if (!sortie.locked) {
                   <div class="list-actions">
                     @if (sortie.profiles) {
-                      <div>
+                      <div [appProfileLink]="sortie.created_by">
                         @if (sortie.profiles.avatar_url) {
                           <img [src]="sortie.profiles.avatar_url" class="list-avatar" alt="" />
                         }

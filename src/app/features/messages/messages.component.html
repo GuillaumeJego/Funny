@@ -33,7 +33,7 @@
       <div class="membres-grid">
         @for (f of filteredFriends(); track f) {
           <div appClickable class="membre-card" (click)="openChatWithFriend(f)">
-            <div class="avatar-wrap">
+            <div class="avatar-wrap" [appProfileLink]="getFriendProfile(f)?.id">
               @if (getFriendProfile(f)?.avatar_url) {
                 <img [src]="getFriendProfile(f)!.avatar_url!" class="avatar" alt="" />
               }
@@ -71,7 +71,7 @@
             [class.has-unread]="unread().has(conv.id)"
             (click)="openChat(conv)"
           >
-            <div class="avatar-wrap">
+            <div class="avatar-wrap" [appProfileLink]="conv.sortie_id ? null : getFriendId(conv)">
               @if (conv.sortie_id && conv.sortie_image) {
                 <img [src]="conv.sortie_image" class="avatar" alt="" />
               } @else if (conv.sortie_id) {

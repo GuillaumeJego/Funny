@@ -33,7 +33,7 @@
         </span>
       </a>
     } @else {
-      <div class="header-identity">
+      <div class="header-identity" [appProfileLink]="friendId()">
         <div class="header-avatar">
           @if (friendAvatar()) {
             <img [src]="friendAvatar()" class="h-avatar-img" alt="" />
@@ -84,7 +84,7 @@
           <div class="msg-row" [class.own]="isOwn(msg)">
             <!-- Avatar expéditeur (messages reçus) -->
             @if (!isOwn(msg)) {
-              <div class="msg-avatar">
+              <div class="msg-avatar" [appProfileLink]="msg.sender_id">
                 @if (msg.sender?.avatar_url) {
                   <img [src]="msg.sender!.avatar_url!" class="sender-avatar" alt="" />
                 }

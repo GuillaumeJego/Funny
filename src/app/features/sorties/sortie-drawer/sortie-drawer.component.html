@@ -138,7 +138,11 @@
                 </div>
                 <!-- Organisateur -->
                 @if (s.profiles) {
-                  <div class="organizer">
+                  <div
+                    class="organizer"
+                    appClickable
+                    (click)="s.created_by && goToProfile(s.created_by)"
+                  >
                     @if (s.profiles.avatar_url) {
                       <img [src]="s.profiles.avatar_url" class="avatar" alt="" />
                     }
