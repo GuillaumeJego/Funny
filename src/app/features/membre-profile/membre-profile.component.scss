@@ -355,83 +355,59 @@
   }
 }
 
-// ─── Actions amis ────────────────────────────────────────
-.friend-actions {
-  padding: 0.75rem 1rem 0;
-}
-
-.friend-btn-row {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.btn-friend {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.75rem 1.1rem;
-  border-radius: 13px;
-  font-size: 0.92rem;
-  font-weight: 700;
-  cursor: pointer;
+// ─── Son espace (profil visité) ──────────────────────────
+button.space-item {
+  width: 100%;
+  background: none;
   border: none;
-  transition:
-    opacity 0.15s,
-    background 0.15s;
+  border-bottom: 1px solid $border-color;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
 
   &:disabled {
     opacity: 0.6;
     cursor: default;
   }
+}
 
-  &.add {
-    flex: 1;
-    background: $primary;
-    color: #fff;
-    &:not(:disabled):hover {
-      opacity: 0.9;
+.space-item {
+  &.highlight {
+    color: $primary;
+  }
+  &.muted {
+    color: $text-light;
+  }
+  &.danger {
+    color: #ffb4b4;
+    font-weight: 600;
+    svg {
+      stroke: #ffb4b4;
     }
   }
-  &.pending {
-    background: $bg-light;
-    color: $text-light;
+  .space-aside {
+    margin-left: auto;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
     border: 1px solid $border-color;
-  }
-  &.cancel {
     background: transparent;
-    color: $text-light;
-    border: 1px solid $border-color;
-    &:hover {
-      background: $bg-light;
+    color: $text-dark;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+
+    & + .space-aside {
+      margin-left: 0.4rem;
     }
-  }
-  &.accept {
-    flex: 1;
-    background: $primary;
-    color: #fff;
-    &:not(:disabled):hover {
-      opacity: 0.9;
+    &.primary {
+      background: $primary;
+      border-color: $primary;
+      color: #fff;
     }
-  }
-  &.message {
-    background: $primary;
-    color: #fff;
-    flex: 1;
-    justify-content: center;
-    &:hover {
-      opacity: 0.9;
-    }
-  }
-  &.remove {
-    background: $bg-light;
-    color: $text-medium;
-    border: 1px solid $border-color;
-    &:hover {
-      background: rgba($error, 0.08);
-      color: $error;
-      border-color: $error;
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
     }
   }
 }

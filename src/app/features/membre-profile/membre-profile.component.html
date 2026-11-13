@@ -191,50 +191,34 @@
       </div>
     }
     @if (!isOwnProfile() && !blocked()) {
-      <div class="friend-actions">
+      <nav class="my-space" aria-label="Son espace">
+        <div class="my-space-title">Son espace</div>
         @switch (friendshipStatus()) {
           @case ('none') {
-            <div class="friend-btn-row">
-              <button
-                class="btn-friend add"
-                [disabled]="friendshipLoading()"
-                (click)="sendFriendRequest()"
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="8.5" cy="7" r="4" />
-                  <line x1="20" y1="8" x2="20" y2="14" />
-                  <line x1="23" y1="11" x2="17" y2="11" />
-                </svg>
-                Ajouter comme ami
-              </button>
-            </div>
+            <button
+              type="button"
+              class="space-item highlight"
+              [disabled]="friendshipLoading()"
+              (click)="sendFriendRequest()"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="9" cy="8" r="3.5" />
+                <path d="M2.5 20a6.5 6.5 0 0 1 13 0M19 8v6M16 11h6" />
+              </svg>
+              <span>Ajouter comme ami</span>
+              <span class="chevron" aria-hidden="true">›</span>
+            </button>
           }
           @case ('pending_sent') {
-            <div class="friend-btn-row">
-              <button class="btn-friend pending" disabled>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                Demande envoyée
-              </button>
+            <div class="space-item muted">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              </svg>
+              <span>Demande d'ami envoyée</span>
               <button
-                class="btn-friend cancel"
+                type="button"
+                class="space-aside"
                 [disabled]="friendshipLoading()"
                 (click)="declineFriend()"
               >
@@ -243,16 +227,23 @@
             </div>
           }
           @case ('pending_received') {
-            <div class="friend-btn-row">
+            <div class="space-item highlight">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="9" cy="8" r="3.5" />
+                <path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 11l2 2 4-4" />
+              </svg>
+              <span>Veut devenir ton ami</span>
               <button
-                class="btn-friend accept"
+                type="button"
+                class="space-aside primary"
                 [disabled]="friendshipLoading()"
                 (click)="acceptFriend()"
               >
-                ✓ Accepter
+                Accepter
               </button>
               <button
-                class="btn-friend cancel"
+                type="button"
+                class="space-aside"
                 [disabled]="friendshipLoading()"
                 (click)="declineFriend()"
               >
@@ -261,43 +252,57 @@
             </div>
           }
           @case ('accepted') {
-            <div class="friend-btn-row">
-              <button class="btn-friend message" (click)="openChat()">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
-                Envoyer un message
-              </button>
-              <button
-                class="btn-friend remove"
-                [disabled]="friendshipLoading()"
-                (click)="removeFriend()"
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <line x1="23" y1="11" x2="17" y2="11" />
-                </svg>
-                Ami ✓
-              </button>
-            </div>
+            <button type="button" class="space-item" (click)="openChat()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <span>Envoyer un message</span>
+              <span class="chevron" aria-hidden="true">›</span>
+            </button>
           }
         }
-      </div>
+        <button type="button" class="space-item" (click)="openStat('sorties')">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="2" />
+            <path d="M3 10h18M8 3v4M16 3v4" />
+          </svg>
+          <span>Ses sorties</span>
+          <span class="chevron" aria-hidden="true">›</span>
+        </button>
+        <button type="button" class="space-item" (click)="openStat('amis')">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="9" cy="8" r="3.5" />
+            <path
+              d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"
+            />
+          </svg>
+          <span>Ses amis</span>
+          <span class="chevron" aria-hidden="true">›</span>
+        </button>
+        <button type="button" class="space-item" (click)="openStat('favoris')">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"
+            />
+          </svg>
+          <span>Ses favoris</span>
+          <span class="chevron" aria-hidden="true">›</span>
+        </button>
+        @if (friendshipStatus() === 'accepted') {
+          <button
+            type="button"
+            class="space-item danger"
+            [disabled]="friendshipLoading()"
+            (click)="removeFriend()"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="9" cy="8" r="3.5" />
+              <path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 11h6" />
+            </svg>
+            <span>Retirer de mes amis</span>
+          </button>
+        }
+      </nav>
     }
     <!-- ── En savoir plus ── -->
     @if (hasExtraInfo()) {
