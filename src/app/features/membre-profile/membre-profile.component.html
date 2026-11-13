@@ -440,15 +440,7 @@
       <!-- État vide -->
       @if (currentList().length === 0) {
         <div class="empty">
-          <span>{{
-            activeTab() === 'organisees'
-              ? '📋'
-              : activeTab() === 'rejointes'
-                ? '✅'
-                : activeTab() === 'attente'
-                  ? '⏳'
-                  : '❤️'
-          }}</span>
+          <span>{{ tabIcon(activeTab()) }}</span>
           <p>Aucune sortie à afficher.</p>
         </div>
       }

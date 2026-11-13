@@ -118,6 +118,9 @@ export const TABLES = [
       datetime('affinites_jusqua'),
       // Date d'envoi du rappel « c'est bientôt » aux participants (la veille).
       datetime('rappel_envoye'),
+      // Présences : date de la validation définitive par l'organisateur, et du dernier rappel.
+      datetime('presences_validees'),
+      datetime('presences_rappel'),
       // Position du lieu (carte des sorties, filtre « à moins de X km ») : vide si inconnue.
       float('lat'),
       float('lng'),
@@ -153,6 +156,8 @@ export const TABLES = [
       str('sortie_id', ID, { required: true }),
       str('user_id', ID, { required: true }),
       enumeration('status', ['pending', 'waiting', 'confirmed', 'cancelled'], { required: true }),
+      // Présent à la sortie, selon l'organisateur (vide tant qu'il n'a pas validé).
+      bool('present'),
     ],
     indexes: [
       { key: 'sortie_user_unique', type: 'unique', columns: ['sortie_id', 'user_id'] },

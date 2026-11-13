@@ -21,6 +21,7 @@ import {
 import { cleanSortie, isSafeDefaultImage, sortieImageFileId } from './shared/sortie-rules.js';
 import { recordAffinity, sendAffinityQuestions } from './shared/affinites.js';
 import { sendReminders } from './shared/rappels.js';
+import { sendPresenceReminders, validatePresences } from './shared/presences.js';
 import { syncSortieChat } from './shared/conversations.js';
 
 /**
@@ -308,13 +309,21 @@ async function affinite({ api, userId, input }) {
   });
 }
 
+/** L'organisateur indique qui était présent (validation définitive). */
+async function presences({ api, userId, input }) {
+  const sortie = await getSortie(api, input.sortieId);
+  return validatePresences(api, { sortie, userId, absentIds: input.absentIds });
+}
+
 export default handler(
-  { create, update, join, leave, like, affinite, openChat, delete: remove },
-  // Chaque heure : rappel la veille des sorties, et question des affinités après.
+  { create, update, join, leave, like, affinite, presences, openChat, delete: remove },
+  // Chaque heure : rappel la veille des sorties, question des affinités après,
+  // et rappel quotidien à l'organisateur tant que les présences ne sont pas validées.
   {
     onSchedule: async ({ api }) => ({
       ...(await sendReminders(api)),
       ...(await sendAffinityQuestions(api)),
+      ...(await sendPresenceReminders(api)),
     }),
   },
 );

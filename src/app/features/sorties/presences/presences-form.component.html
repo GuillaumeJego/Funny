@@ -1,0 +1,65 @@
+<div class="presences-form">
+  <div class="pf-header">
+    <h2>📋 Qui était présent ?</h2>
+    <p class="pf-sortie">{{ sortie().title }}</p>
+    <p class="pf-date">{{ formatDate(sortie().date) }}</p>
+    @if (!alreadyValidated()) {
+      <p class="pf-hint">
+        Tout le monde est coché présent. Décoche les personnes qui ne sont pas venues.
+      </p>
+    }
+  </div>
+
+  @if (loading()) {
+    <p class="pf-info">Chargement…</p>
+  } @else if (participants().length === 0) {
+    <p class="pf-info">Personne d'autre n'était inscrit à cette sortie.</p>
+  } @else {
+    <ul class="pf-list">
+      @for (p of participants(); track p.id) {
+        <li>
+          <label class="pf-row" [class.absent]="absents().has(p.id)">
+            @if (p.avatar_url) {
+              <img [src]="p.avatar_url" class="pf-avatar" alt="" />
+            } @else {
+              <span class="pf-avatar placeholder">{{ initial(p.username) }}</span>
+            }
+            <span class="pf-name">{{ p.username }}</span>
+            <span class="pf-state">{{ absents().has(p.id) ? 'Absent' : 'Présent' }}</span>
+            <input
+              type="checkbox"
+              [checked]="!absents().has(p.id)"
+              [disabled]="alreadyValidated()"
+              (change)="toggle(p.id)"
+              [attr.aria-label]="p.username + ' présent'"
+            />
+          </label>
+        </li>
+      }
+    </ul>
+    <p class="pf-count">
+      {{ presentCount() }} présent{{ presentCount() > 1 ? 's' : '' }} ·
+      {{ participants().length - presentCount() }} absent{{
+        participants().length - presentCount() > 1 ? 's' : ''
+      }}
+    </p>
+  }
+
+  @if (error()) {
+    <p class="pf-error">{{ error() }}</p>
+  }
+
+  @if (alreadyValidated()) {
+    <p class="pf-done">✅ Présences validées.</p>
+  } @else {
+    <div class="pf-actions">
+      <button type="button" class="btn-validate" [disabled]="sending()" (click)="validate()">
+        {{ sending() ? 'Enregistrement…' : 'Valider (définitif)' }}
+      </button>
+      <button type="button" class="btn-later" [disabled]="sending()" (click)="later.emit()">
+        Je remplirai plus tard
+      </button>
+    </div>
+    <p class="pf-note">Une fois validées, les présences ne peuvent plus être modifiées.</p>
+  }
+</div>

@@ -11,6 +11,7 @@ type InscriptionRow = Models.Row & {
   sortie_id: string;
   user_id: string;
   status: 'pending' | 'waiting' | 'confirmed' | 'cancelled';
+  present?: boolean | null;
 };
 
 @Injectable()
@@ -44,12 +45,33 @@ export class AppwriteInscriptionRepository extends InscriptionRepository {
 
   async getParticipants(
     sortieId: string,
-  ): Promise<{ user_id: string; status: 'pending' | 'confirmed' }[]> {
+  ): Promise<{ user_id: string; status: 'pending' | 'confirmed'; present?: boolean | null }[]> {
     const rows = await this.appwrite.listAll<InscriptionRow>('inscriptions', [
       Query.equal('sortie_id', sortieId),
       Query.equal('status', ['pending', 'confirmed']),
     ]);
-    return rows.map((r) => ({ user_id: r.user_id, status: r.status as 'pending' | 'confirmed' }));
+    return rows.map((r) => ({
+      user_id: r.user_id,
+      status: r.status as 'pending' | 'confirmed',
+      present: r.present ?? null,
+    }));
+  }
+
+  async getParticipatedSortieIds(userId: string): Promise<string[]> {
+    const rows = await this.appwrite.listAll<InscriptionRow>('inscriptions', [
+      Query.equal('user_id', userId),
+      Query.equal('status', ['pending', 'confirmed']),
+    ]);
+    // Sans réponse de l'organisateur, on considère le membre présent.
+    return rows.filter((r) => r.present !== false).map((r) => r.sortie_id);
+  }
+
+  async validerPresences(
+    sortieId: string,
+    absentIds: string[],
+  ): Promise<{ error: RepositoryError | null }> {
+    const { error } = await this.appwrite.run('sorties', 'presences', { sortieId, absentIds });
+    return { error };
   }
 
   async getWaitingUserIds(sortieId: string): Promise<string[]> {

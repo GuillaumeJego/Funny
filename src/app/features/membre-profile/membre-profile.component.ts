@@ -32,7 +32,7 @@ import { MemberSafetyComponent } from '../../core/components/member-safety/membe
 import { isPremiumMember } from '../../core/utils/premium';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
 
-type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees';
+type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees' | 'passees';
 
 @Component({
   selector: 'app-membre-profile',
@@ -71,6 +71,8 @@ export class MembreProfileComponent implements OnInit {
   readonly sortiesRejointes = signal<SortieWithRelations[]>([]);
   readonly sortiesAttente = signal<SortieWithRelations[]>([]);
   readonly sortiesLikees = signal<SortieWithRelations[]>([]);
+  /** Sorties passées auxquelles le membre a participé (pas noté absent par l'organisateur). */
+  readonly sortiesPassees = signal<SortieWithRelations[]>([]);
 
   readonly lightboxOpen = signal(false);
   readonly bioExpanded = signal(false);
@@ -93,6 +95,7 @@ export class MembreProfileComponent implements OnInit {
     { key: 'rejointes', label: 'Rejointes', icon: '✅' },
     { key: 'attente', label: 'En attente', icon: '⏳' },
     { key: 'likees', label: 'Likées', icon: '❤️' },
+    { key: 'passees', label: 'Passées', icon: '🕰️' },
   ];
 
   async ngOnInit() {
@@ -130,12 +133,13 @@ export class MembreProfileComponent implements OnInit {
     const favorisIds = await this.favoriService.getFavoris(user.id);
     this.viewerFavoris.set(new Set(favorisIds));
 
-    const [profileRes, organisees, rejointes, attente, likees] = await Promise.all([
+    const [profileRes, organisees, rejointes, attente, likees, passees] = await Promise.all([
       this.profileService.getProfileById(targetId),
       this.sortieService.getSortiesCreatedBy(targetId),
       this.sortieService.getSortiesRejointes(targetId),
       this.sortieService.getSortiesEnAttente(targetId),
       this.sortieService.getSortiesLikees(targetId),
+      this.sortieService.getSortiesPassees(targetId),
     ]);
 
     this.profile.set(profileRes.data as Profile);
@@ -143,6 +147,7 @@ export class MembreProfileComponent implements OnInit {
     this.sortiesRejointes.set(rejointes);
     this.sortiesAttente.set(attente);
     this.sortiesLikees.set(likees);
+    this.sortiesPassees.set(passees);
 
     // Les images et le nombre d’inscrits sont déjà calculés par le service.
     const all = [
@@ -150,6 +155,7 @@ export class MembreProfileComponent implements OnInit {
       ...this.sortiesRejointes(),
       ...this.sortiesAttente(),
       ...this.sortiesLikees(),
+      ...this.sortiesPassees(),
     ];
     // Thèmes et villes disponibles
     const themesMap = new Map<string, ThemeOption>();
@@ -177,13 +183,14 @@ export class MembreProfileComponent implements OnInit {
     this.currentFilters.set(f);
   }
 
-  private applyFilters(list: SortieWithRelations[]): SortieWithRelations[] {
+  /** `withPeriod` false : onglet « Passées », où les dates sont forcément passées. */
+  private applyFilters(list: SortieWithRelations[], withPeriod = true): SortieWithRelations[] {
     const now = new Date();
     const f = this.currentFilters();
     return list.filter((s) => {
       if (f.themeIds?.length && !f.themeIds.includes(s.theme_id ?? '')) return false;
       if (!matchesPlace(s, f)) return false;
-      if (!matchesPeriod(s.date, f, now)) return false;
+      if (withPeriod && !matchesPeriod(s.date, f, now)) return false;
       if (f.prix === 'gratuit' && s.price > 0) return false;
       if (f.prix === 'payant' && s.price === 0) return false;
       if (f.premium && !s.is_premium) return false;
@@ -191,28 +198,31 @@ export class MembreProfileComponent implements OnInit {
     });
   }
 
-  readonly currentList = computed<SortieWithRelations[]>(() => {
-    const base =
-      this.activeTab() === 'organisees'
-        ? this.sortiesOrganisees()
-        : this.activeTab() === 'rejointes'
-          ? this.sortiesRejointes()
-          : this.activeTab() === 'attente'
-            ? this.sortiesAttente()
-            : this.sortiesLikees();
-    return this.applyFilters(base);
-  });
+  private listFor(tab: TabKey): SortieWithRelations[] {
+    switch (tab) {
+      case 'organisees':
+        return this.sortiesOrganisees();
+      case 'rejointes':
+        return this.sortiesRejointes();
+      case 'attente':
+        return this.sortiesAttente();
+      case 'likees':
+        return this.sortiesLikees();
+      case 'passees':
+        return this.sortiesPassees();
+    }
+  }
+
+  readonly currentList = computed<SortieWithRelations[]>(() =>
+    this.applyFilters(this.listFor(this.activeTab()), this.activeTab() !== 'passees'),
+  );
+
+  tabIcon(tab: TabKey): string {
+    return this.tabs.find((t) => t.key === tab)?.icon ?? '📋';
+  }
 
   countFor(tab: TabKey): number {
-    const base =
-      tab === 'organisees'
-        ? this.sortiesOrganisees()
-        : tab === 'rejointes'
-          ? this.sortiesRejointes()
-          : tab === 'attente'
-            ? this.sortiesAttente()
-            : this.sortiesLikees();
-    return this.applyFilters(base).length;
+    return this.applyFilters(this.listFor(tab), tab !== 'passees').length;
   }
 
   isPremium(): boolean {
@@ -423,6 +433,7 @@ export class MembreProfileComponent implements OnInit {
     this.sortiesRejointes.set(this.sortiesRejointes().map(withCount));
     this.sortiesAttente.set(this.sortiesAttente().map(withCount));
     this.sortiesLikees.set(this.sortiesLikees().map(withCount));
+    this.sortiesPassees.set(this.sortiesPassees().map(withCount));
     const selected = this.selectedSortie();
     if (selected) this.selectedSortie.set(withCount(selected));
   }
