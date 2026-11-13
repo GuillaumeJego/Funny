@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .notifications-page {
   padding: 1.5rem 1rem 6rem;
@@ -58,7 +58,7 @@
 
   &.unread {
     border-left: 3px solid $primary;
-    background: rgba($primary, 0.03);
+    background: alpha($primary, 0.03);
   }
 
   &:hover {

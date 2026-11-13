@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .navbar-top {
   position: fixed;
@@ -6,7 +6,7 @@
   left: 0;
   right: 0;
   height: 56px;
-  background: rgba($bg-light, 0.92);
+  background: alpha($bg-light, 0.92);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid $border-color;
   display: flex;
@@ -27,7 +27,7 @@
     color: $text-dark;
 
     b {
-      color: $accent;
+      color: $accent-text;
       margin-left: 1px;
     }
   }
@@ -59,7 +59,7 @@
     &:hover,
     &.active {
       border-color: $accent;
-      color: $accent;
+      color: $accent-text;
     }
 
     .notif-badge {
@@ -108,9 +108,9 @@
     }
 
     &.premium {
-      background: rgba($warning, 0.15);
+      background: alpha($warning, 0.15);
       color: $warning;
-      border: 1px solid rgba($warning, 0.4);
+      border: 1px solid alpha($warning, 0.4);
     }
 
     &.not-premium {

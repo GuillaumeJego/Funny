@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .messages-page {
   padding: 1.5rem 1rem 6rem;
@@ -213,7 +213,7 @@
 }
 
 .membre-card.has-unread {
-  border-color: rgba($primary, 0.6);
+  border-color: alpha($primary, 0.6);
 
   .membre-name,
   .conv-preview {

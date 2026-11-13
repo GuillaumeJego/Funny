@@ -24,7 +24,7 @@ import { RouterLink } from '@angular/router';
     </nav>
   `,
   styles: `
-    @use 'styles' as *;
+    @use 'tokens' as *;
 
     .membres-tabs {
       display: flex;

@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .register-container {
   display: flex;
@@ -7,8 +7,8 @@
   min-height: 100vh;
   padding: 1.5rem 1rem;
   background:
-    radial-gradient(circle at 85% 0%, rgba($primary, 0.28), transparent 45%),
-    radial-gradient(circle at 0% 100%, rgba($accent, 0.12), transparent 40%), $bg-light;
+    radial-gradient(circle at 85% 0%, alpha($primary, 0.28), transparent 45%),
+    radial-gradient(circle at 0% 100%, alpha($accent, 0.12), transparent 40%), $bg-light;
 
   .register-card {
     background: $bg-white;
@@ -27,7 +27,7 @@
       line-height: 1;
 
       b {
-        color: $accent;
+        color: $accent-text;
         margin-left: 2px;
       }
     }

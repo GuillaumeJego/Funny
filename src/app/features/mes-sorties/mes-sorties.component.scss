@@ -1,5 +1,5 @@
 @use 'sass:color';
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .mes-sorties-page {
   padding: 1rem;
@@ -170,7 +170,7 @@
     border-color: $accent;
     box-shadow:
       0 0 0 1px $accent,
-      0 4px 18px rgba($accent, 0.2);
+      0 4px 18px alpha($accent, 0.2);
   }
 }
 
@@ -240,7 +240,7 @@
     position: absolute;
     top: 0.5rem;
     left: 0.5rem;
-    background: rgba($warning, 0.9);
+    background: alpha($warning, 0.9);
     color: #fff;
     font-size: 0.68rem;
     font-weight: 700;
@@ -361,7 +361,7 @@
     border-color: $accent;
     box-shadow:
       0 0 0 1px $accent,
-      0 2px 10px rgba($accent, 0.15);
+      0 2px 10px alpha($accent, 0.15);
   }
 }
 
@@ -481,8 +481,8 @@
 .list-attente-badge {
   font-size: 0.72rem;
   font-weight: 700;
-  color: $accent;
-  background: rgba($warning, 0.15);
+  color: $accent-text;
+  background: alpha($warning, 0.15);
   border-radius: 20px;
   padding: 0.1rem 0.5rem;
 }
@@ -526,7 +526,7 @@
     transform 0.15s;
   &:hover,
   &.active {
-    color: $accent;
+    color: $accent-text;
     transform: scale(1.15);
   }
 }
@@ -562,7 +562,7 @@
   flex-shrink: 0;
   font-weight: 800;
   font-size: 0.95rem;
-  color: $accent;
+  color: $accent-text;
 }
 
 .btn-explore {

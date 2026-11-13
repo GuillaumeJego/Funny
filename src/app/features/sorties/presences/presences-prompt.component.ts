@@ -35,7 +35,7 @@ const LATER_KEY = 'funny-presences-plus-tard';
     }
   `,
   styles: `
-    @use 'styles' as *;
+    @use 'tokens' as *;
     .pp-backdrop {
       position: fixed;
       inset: 0;

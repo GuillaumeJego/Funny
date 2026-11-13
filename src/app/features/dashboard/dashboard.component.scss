@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .dashboard {
   position: relative;
@@ -38,7 +38,7 @@
   margin-bottom: 1.5rem;
   border-radius: $border-radius-lg;
   background: linear-gradient(135deg, #1b4fb8 0%, #16305e 60%, #152744 100%);
-  border: 1px solid rgba($primary, 0.35);
+  border: 1px solid alpha($primary, 0.35);
   animation: fade-up 0.4s ease-out;
 
   // Petit halo jaune dans le coin
@@ -50,7 +50,7 @@
     width: 140px;
     height: 140px;
     border-radius: 50%;
-    background: radial-gradient(rgba($accent, 0.35), transparent 70%);
+    background: radial-gradient(alpha($accent, 0.35), transparent 70%);
     pointer-events: none;
   }
 
@@ -227,10 +227,10 @@
   }
 
   &.premium {
-    border-color: rgba($accent, 0.7);
-    box-shadow: 0 4px 18px rgba($accent, 0.15);
+    border-color: alpha($accent, 0.7);
+    box-shadow: 0 4px 18px alpha($accent, 0.15);
     &:hover {
-      box-shadow: 0 8px 28px rgba($accent, 0.25);
+      box-shadow: 0 8px 28px alpha($accent, 0.25);
     }
   }
 }
@@ -320,7 +320,7 @@
   flex-shrink: 0;
   font-weight: 800;
   font-size: 0.95rem;
-  color: $accent;
+  color: $accent-text;
 }
 
 .card-title {
@@ -418,7 +418,7 @@
       transform 0.15s;
     &:hover,
     &.active {
-      color: $accent;
+      color: $accent-text;
       transform: scale(1.15);
     }
   }
@@ -649,7 +649,7 @@
     transform 0.15s;
 
   &:hover {
-    color: $accent;
+    color: $accent-text;
     transform: scale(1.15);
   }
 }
@@ -670,7 +670,7 @@
   font-size: 1.6rem;
   font-weight: 300;
   text-decoration: none;
-  box-shadow: 0 4px 16px rgba($primary, 0.45);
+  box-shadow: 0 4px 16px alpha($primary, 0.45);
   transition:
     background 0.2s,
     transform 0.2s;
@@ -752,7 +752,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  background: rgba($warning, 0.12);
+  background: alpha($warning, 0.12);
   border-radius: $border-radius;
   padding: 0.6rem 0.9rem;
   margin-bottom: 1rem;

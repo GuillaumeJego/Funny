@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .membres-page {
   padding: 1.5rem 1rem 6rem;
@@ -95,7 +95,7 @@
   &.active {
     border-color: $primary;
     color: $primary;
-    background: rgba($primary, 0.05);
+    background: alpha($primary, 0.05);
   }
   &:hover {
     border-color: $primary;

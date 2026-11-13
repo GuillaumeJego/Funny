@@ -1,5 +1,5 @@
 @use 'sass:color';
-@use 'styles' as *;
+@use 'tokens' as *;
 
 // ─── États ────────────────────────────────────────────────
 .state-center {
@@ -83,7 +83,7 @@
   position: relative;
   height: 150px;
   background:
-    radial-gradient(circle at 70% 30%, rgba($primary, 0.55), transparent 55%),
+    radial-gradient(circle at 70% 30%, alpha($primary, 0.55), transparent 55%),
     linear-gradient(120deg, #142a63 0%, #1d3f8f 45%, #0e1a33 100%);
   overflow: hidden;
 }
@@ -147,9 +147,9 @@
   margin: 0.75rem 1rem 0;
   padding: 0.75rem 1rem;
   border-radius: $border-radius;
-  background: rgba($error, 0.12);
-  border: 1px solid rgba($error, 0.35);
-  color: #ffb4b4;
+  background: alpha($error, 0.12);
+  border: 1px solid alpha($error, 0.35);
+  color: $error-text;
   font-size: 0.88rem;
 }
 
@@ -215,7 +215,7 @@
 }
 
 .name-spark {
-  color: $accent;
+  color: $accent-text;
   font-size: 1.3rem;
 }
 
@@ -247,7 +247,7 @@
   border-radius: 999px;
 
   &.chip-admin {
-    background: rgba($primary, 0.85);
+    background: alpha($primary, 0.85);
     color: #fff;
   }
   &.chip-premium {
@@ -289,7 +289,7 @@
   border-radius: 16px;
 
   &:hover {
-    border-color: rgba($primary, 0.6);
+    border-color: alpha($primary, 0.6);
   }
   &:active {
     transform: scale(0.97);
@@ -343,6 +343,10 @@
     stroke-linejoin: round;
   }
 
+  .space-end {
+    margin-left: auto;
+  }
+
   .chevron {
     margin-left: auto;
     font-size: 1.5rem;
@@ -379,10 +383,10 @@ button.space-item {
     color: $text-light;
   }
   &.danger {
-    color: #ffb4b4;
+    color: $error-text;
     font-weight: 600;
     svg {
-      stroke: #ffb4b4;
+      stroke: $error-text;
     }
   }
   .space-aside {
@@ -513,7 +517,7 @@ button.space-item {
     background 0.15s;
   &:hover {
     color: $primary;
-    background: rgba($primary, 0.05);
+    background: alpha($primary, 0.05);
   }
 }
 
