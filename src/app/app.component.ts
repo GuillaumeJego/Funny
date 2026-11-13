@@ -12,11 +12,12 @@ import { NavbarTopComponent } from './core/components/navbar-top/navbar-top.comp
 import { NavbarMainComponent } from './core/components/navbar-main/navbar-main.component';
 import { filter } from 'rxjs/operators';
 import { ActivityService } from './core/services/activity.service';
+import { PresencesPromptComponent } from './features/sorties/presences/presences-prompt.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarTopComponent, NavbarMainComponent],
+  imports: [RouterOutlet, NavbarTopComponent, NavbarMainComponent, PresencesPromptComponent],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './app.component.scss',

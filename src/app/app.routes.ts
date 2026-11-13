@@ -98,6 +98,15 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    // Après une sortie : l'organisateur indique qui était présent.
+    path: 'sorties/:id/presences',
+    loadComponent: () =>
+      import('./features/sorties/presences/presences-page.component').then(
+        (m) => m.PresencesPageComponent,
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'premium',
     loadComponent: () =>
       import('./features/premium/premium.component').then((m) => m.PremiumComponent),

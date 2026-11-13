@@ -57,6 +57,8 @@ const fakeInscriptions: InscriptionRepository = {
   getSortieIds: async () => [],
   getParticipants: async () => [],
   getWaitingUserIds: async () => [],
+  getParticipatedSortieIds: async () => [],
+  validerPresences: async () => ({ error: null }),
   rejoindre: async () => ({ error: null, status: 'pending' }),
   quitter: async () => ({ error: null }),
 };

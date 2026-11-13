@@ -1,0 +1,170 @@
+@use 'styles' as *;
+
+.presences-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.pf-header {
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: $text-dark;
+    margin: 0 0 0.3rem;
+  }
+  .pf-sortie {
+    font-weight: 700;
+    color: $accent;
+    margin: 0;
+  }
+  .pf-date {
+    font-size: 0.85rem;
+    color: $text-light;
+    margin: 0.15rem 0 0;
+  }
+  .pf-hint {
+    font-size: 0.92rem;
+    color: $text-medium;
+    margin: 0.6rem 0 0;
+  }
+}
+
+.pf-info {
+  color: $text-light;
+  text-align: center;
+  padding: 1rem 0;
+  margin: 0;
+}
+
+.pf-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pf-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid $border-color;
+  border-radius: 14px;
+  background: $bg-light;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    opacity 0.15s;
+
+  &.absent {
+    opacity: 0.6;
+
+    .pf-state {
+      color: #ffb4b4;
+    }
+  }
+
+  input {
+    width: 22px;
+    height: 22px;
+    accent-color: $accent;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+}
+
+.pf-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+
+  &.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $primary;
+    color: #fff;
+    font-weight: 700;
+  }
+}
+
+.pf-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 650;
+  color: $text-dark;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pf-state {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #7ee2a8;
+}
+
+.pf-count {
+  font-size: 0.85rem;
+  color: $text-light;
+  margin: 0;
+}
+
+.pf-error {
+  color: #ffb4b4;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.pf-done {
+  color: #7ee2a8;
+  font-weight: 650;
+  margin: 0;
+}
+
+.pf-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.btn-validate,
+.btn-later {
+  width: 100%;
+  padding: 0.95rem;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 750;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.btn-validate {
+  background: $accent;
+  color: $on-accent;
+  border: none;
+}
+
+.btn-later {
+  background: none;
+  color: $text-dark;
+  border: 1px solid $border-color;
+  font-weight: 650;
+}
+
+.pf-note {
+  font-size: 0.8rem;
+  color: $text-light;
+  text-align: center;
+  margin: 0;
+}

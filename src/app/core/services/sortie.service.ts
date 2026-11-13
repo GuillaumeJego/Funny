@@ -62,6 +62,33 @@ export class SortieService {
     return await this.sorties.getPublishedByIds(ids);
   }
 
+  // Sorties passées auxquelles un membre a participé (inscrit ou organisateur, pas absent),
+  // de la plus récente à la plus ancienne
+  async getSortiesPassees(userId: string): Promise<SortieWithRelations[]> {
+    const ids = await this.inscriptions.getParticipatedSortieIds(userId);
+    const now = Date.now();
+    const sorties = await this.sorties.getPublishedByIds(ids);
+    return sorties
+      .filter((s) => new Date(s.date).getTime() < now)
+      .sort((a, b) => b.date.localeCompare(a.date));
+  }
+
+  // Participants d'une sortie avec leur présence (pour l'organisateur, après la sortie)
+  async getPresences(
+    sortieId: string,
+  ): Promise<(MiniProfile & { isOrganizer: boolean; present: boolean | null })[]> {
+    const rows = await this.inscriptions.getParticipants(sortieId);
+    const profiles = await this.profiles.getMiniProfiles(rows.map((r) => r.user_id));
+    return profiles.map((p) => {
+      const row = rows.find((r) => r.user_id === p.id);
+      return { ...p, isOrganizer: row?.status === 'confirmed', present: row?.present ?? null };
+    });
+  }
+
+  async validerPresences(sortieId: string, absentIds: string[]) {
+    return await this.inscriptions.validerPresences(sortieId, absentIds);
+  }
+
   // Sorties en liste d'attente pour un utilisateur (ordonnées par position)
   async getSortiesEnAttente(userId: string): Promise<SortieWithRelations[]> {
     const ids = await this.inscriptions.getSortieIds(userId, 'waiting');
