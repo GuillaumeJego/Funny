@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .presences-form {
   display: flex;
@@ -16,7 +16,7 @@
   }
   .pf-sortie {
     font-weight: 700;
-    color: $accent;
+    color: $accent-text;
     margin: 0;
   }
   .pf-date {
@@ -64,7 +64,7 @@
     opacity: 0.6;
 
     .pf-state {
-      color: #ffb4b4;
+      color: $error-text;
     }
   }
 
@@ -107,7 +107,7 @@
 .pf-state {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #7ee2a8;
+  color: $success-text;
 }
 
 .pf-count {
@@ -117,13 +117,13 @@
 }
 
 .pf-error {
-  color: #ffb4b4;
+  color: $error-text;
   font-size: 0.9rem;
   margin: 0;
 }
 
 .pf-done {
-  color: #7ee2a8;
+  color: $success-text;
   font-weight: 650;
   margin: 0;
 }

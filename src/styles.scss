@@ -1,54 +1,4 @@
-// ==========================================
-// VARIABLES GLOBALES - Couleurs de l'app
-// Identité « nuit » : fonds noir et bleu nuit, bleu électrique pour agir,
-// jaune lumineux pour les touches importantes.
-// ==========================================
-
-// --- Couleur principale (boutons, liens, éléments actifs) : bleu électrique ---
-$primary: #257bff;
-$primary-hover: #1667e6; // Couleur au survol des boutons principaux
-$primary-light: #15284a; // Fond léger pour éléments primaires (pastilles, survols)
-
-// --- Touche lumineuse (logo, bouton Créer, prix, onglet actif, Premium) : jaune ---
-$accent: #ffd54a;
-$accent-hover: #ffca1a;
-$on-accent: #151515; // Texte posé sur le jaune
-
-// --- Couleur secondaire (bouton Annuler, fonds discrets) ---
-$secondary: #24324b;
-$secondary-hover: #2e3f5d; // Couleur au survol des boutons secondaires
-
-// --- Couleurs de statut ---
-$success: #22c55e; // Messages de succès (vert)
-$error: #f05252; // Messages d'erreur (rouge)
-$warning: #f59e0b; // Messages d'avertissement (orange)
-
-// --- Couleurs de texte ---
-$text-dark: #f7f9ff; // Texte principal (titres, contenu)
-$text-medium: #c2cce0; // Labels, textes secondaires
-$text-light: #8e9cb5; // Textes grisés (placeholder, dates, aides)
-
-// --- Couleurs de fond ---
-$bg-light: #080d18; // Fond général de la page (noir bleuté)
-$bg-white: #121b2c; // Fond des cards, barres et formulaires (bleu nuit)
-$bg-elevated: #19253b; // Fond d'un élément posé sur une card (champ, pastille)
-
-// --- Bordures ---
-$border-color: #28344a; // Bordure des inputs, cards et séparateurs
-$border-radius: 12px; // Arrondi standard (inputs, boutons)
-$border-radius-lg: 22px; // Arrondi large (cards)
-
-// --- Ombres ---
-$shadow: 0 10px 30px rgba(0, 0, 0, 0.35); // Ombre des cards
-
-// --- Police ---
-$font-family:
-  'Inter Variable',
-  system-ui,
-  -apple-system,
-  'Segoe UI',
-  Roboto,
-  sans-serif;
+@use 'tokens' as *;
 
 // ==========================================
 // STYLES GLOBAUX
@@ -60,9 +10,46 @@ $font-family:
   box-sizing: border-box;
 }
 
-// Les contrôles natifs (dates, listes, barres de défilement) suivent le thème sombre.
+// Mode Lumineux (par défaut).
 :root {
+  color-scheme: light;
+  --primary: #1f6fef;
+  --primary-hover: #175ad0;
+  --primary-light: #e7f0ff;
+  --accent-text: #9a6700;
+  --secondary: #e9edf5;
+  --secondary-hover: #dce3ee;
+  --success-text: #15803d;
+  --error-text: #c62828;
+  --text-dark: #141b2b;
+  --text-medium: #44506a;
+  --text-light: #6f7b92;
+  --bg-light: #f3f5f9;
+  --bg-white: #ffffff;
+  --bg-elevated: #eef1f6;
+  --border-color: #e0e5ee;
+  --shadow: 0 8px 24px rgba(20, 32, 60, 0.08);
+}
+
+// Mode Sombre : la charte « nuit » d'origine.
+:root[data-theme='dark'] {
   color-scheme: dark;
+  --primary: #257bff;
+  --primary-hover: #1667e6;
+  --primary-light: #15284a;
+  --accent-text: #ffd54a;
+  --secondary: #24324b;
+  --secondary-hover: #2e3f5d;
+  --success-text: #7ee2a8;
+  --error-text: #ffb4b4;
+  --text-dark: #f7f9ff;
+  --text-medium: #c2cce0;
+  --text-light: #8e9cb5;
+  --bg-light: #080d18;
+  --bg-white: #121b2c;
+  --bg-elevated: #19253b;
+  --border-color: #28344a;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 body {

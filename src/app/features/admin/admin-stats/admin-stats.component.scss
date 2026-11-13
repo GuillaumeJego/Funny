@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .section {
   background: $bg-white;
@@ -112,7 +112,7 @@
   .tile-value {
     font-size: 1.4rem;
     font-weight: 800;
-    color: $accent;
+    color: $accent-text;
     font-variant-numeric: tabular-nums;
   }
   .tile-label {

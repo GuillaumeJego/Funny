@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .affinites-page {
   padding: 1.5rem 1rem 6rem;
@@ -17,7 +17,7 @@
   }
   .sortie-title {
     font-weight: 600;
-    color: $accent;
+    color: $accent-text;
     margin-bottom: 0.5rem;
   }
   .question {
@@ -52,12 +52,12 @@
   font-size: 0.9rem;
 }
 .mutual {
-  background: rgba($success, 0.15);
-  border: 1px solid rgba($success, 0.4);
-  color: #7ee2a8;
+  background: alpha($success, 0.15);
+  border: 1px solid alpha($success, 0.4);
+  color: $success-text;
 }
 .error {
-  background: rgba($error, 0.1);
+  background: alpha($error, 0.1);
   color: $error;
 }
 

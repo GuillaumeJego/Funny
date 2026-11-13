@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .premium-page {
   max-width: 560px;
@@ -121,7 +121,7 @@
 
   &.selected {
     border-color: $accent;
-    box-shadow: 0 0 0 3px rgba($accent, 0.18);
+    box-shadow: 0 0 0 3px alpha($accent, 0.18);
   }
 
   &.highlight .plan-label::after {
@@ -258,8 +258,8 @@
 }
 
 .welcome {
-  background: rgba($warning, 0.12);
-  border: 1px solid rgba($warning, 0.4);
+  background: alpha($warning, 0.12);
+  border: 1px solid alpha($warning, 0.4);
   color: $text-dark;
   font-weight: 700;
   text-align: center;
@@ -267,16 +267,16 @@
 }
 
 .error {
-  background: rgba($error, 0.08);
-  border: 1px solid rgba($error, 0.3);
+  background: alpha($error, 0.08);
+  border: 1px solid alpha($error, 0.3);
   color: $error;
 }
 
 .subscribed-card {
   padding: 1.25rem;
   border-radius: $border-radius-lg;
-  border: 1px solid rgba($warning, 0.35);
-  background: rgba($warning, 0.08);
+  border: 1px solid alpha($warning, 0.35);
+  background: alpha($warning, 0.08);
   color: $text-dark;
   line-height: 1.5;
 

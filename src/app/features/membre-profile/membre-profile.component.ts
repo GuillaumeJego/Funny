@@ -1,3 +1,4 @@
+import { DisplayModePickerComponent } from '../../core/components/display-mode-picker/display-mode-picker.component';
 import {
   Component,
   OnInit,
@@ -37,7 +38,13 @@ type TabKey = 'organisees' | 'rejointes' | 'attente' | 'likees' | 'passees';
 @Component({
   selector: 'app-membre-profile',
   standalone: true,
-  imports: [ClickableDirective, RouterModule, SortieDrawerComponent, MemberSafetyComponent],
+  imports: [
+    ClickableDirective,
+    RouterModule,
+    SortieDrawerComponent,
+    MemberSafetyComponent,
+    DisplayModePickerComponent,
+  ],
   templateUrl: './membre-profile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './membre-profile.component.scss',

@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .navbar-filters {
   position: fixed;
@@ -326,7 +326,7 @@
     }
 
     &:hover {
-      background: rgba($primary, 0.06);
+      background: alpha($primary, 0.06);
     }
   }
 }

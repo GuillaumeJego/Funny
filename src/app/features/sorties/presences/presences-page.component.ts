@@ -34,7 +34,7 @@ import { PresencesFormComponent } from './presences-form.component';
     </div>
   `,
   styles: `
-    @use 'styles' as *;
+    @use 'tokens' as *;
     .presences-page {
       padding: 1.25rem 1rem 6rem;
       max-width: 600px;
@@ -42,7 +42,7 @@ import { PresencesFormComponent } from './presences-form.component';
     }
     .back {
       display: inline-block;
-      color: $accent;
+      color: $accent-text;
       font-size: 0.9rem;
       text-decoration: none;
       margin-bottom: 1rem;

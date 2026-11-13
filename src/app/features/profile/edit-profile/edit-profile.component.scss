@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 @use 'sass:color';
 
 .edit-profile-container {
@@ -188,8 +188,8 @@
   background: $bg-light;
 
   &.is-premium {
-    background: rgba($warning, 0.08);
-    border-color: rgba($warning, 0.35);
+    background: alpha($warning, 0.08);
+    border-color: alpha($warning, 0.35);
   }
 }
 
@@ -231,21 +231,21 @@
 
 // ─── Supprimer mon compte ─────────────────────────────────
 .edit-profile-container .edit-profile-card section.danger-section h2 {
-  color: #ffb4b4;
-  border-bottom-color: rgba($error, 0.35);
+  color: $error-text;
+  border-bottom-color: alpha($error, 0.35);
 }
 
 .danger-section {
   margin-top: 2rem;
   padding: 1rem;
-  border: 1px solid rgba($error, 0.35);
+  border: 1px solid alpha($error, 0.35);
   border-radius: $border-radius-lg;
-  background: rgba($error, 0.08);
+  background: alpha($error, 0.08);
 
   h2 {
     font-size: 1rem;
     font-weight: 700;
-    color: #ffb4b4;
+    color: $error-text;
     margin-bottom: 0.4rem;
   }
 
@@ -335,4 +335,12 @@
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
+}
+
+.display-section {
+  .display-hint {
+    font-size: 0.88rem;
+    color: $text-light;
+    margin: 0 0 0.75rem;
+  }
 }

@@ -1,5 +1,5 @@
 @use 'sass:color';
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .admin-page {
   padding: 1.25rem 1rem 6rem;
@@ -106,7 +106,7 @@
   }
   &.active {
     border-color: $primary;
-    background: rgba($primary, 0.05);
+    background: alpha($primary, 0.05);
   }
 }
 
@@ -290,19 +290,19 @@
   border-radius: 999px;
 
   &.tag-admin {
-    background: rgba($primary, 0.12);
+    background: alpha($primary, 0.12);
     color: $primary;
   }
   &.tag-developer {
-    background: rgba($accent, 0.15);
-    color: $accent;
+    background: alpha($accent, 0.15);
+    color: $accent-text;
   }
   &.tag-allowed {
-    background: rgba($success, 0.15);
-    color: #7ee2a8;
+    background: alpha($success, 0.15);
+    color: $success-text;
   }
   &.tag-denied {
-    background: rgba($error, 0.12);
+    background: alpha($error, 0.12);
     color: $error;
   }
   &.tag-default {
@@ -354,7 +354,7 @@
     opacity: 0.7;
   }
   &.active {
-    background: rgba($accent, 0.2);
+    background: alpha($accent, 0.2);
     border-color: $accent;
     opacity: 1;
   }
@@ -670,8 +670,8 @@
 }
 
 .btn-ban {
-  border: 1px solid rgba($error, 0.4);
-  background: rgba($error, 0.08);
+  border: 1px solid alpha($error, 0.4);
+  background: alpha($error, 0.08);
   color: $error;
 }
 

@@ -1,5 +1,5 @@
 @use 'sass:color';
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .chat-page {
   display: flex;
@@ -40,9 +40,9 @@
   flex-shrink: 0;
   padding: 0.9rem 1rem;
   padding-bottom: max(0.9rem, env(safe-area-inset-bottom));
-  background: rgba($error, 0.12);
-  border-top: 1px solid rgba($error, 0.35);
-  color: #ffb4b4;
+  background: alpha($error, 0.12);
+  border-top: 1px solid alpha($error, 0.35);
+  color: $error-text;
   font-size: 0.9rem;
   text-align: center;
 }
@@ -50,7 +50,7 @@
 .btn-back {
   background: none;
   border: none;
-  color: $accent;
+  color: $accent-text;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -339,7 +339,7 @@
   transition: background 0.15s;
 
   &.mine {
-    background: rgba($primary, 0.12);
+    background: alpha($primary, 0.12);
     border-color: $primary;
   }
   &:hover {
@@ -575,9 +575,9 @@
 .send-error {
   padding: 0.4rem 1rem;
   font-size: 0.82rem;
-  color: #ffb4b4;
-  background: rgba($error, 0.12);
-  border-top: 1px solid rgba($error, 0.35);
+  color: $error-text;
+  background: alpha($error, 0.12);
+  border-top: 1px solid alpha($error, 0.35);
 }
 
 // ─── Discussion de groupe (sortie) ────────────────────────

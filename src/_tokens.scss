@@ -1,0 +1,63 @@
+// ==========================================
+// VARIABLES GLOBALES - Couleurs de l'app
+// Deux modes d'affichage, au choix du membre (Mon espace ou Modifier mon profil) :
+// - Lumineux (par défaut) : fonds blancs et gris très clairs ;
+// - Sombre : fonds noir et bleu nuit.
+// Les couleurs qui changent selon le mode sont des variables CSS (--…), définies
+// plus bas dans :root (Lumineux) et :root[data-theme='dark'] (Sombre).
+// ==========================================
+
+// Couleur avec transparence, qui marche aussi avec les variables CSS.
+// Exemple : alpha($primary, 0.1) = le bleu à 10 %.
+@function alpha($color, $amount) {
+  @return color-mix(in srgb, #{$color} #{$amount * 100%}, transparent);
+}
+
+// --- Couleur principale (boutons, liens, éléments actifs) : bleu électrique ---
+$primary: var(--primary);
+$primary-hover: var(--primary-hover); // Couleur au survol des boutons principaux
+$primary-light: var(--primary-light); // Fond léger pour éléments primaires (pastilles, survols)
+
+// --- Touche lumineuse (logo, bouton Créer, prix, onglet actif, Premium) : jaune ---
+$accent: #ffd54a; // Fond jaune (identique dans les deux modes)
+$accent-hover: #ffca1a;
+$on-accent: #151515; // Texte posé sur le jaune
+$accent-text: var(--accent-text); // Texte « jaune » posé sur le fond de page
+
+// --- Couleur secondaire (bouton Annuler, fonds discrets) ---
+$secondary: var(--secondary);
+$secondary-hover: var(--secondary-hover); // Couleur au survol des boutons secondaires
+
+// --- Couleurs de statut ---
+$success: #22c55e; // Messages de succès (vert)
+$error: #f05252; // Messages d'erreur (rouge)
+$warning: #f59e0b; // Messages d'avertissement (orange)
+$success-text: var(--success-text); // Texte vert lisible sur le fond de page
+$error-text: var(--error-text); // Texte rouge lisible sur le fond de page
+
+// --- Couleurs de texte ---
+$text-dark: var(--text-dark); // Texte principal (titres, contenu)
+$text-medium: var(--text-medium); // Labels, textes secondaires
+$text-light: var(--text-light); // Textes grisés (placeholder, dates, aides)
+
+// --- Couleurs de fond ---
+$bg-light: var(--bg-light); // Fond général de la page
+$bg-white: var(--bg-white); // Fond des cards, barres et formulaires
+$bg-elevated: var(--bg-elevated); // Fond d'un élément posé sur une card (champ, pastille)
+
+// --- Bordures ---
+$border-color: var(--border-color); // Bordure des inputs, cards et séparateurs
+$border-radius: 12px; // Arrondi standard (inputs, boutons)
+$border-radius-lg: 22px; // Arrondi large (cards)
+
+// --- Ombres ---
+$shadow: var(--shadow); // Ombre des cards
+
+// --- Police ---
+$font-family:
+  'Inter Variable',
+  system-ui,
+  -apple-system,
+  'Segoe UI',
+  Roboto,
+  sans-serif;

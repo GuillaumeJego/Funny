@@ -1,3 +1,4 @@
+import { DisplayModePickerComponent } from '../../../core/components/display-mode-picker/display-mode-picker.component';
 import {
   Component,
   OnInit,
@@ -29,6 +30,7 @@ import { isPremiumMember } from '../../../core/utils/premium';
     AvatarUploadComponent,
     CoverUploadComponent,
     MetanaCreditComponent,
+    DisplayModePickerComponent,
   ],
   templateUrl: './edit-profile.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

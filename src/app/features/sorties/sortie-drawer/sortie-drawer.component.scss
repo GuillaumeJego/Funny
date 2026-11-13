@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 
 // ─── Backdrop ─────────────────────────────────────────────
 .drawer-backdrop {
@@ -158,8 +158,8 @@
 
   .badge-premium-img {
     background: rgba(8, 13, 24, 0.7);
-    color: $accent;
-    border: 1px solid rgba($accent, 0.5);
+    color: $accent-text;
+    border: 1px solid alpha($accent, 0.5);
   }
 
   .hero-location {
@@ -310,7 +310,7 @@
   padding: 1rem 1.1rem;
   border: 1px solid $border-color;
   border-radius: 16px;
-  background: rgba($primary, 0.04);
+  background: alpha($primary, 0.04);
 
   .trust-title {
     font-weight: 650;
@@ -340,7 +340,7 @@
   transition: border-color 0.15s;
 
   &:hover {
-    border-color: rgba($primary, 0.5);
+    border-color: alpha($primary, 0.5);
   }
 
   .avatar,
@@ -384,7 +384,7 @@
   display: flex;
   gap: 0.75rem;
   padding: 0.85rem 1.25rem;
-  background: rgba($bg-white, 0.96);
+  background: alpha($bg-white, 0.96);
   border-top: 1px solid $border-color;
   z-index: 5;
 
@@ -418,9 +418,9 @@
 .btn-quitter-attente {
   flex: 1;
   padding: 0.95rem;
-  background: rgba($warning, 0.12);
-  color: $accent;
-  border: 1px solid rgba($accent, 0.4);
+  background: alpha($warning, 0.12);
+  color: $accent-text;
+  border: 1px solid alpha($accent, 0.4);
   border-radius: 16px;
   font-size: 1rem;
   font-weight: 700;
@@ -539,7 +539,7 @@
   padding: 0.75rem 0.9rem;
   transition: border-color 0.15s;
   &:hover {
-    border-color: rgba($primary, 0.5);
+    border-color: alpha($primary, 0.5);
   }
 }
 
@@ -754,6 +754,6 @@
 
 .chat-error {
   font-size: 0.85rem;
-  color: #ffb4b4;
+  color: $error-text;
   margin: 0;
 }

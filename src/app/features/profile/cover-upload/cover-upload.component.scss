@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use 'tokens' as *;
 
 .cover-upload {
   display: flex;
@@ -19,7 +19,7 @@
   overflow: hidden;
   border: 1px solid $border-color;
   background:
-    radial-gradient(circle at 70% 30%, rgba($primary, 0.55), transparent 55%),
+    radial-gradient(circle at 70% 30%, alpha($primary, 0.55), transparent 55%),
     linear-gradient(120deg, #142a63 0%, #1d3f8f 45%, #0e1a33 100%);
   display: flex;
   align-items: center;
@@ -89,6 +89,6 @@
 
 .cover-error {
   font-size: 0.85rem;
-  color: #ffb4b4;
+  color: $error-text;
   margin: 0;
 }
