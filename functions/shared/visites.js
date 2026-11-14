@@ -61,6 +61,7 @@ export async function recordProfileVisit(api, { visitorId, visitedId, now = new 
         {
           user_id: visitedId,
           actor_id: visitorId,
+          category: 'visites',
           title: '👀 Visite de ton profil',
           message: `${name} a visité ton profil.`,
           link,
@@ -70,6 +71,7 @@ export async function recordProfileVisit(api, { visitorId, visitedId, now = new 
       await notify(api, [
         {
           user_id: visitedId,
+          category: 'visites',
           title: '👀 Quelqu’un a visité ton profil',
           message: 'Passe Premium pour découvrir qui.',
           link,

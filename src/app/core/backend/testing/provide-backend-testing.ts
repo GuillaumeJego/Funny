@@ -40,6 +40,7 @@ const fakeProfiles: ProfileRepository = {
   getAll: async () => empty,
   getMiniProfiles: async () => [],
   update: async () => ok,
+  setMutedNotifications: async () => ({ data: null, error: null }),
   recordProfileVisit: async () => {},
   getProfileVisits: async () => ({ premium: false, visits: [] }),
 };

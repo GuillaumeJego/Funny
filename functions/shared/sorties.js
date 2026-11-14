@@ -50,6 +50,7 @@ export async function promoteFromWaitingList(api, sortie) {
   await notify(api, [
     {
       user_id: next.user_id,
+      category: 'inscrit',
       title: '🎉 Une place s’est libérée',
       message: `Vous êtes maintenant inscrit à la sortie « ${sortie.title} »`,
       link: `/dashboard?sortie=${sortie.$id}`,

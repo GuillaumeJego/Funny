@@ -186,10 +186,41 @@ export async function inBatches(items, task, size = 10) {
   }
 }
 
-/** Envoie des notifications : chaque destinataire est seul à pouvoir les lire. */
+/**
+ * Catégories de notifications qu'un membre peut couper (page Notifications, ⚙️).
+ * Une notification sans catégorie (sortie annulée ou modifiée, présences, signalement)
+ * est toujours envoyée.
+ */
+export const NOTIFICATION_CATEGORIES = [
+  'visites',
+  'amis',
+  'organisateur',
+  'inscrit',
+  'apres_sortie',
+];
+
+/** Catégories coupées par chaque membre (colonne notif_off de profiles_private). */
+async function mutedCategories(api, userIds) {
+  const muted = new Map();
+  await inBatches(userIds, async (id) => {
+    const row = await api.getRow('profiles_private', id);
+    muted.set(id, new Set(row?.notif_off ?? []));
+  });
+  return muted;
+}
+
+/**
+ * Envoie des notifications : chaque destinataire est seul à pouvoir les lire.
+ * Une notification d'une catégorie que le destinataire a coupée n'est pas créée.
+ */
 export async function notify(api, notifications) {
-  const recipients = notifications.filter((n) => n.user_id && n.user_id !== n.actor_id);
-  await inBatches(recipients, (n) =>
+  let recipients = notifications.filter((n) => n.user_id && n.user_id !== n.actor_id);
+  const categorized = [...new Set(recipients.filter((n) => n.category).map((n) => n.user_id))];
+  if (categorized.length) {
+    const muted = await mutedCategories(api, categorized);
+    recipients = recipients.filter((n) => !n.category || !muted.get(n.user_id)?.has(n.category));
+  }
+  await inBatches(recipients, ({ category: _category, ...n }) =>
     api.createRow('notifications', uniqueId(), n, [
       Permission.read(Role.user(n.user_id)),
       Permission.update(Role.user(n.user_id)),

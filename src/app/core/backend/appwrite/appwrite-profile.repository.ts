@@ -94,6 +94,21 @@ export class AppwriteProfileRepository extends ProfileRepository {
     });
   }
 
+  async setMutedNotifications(
+    userId: string,
+    categories: string[],
+  ): Promise<RepositoryResult<null>> {
+    return attempt(async () => {
+      await this.appwrite.tables.updateRow({
+        databaseId: DB,
+        tableId: 'profiles_private',
+        rowId: userId,
+        data: { notif_off: categories },
+      });
+      return null;
+    });
+  }
+
   async recordProfileVisit(memberId: string): Promise<void> {
     // Sans effet visible : une erreur ici ne doit jamais gêner le membre.
     await this.appwrite.run('social', 'profileVisit', { userId: memberId });

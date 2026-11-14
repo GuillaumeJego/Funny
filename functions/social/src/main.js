@@ -77,6 +77,7 @@ async function friendRequest({ api, userId, input }) {
     {
       user_id: otherId,
       actor_id: userId,
+      category: 'amis',
       title: "👥 Demande d'ami",
       message: `${actor} vous a envoyé une demande d'ami`,
       link: `/membres/${userId}`,
@@ -98,6 +99,7 @@ async function friendRespond({ api, userId, input }) {
       {
         user_id: friendship.requester_id,
         actor_id: userId,
+        category: 'amis',
         title: '🤝 Demande acceptée',
         message: `${actor} a accepté votre demande d'ami`,
         link: `/membres/${userId}`,

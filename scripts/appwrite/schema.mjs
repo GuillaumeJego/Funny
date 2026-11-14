@@ -56,13 +56,16 @@ export const TABLES = [
     indexes: [{ key: 'username_unique', type: 'unique', columns: ['username'] }],
   },
   {
-    // Informations que seul le membre voit (date de naissance, acceptation des conditions).
+    // Informations que seul le membre voit (date de naissance, acceptation des conditions,
+    // notifications coupées).
     id: 'profiles_private',
     name: 'Profils (privé)',
     permissions: [],
     rowSecurity: true, // read/update("user:<id>")
     // terms_accepted_at : date d'acceptation des conditions (et de l'âge minimum) à l'inscription.
-    columns: [datetime('birthdate'), datetime('terms_accepted_at')],
+    // notif_off : catégories de notifications que le membre ne veut plus recevoir
+    // (visites, amis, organisateur, inscrit, apres_sortie ; voir functions/shared/appwrite.js).
+    columns: [datetime('birthdate'), datetime('terms_accepted_at'), stringArray('notif_off', 20)],
     indexes: [],
   },
   {

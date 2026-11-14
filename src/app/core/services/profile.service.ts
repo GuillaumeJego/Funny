@@ -33,6 +33,16 @@ export class ProfileService {
   private storage = inject(StorageRepository);
   private admin = inject(AdminRepository);
 
+  /** Catégories de notifications coupées par le membre. */
+  async getMutedNotifications(userId: string): Promise<string[]> {
+    const { data } = await this.profiles.getById(userId);
+    return data?.notif_off ?? [];
+  }
+
+  async setMutedNotifications(userId: string, categories: string[]) {
+    return await this.profiles.setMutedNotifications(userId, categories);
+  }
+
   /** Signale la visite du profil d'un autre membre ; une erreur n'est jamais gênante. */
   async recordProfileVisit(memberId: string) {
     try {

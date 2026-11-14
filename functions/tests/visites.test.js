@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { listProfileVisits, purgeOldVisits, recordProfileVisit } from '../shared/visites.js';
+import { notify } from '../shared/appwrite.js';
 import { createFakeApi } from './fake-api.js';
 
 const NOW = new Date('2026-11-14T12:00:00Z');
@@ -88,5 +89,25 @@ describe('visites de profil', () => {
     });
     expect(await purgeOldVisits(api, NOW)).toEqual({ visitsPurged: 1 });
     expect(visits(api).map((v) => v.$id)).toEqual(['new']);
+  });
+});
+
+describe('notifications coupées par le membre', () => {
+  it('n’envoie pas une catégorie coupée, mais toujours les notifications importantes', async () => {
+    const api = createFakeApi({
+      profiles: [
+        { $id: 'alice', username: 'Alice' },
+        { $id: 'zoe', username: 'Zoé' },
+      ],
+      profiles_private: [{ $id: 'alice', notif_off: ['visites'] }],
+    });
+    await recordProfileVisit(api, { visitorId: 'zoe', visitedId: 'alice', now: NOW });
+    await notify(api, [
+      { user_id: 'alice', category: 'amis', title: 'Ami', message: 'm' },
+      { user_id: 'alice', title: 'Sortie annulée', message: 'm' },
+    ]);
+    const titles = (api.tables.get('notifications') ?? []).map((n) => n.title);
+    expect(titles).toEqual(['Ami', 'Sortie annulée']);
+    expect((api.tables.get('notifications') ?? []).some((n) => 'category' in n)).toBe(false);
   });
 });

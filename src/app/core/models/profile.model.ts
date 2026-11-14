@@ -6,6 +6,8 @@ export interface Profile {
   /** Photo de couverture (bandeau du profil) ; absente = bandeau bleu. */
   cover_url?: string | null;
   birthdate?: string;
+  /** Catégories de notifications coupées (visible seulement par le membre lui-même). */
+  notif_off?: string[];
   gender?: string;
   city?: string;
   smoking?: string;
