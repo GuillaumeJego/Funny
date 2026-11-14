@@ -27,6 +27,9 @@ const storage = new Storage(client);
 const teams = new Teams(client);
 
 const TEXT_SIZE = 10000; // colonnes « text » : chaîne longue, compatible avec toutes les versions
+// Une ligne Appwrite ne peut pas dépasser ~64 Ko au total. Au-delà de 16 381 caractères, une colonne
+// texte est rangée à part et ne compte presque plus dans cette limite : utile pour une table qui
+// a plusieurs longs textes (ex. signalements : détails + messages copiés). Voir text(…, { size }).
 
 const log = (symbol, message) => console.log(`${symbol} ${message}`);
 
@@ -56,7 +59,7 @@ function createColumn(tableId, column) {
     case 'string':
       return db.createStringColumn({ ...base, size: column.size, xdefault });
     case 'text':
-      return db.createStringColumn({ ...base, size: TEXT_SIZE, xdefault });
+      return db.createStringColumn({ ...base, size: column.size ?? TEXT_SIZE, xdefault });
     case 'stringArray':
       return db.createStringColumn({ ...base, size: column.size, array: true });
     case 'enum':
