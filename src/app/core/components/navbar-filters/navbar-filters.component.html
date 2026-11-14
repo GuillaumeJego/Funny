@@ -67,7 +67,13 @@
       activeCount() > 0 ? activeCount() + ' filtre' + (activeCount() > 1 ? 's' : '') : 'Filtres'
     }}</span>
   </div>
+</nav>
 
+<!--
+  Les panneaux sont hors de la barre : sur iPhone (Safari), un élément « fixed » placé dans
+  une barre qui défile horizontalement est coupé à la hauteur de la barre, donc invisible.
+-->
+<div class="filter-panels">
   <!-- ── Panel Quoi : thèmes ── -->
   @if (openPanel() === 'quoi') {
     <div class="filter-panel" (click)="$event.stopPropagation()">
@@ -240,4 +246,4 @@
       </div>
     </div>
   }
-</nav>
+</div>
