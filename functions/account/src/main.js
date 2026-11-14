@@ -140,6 +140,7 @@ async function remove({ api, userId, input }) {
   await deleteAll('subscriptions', await byUser('subscriptions', 'user_id'));
   await deleteAll('connexions', await byUser('connexions', 'user_id'));
   await deleteAll('pages_vues', await byUser('pages_vues', 'user_id'));
+  await deleteAll('profile_visits', await byUser('profile_visits', 'visitor_id', 'visited_id'));
 
   // Ses conversations : l'autre membre ne peut plus lui écrire, on les efface en entier.
   const conversations = await api.listAllRows('conversations', [

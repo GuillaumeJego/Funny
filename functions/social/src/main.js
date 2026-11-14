@@ -10,6 +10,7 @@ import {
   usernameOf,
 } from './shared/appwrite.js';
 import { collectEvidence, shareMediaWithAdmins } from './shared/moderation.js';
+import { listProfileVisits, purgeOldVisits, recordProfileVisit } from './shared/visites.js';
 
 /** Délai avant de pouvoir redemander en ami un membre qui a refusé : 30 jours. */
 const RETRY_AFTER_DECLINE_MS = 30 * 24 * 3600 * 1000;
@@ -235,12 +236,28 @@ async function unblock({ api, userId, input }) {
   return {};
 }
 
-export default handler({
-  friendRequest,
-  friendRespond,
-  friendRemove,
-  openConversation,
-  report,
-  block,
-  unblock,
-});
+/** Le membre ouvre le profil d'un autre membre. */
+async function profileVisit({ api, userId, input }) {
+  return recordProfileVisit(api, { visitorId: userId, visitedId: String(input.userId ?? '') });
+}
+
+/** Qui a visité mon profil (floutée si je ne suis pas Premium). */
+async function profileVisits({ api, userId }) {
+  return listProfileVisits(api, { userId });
+}
+
+export default handler(
+  {
+    friendRequest,
+    friendRespond,
+    friendRemove,
+    openConversation,
+    report,
+    block,
+    unblock,
+    profileVisit,
+    profileVisits,
+  },
+  // Chaque nuit : effacer les visites de profil de plus de 30 jours.
+  { onSchedule: async ({ api }) => purgeOldVisits(api) },
+);

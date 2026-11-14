@@ -44,6 +44,8 @@ const FUNCTIONS = [
     id: 'social',
     name: 'Amis et conversations',
     timeout: 30,
+    // Chaque nuit (4 h) : effacer les visites de profil de plus de 30 jours.
+    schedule: '0 4 * * *',
     scopes: ['rows.read', 'rows.write', 'teams.read', 'teams.write'],
   },
   {

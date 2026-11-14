@@ -2,7 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { Models, Query } from 'appwrite';
 import { Profile } from '../../models/profile.model';
 import { ProfileRepository } from '../../repositories/profile.repository';
-import { MiniProfile, RepositoryResult } from '../../repositories/repository.types';
+import {
+  MiniProfile,
+  ProfileVisitsResult,
+  RepositoryResult,
+} from '../../repositories/repository.types';
 import { AppwriteClientService, DB, attempt } from './appwrite-client';
 
 type ProfileRow = Models.Row & Omit<Profile, 'id'>;
@@ -88,5 +92,15 @@ export class AppwriteProfileRepository extends ProfileRepository {
       }
       return null;
     });
+  }
+
+  async recordProfileVisit(memberId: string): Promise<void> {
+    // Sans effet visible : une erreur ici ne doit jamais gêner le membre.
+    await this.appwrite.run('social', 'profileVisit', { userId: memberId });
+  }
+
+  async getProfileVisits(): Promise<ProfileVisitsResult | null> {
+    const { data } = await this.appwrite.run<ProfileVisitsResult>('social', 'profileVisits');
+    return data ? { premium: !!data.premium, visits: data.visits ?? [] } : null;
   }
 }
