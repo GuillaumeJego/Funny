@@ -395,7 +395,9 @@ export const TABLES = [
       enumeration('status', ['open', 'handled'], { default: 'open' }),
       // Signalement fait depuis une conversation : ses derniers messages (JSON), copiés à ce moment.
       str('conversation_id', ID),
-      text('evidence'),
+      // Grande taille : rangée à part, pour ne pas dépasser la taille maximale d'une ligne
+      // (la colonne « details » occupe déjà une grande partie de cette limite).
+      text('evidence', { size: 100000 }),
     ],
     indexes: [{ key: 'status', type: 'key', columns: ['status'] }],
   },
