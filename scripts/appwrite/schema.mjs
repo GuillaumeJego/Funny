@@ -322,7 +322,7 @@ export const TABLES = [
       str('visitor_id', ID, { required: true }),
       str('visited_id', ID, { required: true }),
       datetime('at', { required: true }),
-      // Dernière notification envoyée au membre visité pour ce visiteur (une par jour au plus).
+      // Dernière notification envoyée au membre visité pour ce visiteur (pas de doublon en 5 min).
       datetime('notified_at'),
     ],
     indexes: [

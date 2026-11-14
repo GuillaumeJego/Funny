@@ -8,8 +8,11 @@ import { isPremium } from './premium.js';
 
 /** Visites gardées 30 jours. */
 export const KEEP_VISITS_MS = 30 * 24 * 3600 * 1000;
-/** Au plus une notification par visiteur et par jour. */
-const NOTIFY_EVERY_MS = 24 * 3600 * 1000;
+/**
+ * Une notification à chaque visite. Seule exception : le même visiteur qui revient dans les
+ * 5 minutes (page rechargée, aller-retour rapide) ne compte pas comme une nouvelle visite.
+ */
+const NOTIFY_EVERY_MS = 5 * 60 * 1000;
 
 async function blockedBetween(api, a, b) {
   const block = await api.findRow('blocks', [
@@ -27,7 +30,7 @@ async function premiumOf(api, userId) {
 
 /**
  * Enregistre la visite de `visitorId` sur le profil de `visitedId` et prévient le membre
- * visité (au plus une fois par jour pour un même visiteur). Le nom du visiteur n'apparaît
+ * visité à chaque visite (sauf retour du même visiteur dans les 5 minutes). Le nom du visiteur n'apparaît
  * dans la notification que si le membre visité est Premium.
  */
 export async function recordProfileVisit(api, { visitorId, visitedId, now = new Date() }) {
