@@ -308,6 +308,27 @@ export const TABLES = [
     ],
   },
   {
+    // Visites de profil : une ligne par couple (visiteur, membre visité), mise à jour à chaque
+    // visite. Lues et écrites par le serveur seulement (Function « social ») : un membre non
+    // Premium ne doit pas découvrir qui l'a visité. Effacées après 30 jours.
+    id: 'profile_visits',
+    name: 'Visites de profil',
+    permissions: [],
+    rowSecurity: false,
+    columns: [
+      str('visitor_id', ID, { required: true }),
+      str('visited_id', ID, { required: true }),
+      datetime('at', { required: true }),
+      // Dernière notification envoyée au membre visité pour ce visiteur (une par jour au plus).
+      datetime('notified_at'),
+    ],
+    indexes: [
+      { key: 'visitor_visited', type: 'unique', columns: ['visitor_id', 'visited_id'] },
+      { key: 'visited_at', type: 'key', columns: ['visited_id', 'at'] },
+      { key: 'at', type: 'key', columns: ['at'] },
+    ],
+  },
+  {
     // Affinités après une sortie : ce qu'un participant a ressenti pour un autre.
     // Écrites par le serveur (Function « sorties »), lisibles par leur seul auteur :
     // l'autre membre n'apprend un choix que s'il est réciproque (notification).

@@ -40,6 +40,8 @@ const fakeProfiles: ProfileRepository = {
   getAll: async () => empty,
   getMiniProfiles: async () => [],
   update: async () => ok,
+  recordProfileVisit: async () => {},
+  getProfileVisits: async () => ({ premium: false, visits: [] }),
 };
 
 const fakeSorties: SortieRepository = {

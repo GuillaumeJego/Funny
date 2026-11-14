@@ -3,59 +3,147 @@
     <h1>Notifications</h1>
   </div>
 
-  @if (loading()) {
-    <div class="loading">Chargement…</div>
-  }
+  <div class="notif-tabs" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      class="notif-tab"
+      [class.active]="tab() === 'notifs'"
+      [attr.aria-selected]="tab() === 'notifs'"
+      (click)="setTab('notifs')"
+    >
+      🔔 Notifications
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="notif-tab"
+      [class.active]="tab() === 'visites'"
+      [attr.aria-selected]="tab() === 'visites'"
+      (click)="setTab('visites')"
+    >
+      👀 Visites
+      @if (visits().length) {
+        <span class="tab-count">{{ visits().length }}</span>
+      }
+    </button>
+  </div>
 
-  @if (!loading() && notifications().length === 0) {
-    <div class="empty">
-      <div class="empty-icon">🔔</div>
-      <p>Pas de notifications pour le moment.</p>
-      <p class="sub">
-        Vous serez alerté quand quelqu'un rejoint votre sortie ou qu'une sortie est annulée.
-      </p>
-    </div>
-  }
+  @if (tab() === 'notifs') {
+    @if (loading()) {
+      <div class="loading">Chargement…</div>
+    }
 
-  @if (!loading() && notifications().length > 0) {
-    <div class="notif-list">
-      @for (n of notifications(); track n.id) {
-        <div
-          class="notif-item"
-          [class.unread]="!n.read"
-          [class.has-target]="!!targetOf(n)"
-          appClickable
-          (click)="open(n)"
-        >
-          <div class="notif-avatar" [appProfileLink]="n.sortie_image ? null : n.actor_id">
-            @if (n.sortie_image) {
-              <img [src]="n.sortie_image" class="actor-avatar" alt="" />
-            } @else if (n.actor?.avatar_url) {
-              <img
-                [src]="n.actor!.avatar_url!"
-                class="actor-avatar"
-                [alt]="$safeNavigationMigration(n.actor?.username)"
-              />
-            }
-            @if (!n.sortie_image && !n.actor?.avatar_url) {
-              <div class="actor-placeholder">
-                {{ n.actor?.username ? n.actor!.username.charAt(0).toUpperCase() : '?' }}
-              </div>
-            }
-            @if (!n.read) {
-              <div class="notif-dot"></div>
+    @if (!loading() && notifications().length === 0) {
+      <div class="empty">
+        <div class="empty-icon">🔔</div>
+        <p>Pas de notifications pour le moment.</p>
+        <p class="sub">
+          Vous serez alerté quand quelqu'un rejoint votre sortie ou qu'une sortie est annulée.
+        </p>
+      </div>
+    }
+
+    @if (!loading() && notifications().length > 0) {
+      <div class="notif-list">
+        @for (n of notifications(); track n.id) {
+          <div
+            class="notif-item"
+            [class.unread]="!n.read"
+            [class.has-target]="!!targetOf(n)"
+            appClickable
+            (click)="open(n)"
+          >
+            <div class="notif-avatar" [appProfileLink]="n.sortie_image ? null : n.actor_id">
+              @if (n.sortie_image) {
+                <img [src]="n.sortie_image" class="actor-avatar" alt="" />
+              } @else if (n.actor?.avatar_url) {
+                <img
+                  [src]="n.actor!.avatar_url!"
+                  class="actor-avatar"
+                  [alt]="$safeNavigationMigration(n.actor?.username)"
+                />
+              }
+              @if (!n.sortie_image && !n.actor?.avatar_url) {
+                <div class="actor-placeholder">
+                  {{ n.actor?.username ? n.actor!.username.charAt(0).toUpperCase() : '?' }}
+                </div>
+              }
+              @if (!n.read) {
+                <div class="notif-dot"></div>
+              }
+            </div>
+            <div class="notif-body">
+              <div class="notif-title">{{ n.title }}</div>
+              <div class="notif-message">{{ n.message }}</div>
+              <div class="notif-date">{{ formatDate(n.created_at) }}</div>
+            </div>
+            @if (targetOf(n)) {
+              <span class="notif-go" aria-hidden="true">›</span>
             }
           </div>
-          <div class="notif-body">
-            <div class="notif-title">{{ n.title }}</div>
-            <div class="notif-message">{{ n.message }}</div>
-            <div class="notif-date">{{ formatDate(n.created_at) }}</div>
-          </div>
-          @if (targetOf(n)) {
-            <span class="notif-go" aria-hidden="true">›</span>
-          }
+        }
+      </div>
+    }
+  } @else {
+    @if (visitsLoading()) {
+      <div class="loading">Chargement…</div>
+    } @else if (visits().length === 0) {
+      <div class="empty">
+        <div class="empty-icon">👀</div>
+        <p>Personne n'a encore visité ton profil ces 30 derniers jours.</p>
+      </div>
+    } @else {
+      @if (!visitsPremium()) {
+        <div class="visits-upsell">
+          <p>
+            <strong
+              >{{ visits().length }} personne{{ visits().length > 1 ? 's ont' : ' a' }} visité ton
+              profil</strong
+            >
+            ces 30 derniers jours. Passe Premium pour découvrir qui.
+          </p>
+          <a routerLink="/premium" class="btn-premium">⭐ Voir qui m'a visité</a>
         </div>
       }
-    </div>
+      <div class="notif-list">
+        @for (v of visits(); track $index) {
+          @if (v.visitor; as visitor) {
+            <a class="notif-item visit-item has-target" [routerLink]="['/membres', visitor.id]">
+              <div class="notif-avatar">
+                @if (visitor.avatar_url) {
+                  <img [src]="visitor.avatar_url" class="actor-avatar" alt="" />
+                } @else {
+                  <div class="actor-placeholder">
+                    {{ visitor.username.charAt(0).toUpperCase() }}
+                  </div>
+                }
+              </div>
+              <div class="notif-body">
+                <div class="notif-title">{{ visitor.username }}</div>
+                <div class="notif-message">a visité ton profil</div>
+                <div class="notif-date">{{ formatDate(v.at) }}</div>
+              </div>
+              <span class="notif-go" aria-hidden="true">›</span>
+            </a>
+          } @else {
+            <a class="notif-item visit-item blurred has-target" routerLink="/premium">
+              <div class="notif-avatar">
+                <div class="actor-placeholder blur" aria-hidden="true">?</div>
+              </div>
+              <div class="notif-body">
+                <div class="notif-title">
+                  <span class="blur-text" aria-hidden="true">Membre mystère</span
+                  ><span class="sr-only">Membre masqué</span>
+                </div>
+                <div class="notif-message">a visité ton profil · 🔒 Premium</div>
+                <div class="notif-date">{{ formatDate(v.at) }}</div>
+              </div>
+              <span class="notif-go" aria-hidden="true">›</span>
+            </a>
+          }
+        }
+      </div>
+    }
   }
 </div>

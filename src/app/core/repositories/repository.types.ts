@@ -20,6 +20,12 @@ export interface AuthUser {
 export type Unsubscribe = () => void;
 
 /** Profil réduit affiché dans les listes (inscrits, likes, attente). */
+/** Visites de mon profil, telles que le serveur les renvoie (visiteur absent si non Premium). */
+export interface ProfileVisitsResult {
+  premium: boolean;
+  visits: { at: string; visitor_id?: string }[];
+}
+
 export interface MiniProfile {
   id: string;
   username: string;

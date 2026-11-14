@@ -3,6 +3,7 @@ import { ProfileRepository } from '../repositories/profile.repository';
 import { StorageRepository } from '../repositories/storage.repository';
 import { AdminRepository } from '../repositories/admin.repository';
 import { Profile } from '../models/profile.model';
+import { MiniProfile } from '../repositories/repository.types';
 
 /** Champs qu'un membre peut modifier sur son propre profil. */
 const SELF_EDITABLE_FIELDS = [
@@ -31,6 +32,38 @@ export class ProfileService {
   private profiles = inject(ProfileRepository);
   private storage = inject(StorageRepository);
   private admin = inject(AdminRepository);
+
+  /** Signale la visite du profil d'un autre membre ; une erreur n'est jamais gênante. */
+  async recordProfileVisit(memberId: string) {
+    try {
+      await this.profiles.recordProfileVisit(memberId);
+    } catch {
+      // le membre visité ne sera simplement pas prévenu
+    }
+  }
+
+  /**
+   * Qui a visité mon profil ces 30 derniers jours, le plus récent d'abord.
+   * `visitor` est absent quand je ne suis pas Premium (visite floutée).
+   */
+  async getProfileVisits(): Promise<{
+    premium: boolean;
+    visits: { at: string; visitor?: MiniProfile }[];
+  } | null> {
+    const result = await this.profiles.getProfileVisits();
+    if (!result) return null;
+    const ids = [...new Set(result.visits.flatMap((v) => (v.visitor_id ? [v.visitor_id] : [])))];
+    const profiles = new Map(
+      (ids.length ? await this.profiles.getMiniProfiles(ids) : []).map((p) => [p.id, p]),
+    );
+    return {
+      premium: result.premium,
+      visits: result.visits
+        // Un visiteur dont le compte a disparu n'est plus affiché.
+        .filter((v) => !v.visitor_id || profiles.has(v.visitor_id))
+        .map((v) => ({ at: v.at, visitor: v.visitor_id ? profiles.get(v.visitor_id) : undefined })),
+    };
+  }
 
   // Récupérer son propre profil
   async getMyProfile(userId: string) {

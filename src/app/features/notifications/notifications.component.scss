@@ -139,3 +139,98 @@
   font-size: 1.4rem;
   color: $text-light;
 }
+
+// ─── Onglets Notifications / Visites ──────────────────────
+.notif-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  margin-bottom: 1rem;
+  border-radius: 14px;
+  background: $bg-white;
+  border: 1px solid $border-color;
+}
+
+.notif-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.5rem;
+  border: none;
+  border-radius: 11px;
+  background: transparent;
+  color: $text-medium;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &.active {
+    background: $primary;
+    color: #fff;
+
+    .tab-count {
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
+    }
+  }
+}
+
+.tab-count {
+  min-width: 1.3rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: $bg-elevated;
+  color: $text-medium;
+  font-size: 0.75rem;
+}
+
+// ─── Visites ──────────────────────────────────────────────
+.visit-item {
+  text-decoration: none;
+  color: inherit;
+}
+
+.visits-upsell {
+  margin-bottom: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: $border-radius-lg;
+  background: alpha($accent, 0.14);
+  border: 1px solid alpha($accent, 0.5);
+  color: $text-dark;
+  font-size: 0.92rem;
+
+  p {
+    margin-bottom: 0.75rem;
+  }
+}
+
+.btn-premium {
+  display: inline-block;
+  padding: 0.65rem 1.1rem;
+  border-radius: 12px;
+  background: $accent;
+  color: $on-accent;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.blurred {
+  .blur {
+    filter: blur(5px);
+  }
+  .blur-text {
+    filter: blur(6px);
+    user-select: none;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

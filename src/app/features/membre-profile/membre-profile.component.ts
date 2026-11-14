@@ -137,6 +137,9 @@ export class MembreProfileComponent implements OnInit {
       }
     }
 
+    // Visite du profil d'un autre membre : il en est prévenu (sans attendre la réponse).
+    if (!this.isOwnProfile()) void this.profileService.recordProfileVisit(targetId);
+
     const favorisIds = await this.favoriService.getFavoris(user.id);
     this.viewerFavoris.set(new Set(favorisIds));
 
