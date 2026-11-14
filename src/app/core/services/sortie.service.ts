@@ -26,13 +26,14 @@ export class SortieService {
   }
 
   // Créer une sortie : le serveur y inscrit aussi son organisateur
-  async createSortie(sortie: Partial<Sortie>) {
-    return await this.sorties.create(sortie);
+  // (avec ses invités, pour une sortie réservée aux abonnés)
+  async createSortie(sortie: Partial<Sortie>, invites: string[] = []) {
+    return await this.sorties.create(sortie, invites);
   }
 
   // Modifier une sortie : le serveur vérifie les champs et prévient les inscrits si besoin
-  async updateSortie(id: string, sortie: Partial<Sortie>) {
-    return await this.sorties.update(id, sortie);
+  async updateSortie(id: string, sortie: Partial<Sortie>, invites: string[] = []) {
+    return await this.sorties.update(id, sortie, invites);
   }
 
   // Une sortie publiée, avec son thème et son image (null si introuvable ou illisible)
@@ -107,6 +108,11 @@ export class SortieService {
       ...p,
       isOrganizer: rows.find((r) => r.user_id === p.id)?.status === 'confirmed',
     }));
+  }
+
+  // Membres invités qui n'ont pas encore répondu
+  async getMembresInvites(sortieId: string): Promise<MiniProfile[]> {
+    return await this.profiles.getMiniProfiles(await this.inscriptions.getInvitedUserIds(sortieId));
   }
 
   // Membres en liste d'attente pour une sortie

@@ -57,6 +57,7 @@ const fakeSorties: SortieRepository = {
 const fakeInscriptions: InscriptionRepository = {
   getStatus: async () => 'none',
   countPending: async () => 0,
+  getInvitedUserIds: async () => [],
   getSortieIds: async () => [],
   getParticipants: async () => [],
   getWaitingUserIds: async () => [],

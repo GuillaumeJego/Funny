@@ -293,6 +293,34 @@
                       }
                     </div>
                   </div>
+                  <!-- Invités sans réponse -->
+                  @if (membresInvites().length > 0) {
+                    <div class="membres-section">
+                      <div class="membres-section-title">
+                        💌 Invités, en attente de réponse ({{ membresInvites().length }})
+                      </div>
+                      <div class="membres-list">
+                        @for (m of membresInvites(); track m.id) {
+                          <div
+                            appClickable
+                            class="membre-item membre-clickable"
+                            (click)="goToProfile(m.id)"
+                          >
+                            @if (m.avatar_url) {
+                              <img [src]="m.avatar_url" class="m-avatar" [alt]="m.username" />
+                            }
+                            @if (!m.avatar_url) {
+                              <div class="m-avatar-placeholder">
+                                {{ getInitial(m.username) }}
+                              </div>
+                            }
+                            <span class="m-name">{{ m.username }}</span>
+                            <span class="chevron" aria-hidden="true">›</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
                   <!-- Liste d'attente -->
                   @if (membresWaiting().length > 0 || s?.max_participants) {
                     <div class="membres-section">
@@ -358,7 +386,14 @@
               </div>
             }
             <!-- Barre d'action en bas -->
-            <div class="action-bar">
+            <div class="action-bar" [class.with-invite]="inscriptionStatus() === 'invited'">
+              <!-- Invitation : la place est gardée jusqu'à la réponse. -->
+              @if (!isOrganizer() && inscriptionStatus() === 'invited') {
+                <div class="invite-banner">
+                  💌 <strong>{{ s.profiles?.username ?? "L'organisateur" }}</strong> t'invite à
+                  cette sortie. Ta place est gardée jusqu'à ta réponse.
+                </div>
+              }
               @if (isOrganizer() || inscriptionStatus() === 'pending') {
                 <button
                   class="btn-chat"
@@ -393,6 +428,12 @@
                 @if (inscriptionStatus() === 'pending') {
                   <button class="btn-rejoindre joined" (click)="quitterClicked.emit(s.id)">
                     ✓ Je participe · <span class="cancel">Annuler</span>
+                  </button>
+                }
+                @if (inscriptionStatus() === 'invited') {
+                  <button class="btn-refuser" (click)="quitterClicked.emit(s.id)">Refuser</button>
+                  <button class="btn-rejoindre" (click)="rejoindreClicked.emit(s.id)">
+                    ✓ Accepter
                   </button>
                 }
                 @if (inscriptionStatus() === 'waiting') {

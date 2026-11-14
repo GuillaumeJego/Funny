@@ -3,6 +3,8 @@ export interface Sortie {
   title: string;
   description?: string;
   theme_id: string;
+  /** Thème « Autre » (theme_id = 'autre') : le nom écrit par l'organisateur. */
+  theme_custom?: string | null;
   created_by?: string;
   date: string;
   location: string;

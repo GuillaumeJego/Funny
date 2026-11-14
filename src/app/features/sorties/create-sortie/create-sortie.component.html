@@ -30,8 +30,22 @@
         @for (theme of themes(); track theme.id) {
           <option [value]="theme.id">{{ theme.icon }} {{ theme.name }}</option>
         }
+        <option [value]="otherTheme">✏️ Autre</option>
       </select>
     </div>
+
+    @if (isOtherTheme()) {
+      <div class="formfield">
+        <label for="cs-theme-custom">Nom du thème *</label>
+        <input
+          id="cs-theme-custom"
+          type="text"
+          maxlength="40"
+          [(ngModel)]="sortie.theme_custom"
+          placeholder="Ex : Karaoké"
+        />
+      </div>
+    }
 
     <div class="formfield">
       <label for="cs-title">Nom de la sortie *</label>
@@ -124,13 +138,15 @@
 
     <div class="formrow">
       <div class="formfield">
-        <label for="cs-max">Participants max</label>
+        <label for="cs-max">Participants max{{ placesCap() !== null ? ' *' : '' }}</label>
         <input
           id="cs-max"
           type="number"
           [(ngModel)]="sortie.max_participants"
           min="1"
-          placeholder="Illimité"
+          [max]="placesCap() ?? 1000"
+          [class.invalid]="overCap()"
+          [placeholder]="placesCap() !== null ? placesCap() + ' max' : 'Illimité'"
         />
       </div>
       <div class="formfield">
@@ -139,6 +155,14 @@
       </div>
     </div>
     <p class="hint">Toi compris pour les places. Prix à 0 = sortie gratuite.</p>
+    @if (placesCap() !== null) {
+      <p class="premium-hint" [class.over]="overCap()">
+        🔒 {{ placesCap() }} places au maximum.
+        <button type="button" class="link" (click)="goToPremium()">
+          Passe Premium pour plus de places
+        </button>
+      </p>
+    }
 
     <div class="formfield">
       <label for="cs-description">Description</label>
@@ -174,6 +198,8 @@
             </button>
           }
         </div>
+      } @else if (isOtherTheme()) {
+        <p class="hint">Avec le thème « Autre », ajoute ta propre photo (obligatoire).</p>
       } @else if (!sortie.theme_id) {
         <p class="hint">Choisis d'abord un thème pour voir ses images.</p>
       }
@@ -195,6 +221,94 @@
         <span>{{
           sortie.is_premium ? '⭐ Réservée aux abonnés' : '🌍 Ouverte à tout le monde'
         }}</span>
+      </div>
+    } @else {
+      <!-- Visible mais grisée : l'option donne envie de passer Premium. -->
+      <div class="formfield toggle-group disabled">
+        <label class="toggle">
+          <input type="checkbox" disabled aria-label="Réservée aux abonnés (option Premium)" />
+          <span class="slider"></span>
+        </label>
+        <span class="toggle-text">⭐ Réservée aux abonnés</span>
+        <button type="button" class="badge-premium" (click)="goToPremium()">Option Premium</button>
+      </div>
+    }
+
+    @if (canCreatePremium() && sortie.is_premium) {
+      <div class="formfield invite-box">
+        <label for="cs-invite">💌 Qui souhaitez-vous inviter ?</label>
+        <p class="hint invite-hint">
+          Abonnés ou non : leur place est gardée tant qu'ils n'ont pas refusé.
+          @if (hasPlacesLimit()) {
+            <strong>
+              {{ placesLeft() }} place{{ placesLeft() > 1 ? 's' : '' }} libre{{
+                placesLeft() > 1 ? 's' : ''
+              }}
+              pour inviter.
+            </strong>
+          }
+        </p>
+        @if (alreadyInvited().length) {
+          <p class="hint">
+            Déjà invités :
+            @for (m of alreadyInvited(); track m.id; let last = $last) {
+              {{ m.username }}{{ last ? '' : ', ' }}
+            }
+          </p>
+        }
+        @if (invitees().length) {
+          <div class="chips">
+            @for (m of invitees(); track m.id) {
+              <span class="chip">
+                @if (m.avatar_url) {
+                  <img [src]="m.avatar_url" alt="" />
+                } @else {
+                  <span class="chip-initial">{{ m.username.charAt(0).toUpperCase() }}</span>
+                }
+                {{ m.username }}
+                <button
+                  type="button"
+                  [attr.aria-label]="'Retirer ' + m.username"
+                  (click)="removeInvitee(m.id)"
+                >
+                  ✕
+                </button>
+              </span>
+            }
+          </div>
+        }
+        <input
+          id="cs-invite"
+          type="search"
+          autocomplete="off"
+          placeholder="Chercher un membre par son nom"
+          [disabled]="placesLeft() <= 0"
+          [ngModel]="inviteQuery()"
+          (ngModelChange)="inviteQuery.set($event)"
+          (focus)="loadMembers()"
+        />
+        @if (placesLeft() <= 0) {
+          <p class="hint">Plus de place libre : ajoute des places pour inviter plus de monde.</p>
+        }
+        @if (inviteResults().length) {
+          <div class="location-suggestions">
+            @for (m of inviteResults(); track m.id) {
+              <div appClickable class="suggestion-item" (click)="addInvitee(m)">
+                @if (m.avatar_url) {
+                  <img class="sug-avatar" [src]="m.avatar_url" alt="" />
+                } @else {
+                  <span class="sug-avatar sug-initial">{{
+                    m.username.charAt(0).toUpperCase()
+                  }}</span>
+                }
+                <span class="sug-name">{{ m.username }}</span>
+                <span class="sug-country">+ Inviter</span>
+              </div>
+            }
+          </div>
+        } @else if (inviteQuery().trim()) {
+          <p class="hint">Aucun membre trouvé.</p>
+        }
       </div>
     }
 

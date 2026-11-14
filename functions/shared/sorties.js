@@ -3,6 +3,13 @@ import { Query, deleteFile, inBatches, notify, usernameOf } from './appwrite.js'
 import { deleteSortieChat, syncSortieChat } from './conversations.js';
 
 /**
+ * Statuts qui occupent une place : inscrit (« pending »), organisateur (« confirmed ») et invité
+ * qui n'a pas encore répondu (« invited » : sa place lui est gardée).
+ */
+export const TAKEN = ['pending', 'confirmed', 'invited'];
+const TAKEN_BY_OTHERS = ['confirmed', 'invited'];
+
+/**
  * Vérifie, après coup, qu'une inscription « pending » tient dans le nombre de places.
  * Appwrite n'a pas de verrou : deux membres qui rejoignent en même temps peuvent tous les
  * deux voir une place libre. On classe donc les inscrits par date de passage en « pending »
@@ -12,10 +19,10 @@ import { deleteSortieChat, syncSortieChat } from './conversations.js';
  */
 export async function confirmPlace(api, sortie, inscriptionId) {
   if (sortie.max_participants == null) return 'pending';
-  // L'organisateur (« confirmed ») occupe une des places.
+  // L'organisateur (« confirmed ») et les invités qui n'ont pas encore répondu occupent des places.
   const organizers = await api.countRows('inscriptions', [
     Query.equal('sortie_id', sortie.$id),
-    Query.equal('status', 'confirmed'),
+    Query.equal('status', TAKEN_BY_OTHERS),
   ]);
   const pending = await api.listAllRows('inscriptions', [
     Query.equal('sortie_id', sortie.$id),
@@ -31,10 +38,10 @@ export async function confirmPlace(api, sortie, inscriptionId) {
 
 /** Fait passer le premier de la liste d'attente dans les inscrits, s'il y a de la place. */
 export async function promoteFromWaitingList(api, sortie) {
-  // Places prises : inscrits et organisateur.
+  // Places prises : inscrits, organisateur et invités.
   const taken = await api.countRows('inscriptions', [
     Query.equal('sortie_id', sortie.$id),
-    Query.equal('status', ['pending', 'confirmed']),
+    Query.equal('status', TAKEN),
   ]);
   if (sortie.max_participants != null && taken >= sortie.max_participants) return;
   // Ordre de la liste d'attente : date de passage en « waiting ».
@@ -70,6 +77,8 @@ export function premiumPreview(sortie) {
     theme_id: sortie.theme_id,
     date: sortie.date,
     image_url: sortie.image_url || null,
+    // Thème « Autre » : le nom écrit par l'organisateur.
+    theme_custom: sortie.theme_custom || null,
   };
 }
 
@@ -100,13 +109,15 @@ export async function deleteSortie(api, sortie, { notifyMembers = true } = {}) {
     const organizer = await usernameOf(api, sortie.created_by);
     const seen = new Set([sortie.created_by]);
     const notifications = [];
-    for (const i of inscriptions.filter((i) => i.status === 'pending' || i.status === 'waiting')) {
+    for (const i of inscriptions.filter((i) =>
+      ['pending', 'waiting', 'invited'].includes(i.status),
+    )) {
       if (seen.has(i.user_id)) continue;
       seen.add(i.user_id);
       notifications.push({
         user_id: i.user_id,
         title: 'Sortie annulée',
-        message: `Vous étiez inscrit à la sortie « ${sortie.title} ». L'organisateur ${organizer} l'a annulée.`,
+        message: `Vous étiez ${i.status === 'invited' ? 'invité' : 'inscrit'} à la sortie « ${sortie.title} ». L'organisateur ${organizer} l'a annulée.`,
       });
     }
     for (const f of favoris) {

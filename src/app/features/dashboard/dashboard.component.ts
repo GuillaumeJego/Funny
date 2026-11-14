@@ -183,10 +183,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   async onRejoindre(sortieId: string) {
     if (!this.userId()) return;
+    // Un invité qui accepte avait déjà sa place comptée.
+    const wasInvited = this.inscriptionStatus() === 'invited';
     const { error, status } = await this.inscriptionService.rejoindre(this.userId(), sortieId);
     if (!error && status) {
       this.inscriptionStatus.set(status);
-      if (status === 'pending') {
+      if (status === 'pending' && !wasInvited) {
         this.adjustInscriptions(sortieId, 1);
       }
     }

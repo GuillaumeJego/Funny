@@ -17,7 +17,8 @@ import { ProfileService } from '../../../core/services/profile.service';
 import { SettingsService } from '../../../core/services/settings.service';
 import { SortieService } from '../../../core/services/sortie.service';
 import { ThemeService } from '../../../core/services/theme.service';
-import { Theme, ThemeImage } from '../../../core/models/theme.model';
+import { OTHER_THEME_ID, Theme, ThemeImage } from '../../../core/models/theme.model';
+import { Profile } from '../../../core/models/profile.model';
 import { Sortie } from '../../../core/models/sortie.model';
 import { SortieImageUploadComponent } from '../sortie-image-upload/sortie-image-upload.component';
 import { isPremiumMember } from '../../../core/utils/premium';
@@ -82,6 +83,23 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   /** Seuls les abonnés (et les admins) peuvent réserver une sortie aux abonnés. */
   readonly canCreatePremium = signal(false);
 
+  /** Thème « Autre » : nom libre et photo obligatoire. */
+  readonly otherTheme = OTHER_THEME_ID;
+  /** Organisateur non abonné : 10 places au plus (null = pas de limite). */
+  static readonly FREE_PLACES = 10;
+  readonly placesCap = signal<number | null>(null);
+
+  // Invitations (sortie réservée aux abonnés)
+  private readonly allMembers = signal<Profile[]>([]);
+  private membersLoaded = false;
+  readonly inviteQuery = signal('');
+  readonly invitees = signal<Profile[]>([]);
+  /** Modification : membres déjà invités, inscrits ou en attente (à ne pas réinviter). */
+  private readonly involvedIds = signal<Set<string>>(new Set());
+  readonly alreadyInvited = signal<{ id: string; username: string }[]>([]);
+  /** Places déjà prises (toi compris, et les invités qui n'ont pas répondu). */
+  private takenPlaces = 1;
+
   async ngOnInit() {
     const {
       data: { user },
@@ -94,6 +112,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
 
     const { data: profile } = await this.profileService.getMyProfile(user.id);
     this.canCreatePremium.set(isPremiumMember(profile));
+    if (!isPremiumMember(profile)) this.placesCap.set(CreateSortieComponent.FREE_PLACES);
     this.editId.set(this.route.snapshot.paramMap.get('id') ?? '');
     if (this.editId()) {
       const isAdmin = profile?.role === 'admin' || profile?.role === 'developer';
@@ -139,6 +158,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       title: sortie.title,
       description: sortie.description ?? '',
       theme_id: sortie.theme_id,
+      theme_custom: sortie.theme_custom ?? '',
       // Le champ « date et heure » attend 2026-11-20T19:30 : la date telle qu'elle a été saisie.
       date: sortie.date.slice(0, 16),
       location: sortie.location,
@@ -154,6 +174,16 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     this.dateHour = sortie.date.slice(11, 16);
     // Une sortie déjà Premium peut le rester, même si l'abonnement de l'organisateur a pris fin.
     if (sortie.is_premium) this.canCreatePremium.set(true);
+    // Le statut comptait à la création : la sortie garde ses places (jamais moins de 10).
+    if (this.placesCap() !== null) {
+      this.placesCap.set(
+        sortie.max_participants == null
+          ? null
+          : Math.max(CreateSortieComponent.FREE_PLACES, sortie.max_participants),
+      );
+    }
+    this.takenPlaces = sortie.inscriptionsCount ?? 1;
+    if (sortie.is_premium) await this.loadInvolved(id);
     this.locationQuery.set(sortie.location);
     const { data } = await this.themeService.getThemeImages(sortie.theme_id);
     this.themeImages.set(data ?? []);
@@ -186,6 +216,13 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
 
   async onThemeSelected() {
     if (!this.sortie.theme_id) return;
+    if (this.isOtherTheme()) {
+      // Pas d'images toutes prêtes : la photo de l'organisateur est obligatoire.
+      this.themeImages.set([]);
+      this.selectedImageUrl.set('');
+      if (this.sortie.image_source !== 'custom') this.sortie.image_url = '';
+      return;
+    }
     const { data } = await this.themeService.getThemeImages(this.sortie.theme_id);
     this.themeImages.set(data ?? []);
     this.selectedImageUrl.set('');
@@ -215,15 +252,95 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     this.sortie.date = this.dateDay && this.dateHour ? `${this.dateDay}T${this.dateHour}` : '';
   }
 
+  isOtherTheme(): boolean {
+    return this.sortie.theme_id === OTHER_THEME_ID;
+  }
+
+  /** Nombre de places saisi (null = vide). */
+  private places(): number | null {
+    const value = this.sortie.max_participants as number | string | null | undefined;
+    return value === null || value === undefined || value === '' ? null : Number(value);
+  }
+
+  /** Plus de places que permis sans abonnement. */
+  overCap(): boolean {
+    const cap = this.placesCap();
+    const places = this.places();
+    return cap !== null && places !== null && places > cap;
+  }
+
+  // ── Invitations ─────────────────────────────
+
+  /** Membres déjà concernés par la sortie modifiée : on ne les propose pas à nouveau. */
+  private async loadInvolved(sortieId: string) {
+    const [inscrits, waiting, invited] = await Promise.all([
+      this.sortieService.getMembresInscrits(sortieId),
+      this.sortieService.getMembresWaiting(sortieId),
+      this.sortieService.getMembresInvites(sortieId),
+    ]);
+    this.involvedIds.set(new Set([...inscrits, ...waiting, ...invited].map((m) => m.id)));
+    this.alreadyInvited.set(invited);
+  }
+
+  /** La liste des membres n'est chargée qu'au moment de chercher quelqu'un à inviter. */
+  async loadMembers() {
+    if (this.membersLoaded) return;
+    this.membersLoaded = true;
+    const { data } = await this.profileService.getAllProfiles();
+    this.allMembers.set(data ?? []);
+  }
+
+  hasPlacesLimit(): boolean {
+    return this.places() !== null;
+  }
+
+  /** Places encore libres pour inviter (Infinity sans limite). */
+  placesLeft(): number {
+    const places = this.places();
+    if (places === null) return Infinity;
+    return Math.max(0, places - this.takenPlaces - this.invitees().length);
+  }
+
+  /** Membres qui correspondent à la recherche (8 au plus). */
+  inviteResults(): Profile[] {
+    const q = this.inviteQuery().toLowerCase().trim();
+    if (!q) return [];
+    const chosen = new Set(this.invitees().map((m) => m.id));
+    return this.allMembers()
+      .filter(
+        (m) =>
+          m.id !== this.userId &&
+          !chosen.has(m.id) &&
+          !this.involvedIds().has(m.id) &&
+          m.username.toLowerCase().includes(q),
+      )
+      .slice(0, 8);
+  }
+
+  addInvitee(member: Profile) {
+    if (this.placesLeft() <= 0) return;
+    this.invitees.update((list) => [...list, member]);
+    this.inviteQuery.set('');
+  }
+
+  removeInvitee(memberId: string) {
+    this.invitees.update((list) => list.filter((m) => m.id !== memberId));
+  }
+
   /** Ce qu'il manque pour publier, en clair ; vide quand tout est prêt. */
   missingFields(): string[] {
     const missing: string[] = [];
     if (!this.sortie.theme_id) missing.push('le thème');
+    if (this.isOtherTheme() && (this.sortie.theme_custom ?? '').trim().length < 2)
+      missing.push('le nom du thème');
     if (!this.sortie.title?.trim()) missing.push('le nom');
     if (!this.dateDay) missing.push('la date');
     if (!this.dateHour) missing.push("l'heure");
     if (!this.sortie.location && !this.locationQuery().trim()) missing.push('le lieu');
-    if (!this.selectedImageUrl() && !this.customImagePreview()) missing.push("l'image");
+    if (this.isOtherTheme() && !this.customImagePreview()) missing.push('ta photo');
+    else if (!this.selectedImageUrl() && !this.customImagePreview()) missing.push("l'image");
+    if (this.placesCap() !== null && this.places() === null)
+      missing.push(`le nombre de participants (${this.placesCap()} max)`);
     return missing;
   }
 
@@ -232,6 +349,20 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     const missing = this.missingFields();
     if (missing.length) {
       this.errorMessage.set(`Il manque encore : ${missing.join(', ')}.`);
+      return;
+    }
+    if (this.overCap()) {
+      this.errorMessage.set(
+        `${this.placesCap()} places au maximum : passe Premium pour plus de places.`,
+      );
+      return;
+    }
+    const places = this.places();
+    const invites = this.sortie.is_premium ? this.invitees().map((m) => m.id) : [];
+    if (places !== null && this.takenPlaces + invites.length > places) {
+      this.errorMessage.set(
+        `Pas assez de places pour tes invités : il en faut au moins ${this.takenPlaces + invites.length}.`,
+      );
       return;
     }
     // Lieu tapé sans choisir de suggestion : on garde le texte saisi.
@@ -268,6 +399,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
         const { data: saved, error } = await this.sortieService.updateSortie(
           this.editId(),
           this.sortie,
+          invites,
         );
         if (error || !saved) {
           this.errorMessage.set(error?.message ?? 'Erreur lors de la modification de la sortie.');
@@ -277,7 +409,10 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
         }
       } else {
         this.sortie.created_by = this.userId;
-        const { data: newSortie, error } = await this.sortieService.createSortie(this.sortie);
+        const { data: newSortie, error } = await this.sortieService.createSortie(
+          this.sortie,
+          invites,
+        );
         if (error || !newSortie) {
           this.errorMessage.set(error?.message ?? 'Erreur lors de la création de la sortie.');
         } else {
@@ -304,6 +439,10 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       this.customImagePreview.set(e.target?.result as string);
     };
     reader.readAsDataURL(blob);
+  }
+
+  goToPremium() {
+    this.router.navigate(['/premium']);
   }
 
   goToDashboard() {

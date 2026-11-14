@@ -1,3 +1,6 @@
+/** Thème « Autre » : pas dans la liste des thèmes, l'organisateur écrit son nom (et met sa photo). */
+export const OTHER_THEME_ID = 'autre';
+
 export interface Theme {
   id: string;
   name: string;

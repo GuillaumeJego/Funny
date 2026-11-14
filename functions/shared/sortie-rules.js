@@ -7,7 +7,13 @@ export const LIMITS = {
   location: [2, 300],
   price: 10000,
   places: [1, 1000],
+  themeCustom: [2, 40],
 };
+
+/** Thème « Autre » : l'organisateur écrit lui-même le nom du thème et envoie sa photo. */
+export const OTHER_THEME = 'autre';
+/** Places au maximum pour un organisateur non abonné (illimité pour les abonnés). */
+export const FREE_PLACES = 10;
 
 /** Une sortie peut commencer jusqu'à 24 h « dans le passé » : marge pour les fuseaux horaires. */
 const DATE_TOLERANCE_MS = 24 * 3600 * 1000;
@@ -34,6 +40,17 @@ export function cleanSortie(input, now = new Date()) {
   }
   const themeId = isText(sortie.theme_id) ? sortie.theme_id : '';
   if (!themeId) fail(400, 'Le thème est obligatoire.');
+  const themeCustom =
+    themeId === OTHER_THEME && isText(sortie.theme_custom) ? sortie.theme_custom.trim() : '';
+  if (
+    themeId === OTHER_THEME &&
+    (themeCustom.length < LIMITS.themeCustom[0] || themeCustom.length > LIMITS.themeCustom[1])
+  ) {
+    fail(
+      400,
+      `Donne un nom au thème (${LIMITS.themeCustom[0]} à ${LIMITS.themeCustom[1]} caractères).`,
+    );
+  }
 
   const date = new Date(sortie.date);
   if (!isText(sortie.date) || Number.isNaN(date.getTime())) fail(400, 'La date est invalide.');
@@ -72,11 +89,15 @@ export function cleanSortie(input, now = new Date()) {
 
   const imageSource = sortie.image_source === 'custom' ? 'custom' : 'default';
   const imageUrl = isText(sortie.image_url) ? sortie.image_url.trim() : '';
+  if (themeId === OTHER_THEME && (imageSource !== 'custom' || !imageUrl)) {
+    fail(400, 'Avec le thème « Autre », ta photo est obligatoire.');
+  }
 
   return {
     title,
     description,
     theme_id: themeId,
+    theme_custom: themeCustom || null,
     date: sortie.date,
     location,
     price: Math.round(price * 100) / 100,
@@ -87,6 +108,21 @@ export function cleanSortie(input, now = new Date()) {
     lat: hasPosition ? lat : null,
     lng: hasPosition ? lng : null,
   };
+}
+
+/**
+ * Un organisateur non abonné a 10 places au plus. Le statut compte au moment de la création :
+ * en modifiant sa sortie, il garde les places qu'il avait (il ne peut pas en ajouter au-delà de 10).
+ * `previous` : places de la sortie avant modification (null = illimité), absent à la création.
+ */
+export function checkPlaces({ places, previous, subscriber }) {
+  if (subscriber) return;
+  if (places != null && places <= FREE_PLACES) return;
+  if (previous !== undefined) {
+    if (previous === null) return;
+    if (places != null && places <= previous) return;
+  }
+  fail(403, `${FREE_PLACES} places au maximum : passe Premium pour plus de places.`);
 }
 
 /**

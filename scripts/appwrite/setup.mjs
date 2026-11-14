@@ -109,9 +109,25 @@ async function ensureTable(table) {
 
   const listColumns = async () =>
     (await db.listColumns({ databaseId: DATABASE_ID, tableId: table.id })).columns;
-  const existingColumns = new Set((await listColumns()).map((c) => c.key));
+  const current = new Map((await listColumns()).map((c) => [c.key, c]));
   for (const column of table.columns) {
-    if (existingColumns.has(column.key)) continue;
+    const existing = current.get(column.key);
+    // Liste de choix complétée (nouveau statut, par exemple) : on ajoute les choix manquants.
+    if (existing && column.type === 'enum') {
+      const missing = column.elements.filter((e) => !(existing.elements ?? []).includes(e));
+      if (missing.length) {
+        await db.updateEnumColumn({
+          databaseId: DATABASE_ID,
+          tableId: table.id,
+          key: column.key,
+          elements: [...new Set([...(existing.elements ?? []), ...column.elements])],
+          required: !!column.required,
+          xdefault: column.required ? null : (column.default ?? null),
+        });
+        log('+', `  choix ${table.id}.${column.key} : ${missing.join(', ')}`);
+      }
+    }
+    if (existing) continue;
     await createColumn(table.id, column);
     log('+', `  colonne ${table.id}.${column.key}`);
   }

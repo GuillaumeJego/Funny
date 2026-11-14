@@ -108,6 +108,8 @@ export const TABLES = [
       str('title', 120, { required: true }),
       text('description'),
       str('theme_id', ID, { required: true }),
+      // Thème « Autre » (theme_id = 'autre') : le nom écrit par l'organisateur.
+      str('theme_custom', 40),
       str('created_by', ID, { required: true }),
       datetime('date', { required: true }),
       str('location', 300, { required: true }),
@@ -146,6 +148,7 @@ export const TABLES = [
       str('theme_id', ID, { required: true }),
       datetime('date', { required: true }),
       str('image_url', 500),
+      str('theme_custom', 40),
     ],
     indexes: [{ key: 'date', type: 'key', columns: ['date'] }],
   },
@@ -158,7 +161,10 @@ export const TABLES = [
     columns: [
       str('sortie_id', ID, { required: true }),
       str('user_id', ID, { required: true }),
-      enumeration('status', ['pending', 'waiting', 'confirmed', 'cancelled'], { required: true }),
+      // invited : invité par l'organisateur d'une sortie réservée aux abonnés (place gardée).
+      enumeration('status', ['pending', 'waiting', 'confirmed', 'cancelled', 'invited'], {
+        required: true,
+      }),
       // Présent à la sortie, selon l'organisateur (vide tant qu'il n'a pas validé).
       bool('present'),
     ],

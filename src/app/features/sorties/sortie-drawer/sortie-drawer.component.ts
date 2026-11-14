@@ -58,6 +58,8 @@ export class SortieDrawerComponent implements OnChanges {
   readonly membresInscrits = signal<MiniProfile[]>([]);
   readonly membresLikes = signal<MiniProfile[]>([]);
   readonly membresWaiting = signal<MiniProfile[]>([]);
+  /** Invités qui n'ont pas encore répondu (place gardée). */
+  readonly membresInvites = signal<MiniProfile[]>([]);
   readonly membresLoaded = signal(false);
   readonly membresLoading = signal(false);
 
@@ -72,6 +74,8 @@ export class SortieDrawerComponent implements OnChanges {
     if (sortie?.locked) return true;
     if (!sortie?.is_premium) return false;
     if (this.userIsPremium()) return false;
+    // Invité (ou participant après avoir accepté) : le serveur lui donne la sortie complète.
+    if (this.inscriptionStatus() !== 'none' || this.isOrganizer()) return false;
     return !['admin', 'developer', 'user_premium'].includes(this.userRole());
   });
 
@@ -127,11 +131,13 @@ export class SortieDrawerComponent implements OnChanges {
     const sortie = this.sortie();
     if (!sortie) return;
     this.membresLoading.set(true);
-    const [inscrits, likes, waiting] = await Promise.all([
+    const [inscrits, likes, waiting, invites] = await Promise.all([
       this.sortieService.getMembresInscrits(sortie.id),
       this.sortieService.getMembresLikes(sortie.id),
       this.sortieService.getMembresWaiting(sortie.id),
+      this.sortieService.getMembresInvites(sortie.id),
     ]);
+    this.membresInvites.set(invites);
     this.membresInscrits.set(inscrits);
     this.membresLikes.set(likes);
     this.membresWaiting.set(waiting);
@@ -181,6 +187,7 @@ export class SortieDrawerComponent implements OnChanges {
       this.membresInscrits.set([]);
       this.membresLikes.set([]);
       this.membresWaiting.set([]);
+      this.membresInvites.set([]);
       this.membresLoaded.set(false);
     }
   }
