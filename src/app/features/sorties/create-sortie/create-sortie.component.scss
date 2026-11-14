@@ -436,3 +436,144 @@
     cursor: not-allowed;
   }
 }
+
+// ── Places limitées sans abonnement ──────────
+.formfield input.invalid {
+  border-color: $error;
+}
+
+.premium-hint {
+  margin: -0.6rem 0 1rem;
+  font-size: 0.78rem;
+  color: $text-light;
+
+  &.over {
+    color: $error-text;
+    font-weight: 650;
+  }
+}
+
+.link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: $accent-text;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+// ── Case Premium grisée pour les non-abonnés ──
+.toggle-group.disabled {
+  .toggle .slider {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .toggle-text {
+    flex: 1;
+    color: $text-light;
+  }
+}
+
+.badge-premium {
+  flex: 0 0 auto;
+  padding: 0.3rem 0.65rem;
+  border: none;
+  border-radius: 999px;
+  background: $accent;
+  color: $on-accent;
+  font-size: 0.72rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+// ── Invitations ─────────────────────────────
+.invite-box {
+  padding: 0.9rem;
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+
+  .invite-hint {
+    margin-bottom: 0.7rem;
+
+    strong {
+      color: $text-dark;
+    }
+  }
+
+  .location-suggestions {
+    margin-top: 0.4rem;
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.3rem 0.25rem 0.25rem;
+  background: $primary-light;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $text-dark;
+
+  img,
+  .chip-initial {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .chip-initial {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: $primary;
+    color: white;
+    font-size: 0.7rem;
+  }
+
+  button {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: $text-medium;
+    cursor: pointer;
+  }
+}
+
+.sug-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: 0 0 auto;
+}
+
+.sug-initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: $primary;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.suggestion-item .sug-name {
+  flex: 1;
+}

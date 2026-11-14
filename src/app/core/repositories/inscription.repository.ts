@@ -1,10 +1,11 @@
 import { RepositoryError } from './repository.types';
 
-export type InscriptionStatus = 'none' | 'pending' | 'waiting' | 'confirmed';
+/** invited : invité par l'organisateur, place gardée en attendant sa réponse. */
+export type InscriptionStatus = 'none' | 'pending' | 'waiting' | 'confirmed' | 'invited';
 
 export abstract class InscriptionRepository {
   abstract getStatus(userId: string, sortieId: string): Promise<InscriptionStatus>;
-  /** Participants : inscrits et organisateur (qui occupe une place). */
+  /** Places prises : inscrits, organisateur et invités qui n'ont pas encore répondu. */
   abstract countPending(sortieId: string): Promise<number>;
   /** Identifiants des sorties où le membre a ce statut, dans l'ordre d'inscription. */
   abstract getSortieIds(userId: string, status: 'pending' | 'waiting'): Promise<string[]>;
@@ -22,9 +23,14 @@ export abstract class InscriptionRepository {
     sortieId: string,
     absentIds: string[],
   ): Promise<{ error: RepositoryError | null }>;
+  /** Membres invités qui n'ont pas encore répondu. */
+  abstract getInvitedUserIds(sortieId: string): Promise<string[]>;
   /** Membres en liste d'attente, dans l'ordre d'inscription. */
   abstract getWaitingUserIds(sortieId: string): Promise<string[]>;
-  /** Inscription par le serveur : renvoie le statut obtenu ('pending' ou 'waiting'). */
+  /**
+   * Inscription par le serveur : renvoie le statut obtenu ('pending' ou 'waiting').
+   * Pour un invité, c'est accepter l'invitation ; `quitter` la refuse.
+   */
   abstract rejoindre(
     userId: string,
     sortieId: string,

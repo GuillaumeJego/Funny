@@ -6,6 +6,7 @@ import { RepositoryResult } from '../../repositories/repository.types';
 import { SortieRepository } from '../../repositories/sortie.repository';
 import { AppwriteClientService, attempt } from './appwrite-client';
 import { fromRow } from './rows';
+import { OTHER_THEME_ID } from '../../models/theme.model';
 
 /** Ligne de sortie ou d'aperçu : toutes deux ont une date, qui sert au tri. */
 type DatedRow = Models.Row & { date: string };
@@ -66,17 +67,23 @@ export class AppwriteSortieRepository extends SortieRepository {
     return this.withRelations(rows);
   }
 
-  async create(sortie: Partial<Sortie>): Promise<RepositoryResult<Sortie>> {
+  async create(sortie: Partial<Sortie>, invites: string[] = []): Promise<RepositoryResult<Sortie>> {
     const { data, error } = await this.appwrite.run<{ sortie: Models.Row }>('sorties', 'create', {
       sortie,
+      invites,
     });
     return { data: data ? fromRow<Sortie>(data.sortie) : null, error };
   }
 
-  async update(id: string, sortie: Partial<Sortie>): Promise<RepositoryResult<Sortie>> {
+  async update(
+    id: string,
+    sortie: Partial<Sortie>,
+    invites: string[] = [],
+  ): Promise<RepositoryResult<Sortie>> {
     const { data, error } = await this.appwrite.run<{ sortie: Models.Row }>('sorties', 'update', {
       sortieId: id,
       sortie,
+      invites,
     });
     return { data: data ? fromRow<Sortie>(data.sortie) : null, error };
   }
@@ -118,8 +125,11 @@ export class AppwriteSortieRepository extends SortieRepository {
             'inscriptions',
             'sortie_id',
             sorties.map((s) => s.id),
-            // Participants : inscrits et organisateur (« confirmed »).
-            [Query.equal('status', ['pending', 'confirmed']), Query.select(['$id', 'sortie_id'])],
+            // Places prises : inscrits, organisateur (« confirmed ») et invités sans réponse.
+            [
+              Query.equal('status', ['pending', 'confirmed', 'invited']),
+              Query.select(['$id', 'sortie_id']),
+            ],
           )
         : [],
     ]);
@@ -133,7 +143,11 @@ export class AppwriteSortieRepository extends SortieRepository {
       countById.set(row.sortie_id, (countById.get(row.sortie_id) ?? 0) + 1);
 
     return sorties.map((s) => {
-      const theme = themeById.get(s.theme_id);
+      // Thème « Autre » : le nom écrit par l'organisateur.
+      const theme =
+        s.theme_id === OTHER_THEME_ID
+          ? { name: s.theme_custom || 'Autre', icon: '✏️' }
+          : themeById.get(s.theme_id);
       const profile = profileById.get(s.created_by ?? '');
       return {
         ...s,

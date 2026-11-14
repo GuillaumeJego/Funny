@@ -181,6 +181,7 @@ describe('aperçu des sorties Premium', () => {
       theme_id: valid.theme_id,
       date: valid.date,
       image_url: null,
+      theme_custom: null,
     });
   });
 

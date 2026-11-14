@@ -10,7 +10,7 @@ import { AppwriteClientService } from './appwrite-client';
 type InscriptionRow = Models.Row & {
   sortie_id: string;
   user_id: string;
-  status: 'pending' | 'waiting' | 'confirmed' | 'cancelled';
+  status: 'pending' | 'waiting' | 'confirmed' | 'cancelled' | 'invited';
   present?: boolean | null;
 };
 
@@ -30,7 +30,8 @@ export class AppwriteInscriptionRepository extends InscriptionRepository {
   countPending(sortieId: string): Promise<number> {
     return this.appwrite.count('inscriptions', [
       Query.equal('sortie_id', sortieId),
-      Query.equal('status', ['pending', 'confirmed']), // l'organisateur compte aussi
+      // L'organisateur et les invités sans réponse occupent aussi une place.
+      Query.equal('status', ['pending', 'confirmed', 'invited']),
     ]);
   }
 
@@ -72,6 +73,14 @@ export class AppwriteInscriptionRepository extends InscriptionRepository {
   ): Promise<{ error: RepositoryError | null }> {
     const { error } = await this.appwrite.run('sorties', 'presences', { sortieId, absentIds });
     return { error };
+  }
+
+  async getInvitedUserIds(sortieId: string): Promise<string[]> {
+    const rows = await this.appwrite.listAll<InscriptionRow>('inscriptions', [
+      Query.equal('sortie_id', sortieId),
+      Query.equal('status', 'invited'),
+    ]);
+    return rows.map((r) => r.user_id);
   }
 
   async getWaitingUserIds(sortieId: string): Promise<string[]> {
