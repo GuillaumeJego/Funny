@@ -1,24 +1,27 @@
 @use 'tokens' as *;
 
-.navbar-filters {
-  position: fixed;
-  top: 56px;
-  left: 0;
-  right: 0;
-  height: 52px;
-  padding: 0 0.75rem;
-  // Fond plein : un flou (backdrop-filter) casserait les panneaux « fixed » ouverts dessous.
-  background: $bg-light;
-  border-bottom: 1px solid $border-color;
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  z-index: 999;
+:host {
+  // La barre de filtres. Les panneaux sont rangés à côté (pas dedans), voir le template.
+  .navbar-filters {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    height: 52px;
+    padding: 0 0.75rem;
+    // Fond plein : un flou (backdrop-filter) casserait les panneaux « fixed » ouverts dessous.
+    background: $bg-light;
+    border-bottom: 1px solid $border-color;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    z-index: 999;
 
-  &::-webkit-scrollbar {
-    display: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   // Chaque filtre est une pastille, comme les catégories du prototype.
@@ -271,11 +274,16 @@
 
   // 🖥️ Desktop
   @media (min-width: 769px) {
-    left: 240px;
-    padding: 0 1rem;
-    .filter-panel {
+    .navbar-filters {
       left: 240px;
+      padding: 0 1rem;
     }
+  }
+}
+
+@media (min-width: 769px) {
+  .filter-panel {
+    left: 240px;
   }
 }
 
