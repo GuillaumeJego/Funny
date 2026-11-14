@@ -43,15 +43,17 @@ describe('visites de profil', () => {
     expect(notifs(api)[0].message).toContain('Zoé');
   });
 
-  it('ne prévient qu’une fois par jour pour un même visiteur', async () => {
+  it('prévient à chaque visite, sauf retour dans les 5 minutes', async () => {
     const api = visitsApi();
+    const min = (m) => new Date(NOW.getTime() + m * 60 * 1000);
     await recordProfileVisit(api, { visitorId: 'zoe', visitedId: 'alice', now: NOW });
-    await recordProfileVisit(api, { visitorId: 'zoe', visitedId: 'alice', now: at(3) });
+    await recordProfileVisit(api, { visitorId: 'zoe', visitedId: 'alice', now: min(2) });
     expect(notifs(api)).toHaveLength(1);
     expect(visits(api)).toHaveLength(1);
-    expect(visits(api)[0].at).toBe(at(3).toISOString());
-    await recordProfileVisit(api, { visitorId: 'zoe', visitedId: 'alice', now: at(25) });
-    expect(notifs(api)).toHaveLength(2);
+    expect(visits(api)[0].at).toBe(min(2).toISOString());
+    await recordProfileVisit(api, { visitorId: 'zoe', visitedId: 'alice', now: min(30) });
+    await recordProfileVisit(api, { visitorId: 'zoe', visitedId: 'alice', now: at(3) });
+    expect(notifs(api)).toHaveLength(3);
   });
 
   it('ignore sa propre visite et les membres bloqués', async () => {
