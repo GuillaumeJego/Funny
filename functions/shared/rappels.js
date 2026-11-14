@@ -45,6 +45,7 @@ export async function sendReminders(api, now = new Date()) {
       api,
       ids.map((id) => ({
         user_id: id,
+        category: 'inscrit',
         title: '⏰ C’est bientôt !',
         message: `« ${sortie.title} » : ${frenchDate(sortie.date)}, ${sortie.location}.`,
         link: `/dashboard?sortie=${sortie.$id}`,

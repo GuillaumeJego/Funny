@@ -100,6 +100,7 @@ export async function sendAffinityQuestions(api, now = new Date()) {
       api,
       ids.map((id) => ({
         user_id: id,
+        category: 'apres_sortie',
         title: '✨ Alors, cette sortie ?',
         message: `Avez-vous eu des affinités avec quelqu'un à « ${sortie.title} » ? Vous avez 24 h pour répondre.`,
         link: `/sorties/${sortie.$id}/affinites`,
@@ -191,6 +192,7 @@ export async function recordAffinity(api, { sortie, fromId, toId, choice, now = 
         {
           user_id: fromId,
           actor_id: toId,
+          category: 'apres_sortie',
           title,
           message: `Avec ${toName}, après « ${sortie.title} » : c'est ${what} !${end}`,
           link: `/membres/${toId}`,
@@ -198,6 +200,7 @@ export async function recordAffinity(api, { sortie, fromId, toId, choice, now = 
         {
           user_id: toId,
           actor_id: fromId,
+          category: 'apres_sortie',
           title,
           message: `Avec ${fromName}, après « ${sortie.title} » : c'est ${what} !${end}`,
           link: `/membres/${fromId}`,

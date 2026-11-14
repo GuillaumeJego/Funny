@@ -114,6 +114,7 @@ async function remove({ api, userId, input }) {
     await notify(api, [
       {
         user_id: sortie.created_by,
+        category: 'organisateur',
         title: '👋 Désinscription',
         message: `${username} a quitté la sortie « ${sortie.title} »`,
         link: `/dashboard?sortie=${sortie.$id}`,

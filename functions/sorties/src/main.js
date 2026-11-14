@@ -212,6 +212,7 @@ async function join({ api, userId, input }) {
       ? {
           user_id: sortie.created_by,
           actor_id: userId,
+          category: 'organisateur',
           title: "⏳ Liste d'attente",
           message: `${actor} est en liste d'attente pour « ${sortie.title} »`,
           link: `/dashboard?sortie=${sortie.$id}`,
@@ -219,6 +220,7 @@ async function join({ api, userId, input }) {
       : {
           user_id: sortie.created_by,
           actor_id: userId,
+          category: 'organisateur',
           title: '✅ Nouvelle inscription',
           message: `${actor} a rejoint votre sortie « ${sortie.title} »`,
           link: `/dashboard?sortie=${sortie.$id}`,
@@ -243,6 +245,7 @@ async function leave({ api, userId, input }) {
       {
         user_id: sortie.created_by,
         actor_id: userId,
+        category: 'organisateur',
         title: '🚪 Désinscription',
         message: `${actor} a quitté votre sortie « ${sortie.title} »`,
         link: `/dashboard?sortie=${sortie.$id}`,
@@ -269,6 +272,7 @@ async function like({ api, userId, input }) {
     {
       user_id: sortie.created_by,
       actor_id: userId,
+      category: 'organisateur',
       title: '❤️ Nouveau like',
       message: `${actor} a aimé votre sortie « ${sortie.title} »`,
       link: `/dashboard?sortie=${sortie.$id}`,

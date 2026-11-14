@@ -1,7 +1,44 @@
 <div class="notifications-page">
   <div class="page-header">
     <h1>Notifications</h1>
+    <button
+      type="button"
+      class="btn-settings"
+      [class.open]="settingsOpen()"
+      [attr.aria-expanded]="settingsOpen()"
+      (click)="settingsOpen.set(!settingsOpen())"
+    >
+      ⚙️ Choisir mes notifications
+    </button>
   </div>
+
+  @if (settingsOpen()) {
+    <section class="notif-settings" aria-label="Choisir mes notifications">
+      <p class="settings-hint">Décoche ce que tu ne veux plus recevoir.</p>
+      @for (c of categories; track c.key) {
+        <label class="setting-row">
+          <span class="setting-icon" aria-hidden="true">{{ c.icon }}</span>
+          <span class="setting-text">
+            <span class="setting-label">{{ c.label }}</span>
+            <span class="setting-desc">{{ c.desc }}</span>
+          </span>
+          <input
+            type="checkbox"
+            class="switch"
+            [checked]="!muted().has(c.key)"
+            [disabled]="savingSettings()"
+            (change)="toggleCategory(c.key)"
+          />
+        </label>
+      }
+      <p class="settings-note">
+        Toujours envoyées : sortie annulée ou modifiée, « Qui était présent ? ».
+      </p>
+      @if (settingsError()) {
+        <p class="settings-error">{{ settingsError() }}</p>
+      }
+    </section>
+  }
 
   <div class="notif-tabs" role="tablist">
     <button
