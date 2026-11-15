@@ -5,6 +5,7 @@ import { removeExpiredPremium, syncPremium } from './shared/premium.js';
 import { requireEditable } from './shared/protection.js';
 import { connexionStats } from './shared/stats.js';
 import { deleteEphemeralParts } from './shared/ephemeres.js';
+import { deleteDeletedParts } from './shared/messages.js';
 
 const ROLES = ['user', 'user_premium', 'developer', 'admin'];
 
@@ -132,6 +133,7 @@ async function deleteMessage({ api, input }) {
   if (message) {
     if (message.media_file_id) await deleteFile(api, 'chat-media', message.media_file_id);
     if (message.ephemeral) await deleteEphemeralParts(api, message.$id);
+    if (message.deleted) await deleteDeletedParts(api, message.$id);
     const reactions = await api.listAllRows('message_reactions', [
       Query.equal('message_id', entry.id),
     ]);

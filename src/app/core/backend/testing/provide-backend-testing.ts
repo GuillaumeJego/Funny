@@ -107,6 +107,11 @@ const fakeConversations: ConversationRepository = {
   answerSeeAgain: async () => null,
   getEphemeralViews: async () => [],
   onEphemeralViewChange: () => () => {},
+  editMessage: async () => null,
+  deleteMessage: async () => null,
+  onMessageUpdate: () => () => {},
+  getReadStates: async () => [],
+  onReadChange: () => () => {},
 };
 
 const fakeNotifications: NotificationRepository = {

@@ -1,3 +1,6 @@
+/** Texte, photo, vidéo ou message vocal. */
+export type MessageType = 'text' | 'image' | 'video' | 'audio';
+
 export interface MessageReaction {
   message_id: string;
   user_id: string;
@@ -17,7 +20,7 @@ export interface EphemeralView {
 
 /** Contenu d'un message éphémère, le temps de l'afficher une fois. */
 export interface EphemeralContent {
-  type: 'text' | 'image' | 'video';
+  type: 'text' | 'image' | 'video' | 'audio';
   content?: string;
   /** Adresse locale de la photo ou de la vidéo (à libérer après affichage). */
   url?: string;
@@ -28,7 +31,7 @@ export interface Message {
   conversation_id: string;
   sender_id: string;
   content: string | null;
-  type: 'text' | 'image' | 'video';
+  type: MessageType;
   media_url: string | null;
   reply_to_id: string | null;
   created_at: string;
@@ -44,6 +47,16 @@ export interface Message {
   ephemeral?: boolean;
   /** Message éphémère : qui l'a ouvert, et les demandes pour le revoir. */
   views?: EphemeralView[];
+  /** Date de la dernière modification du texte (affiche « modifié »). */
+  edited_at?: string | null;
+  /** Supprimé par son auteur : plus de contenu, « Message supprimé » à sa place. */
+  deleted?: boolean;
+}
+
+/** Date de lecture de la conversation par un participant. */
+export interface ReadState {
+  user_id: string;
+  last_read_at: string;
 }
 
 export interface ConversationParticipant {

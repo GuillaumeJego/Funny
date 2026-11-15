@@ -111,6 +111,9 @@
                     @if (msg.reply_to.type === 'video') {
                       🎥 Vidéo
                     }
+                    @if (msg.reply_to.type === 'audio') {
+                      🎤 Vocal
+                    }
                     @if (msg.reply_to.type === 'text') {
                       {{ msg.reply_to.content }}
                     }
@@ -122,10 +125,14 @@
                 appClickable
                 class="bubble"
                 [class.own]="isOwn(msg)"
-                [class.ephemeral]="msg.ephemeral"
+                [class.ephemeral]="msg.ephemeral && !msg.deleted"
+                [class.deleted]="msg.deleted"
                 (click)="openReactionPicker($event, msg)"
               >
-                @if (msg.ephemeral) {
+                @if (msg.deleted) {
+                  <!-- Supprimé par son auteur : le contenu n'est plus lisible -->
+                  <p class="bubble-text deleted-text">🚫 Message supprimé</p>
+                } @else if (msg.ephemeral) {
                   <!-- Message éphémère : jamais affiché dans la bulle -->
                   <div class="eph">
                     <span class="eph-title">👁 {{ ephemeralLabel(msg) }}</span>
@@ -208,12 +215,32 @@
                       (loadedmetadata)="mediaLoaded()"
                     ></video>
                   }
+                  <!-- Message vocal (son texte est sa durée) -->
+                  @if (msg.type === 'audio' && msg.media_url) {
+                    <div class="voice" (click)="$event.stopPropagation()">
+                      <span class="voice-icon" aria-hidden="true">🎤</span>
+                      <audio
+                        [src]="msg.media_url"
+                        controls
+                        preload="metadata"
+                        (loadedmetadata)="fixAudioDuration($event)"
+                      ></audio>
+                    </div>
+                    @if (msg.content) {
+                      <span class="voice-duration">Vocal · {{ msg.content }}</span>
+                    }
+                  }
                   <!-- Texte -->
-                  @if (msg.content) {
+                  @if (msg.content && msg.type !== 'audio') {
                     <p class="bubble-text">{{ msg.content }}</p>
                   }
                 }
-                <span class="bubble-time">{{ formatTime(msg.created_at) }}</span>
+                <span class="bubble-time">
+                  @if (msg.edited_at && !msg.deleted) {
+                    <span class="edited">modifié · </span>
+                  }
+                  {{ formatTime(msg.created_at) }}</span
+                >
               </div>
               <!-- Réactions -->
               @if (reactionGroups(msg).length > 0) {
@@ -234,24 +261,26 @@
                 </div>
               }
               <!-- Bouton répondre (visible au hover) -->
-              <button
-                class="btn-reply"
-                [class.own]="isOwn(msg)"
-                (click)="setReply(msg); $event.stopPropagation()"
-                title="Répondre"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
+              @if (!msg.deleted) {
+                <button
+                  class="btn-reply"
+                  [class.own]="isOwn(msg)"
+                  (click)="setReply(msg); $event.stopPropagation()"
+                  title="Répondre"
                 >
-                  <polyline points="9 17 4 12 9 7" />
-                  <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
-                </svg>
-              </button>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  >
+                    <polyline points="9 17 4 12 9 7" />
+                    <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+                  </svg>
+                </button>
+              }
             </div>
           </div>
         </div>
@@ -259,30 +288,56 @@
     </div>
   }
 
-  <!-- Picker de réactions -->
+  <!-- Picker de réactions (et, pour ses messages, modifier / supprimer) -->
   @if (reactionTarget(); as target) {
     <div
       class="reaction-picker"
+      [class.with-actions]="isOwn(target)"
       [style.top.px]="reactionPickerPos().top"
       [style.left.px]="reactionPickerPos().left"
       (click)="$event.stopPropagation()"
     >
-      @for (e of emojis; track e) {
-        <button class="emoji-btn" (click)="react(e)">{{ e }}</button>
+      @if (confirmDelete()) {
+        <!-- Supprimer : on confirme d'abord -->
+        <span class="picker-confirm">Supprimer pour tout le monde ?</span>
+        <div class="picker-actions">
+          <button type="button" class="picker-action" (click)="confirmDelete.set(false)">
+            Annuler
+          </button>
+          <button type="button" class="picker-action danger" (click)="deleteMessage()">
+            Supprimer
+          </button>
+        </div>
+      } @else {
+        <div class="picker-row">
+          @for (e of emojis; track e) {
+            <button class="emoji-btn" (click)="react(e)">{{ e }}</button>
+          }
+          <button class="emoji-btn reply-btn" (click)="setReply(target)" title="Répondre">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="9 17 4 12 9 7" />
+              <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+            </svg>
+          </button>
+        </div>
+        @if (isOwn(target)) {
+          <div class="picker-actions">
+            @if (canEdit(target)) {
+              <button type="button" class="picker-action" (click)="startEdit(target)">
+                ✏️ Modifier
+              </button>
+            }
+            <button type="button" class="picker-action" (click)="askDelete()">🗑️ Supprimer</button>
+          </div>
+        }
       }
-      <button class="emoji-btn reply-btn" (click)="setReply(target)" title="Répondre">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-        >
-          <polyline points="9 17 4 12 9 7" />
-          <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
-        </svg>
-      </button>
     </div>
   }
 
@@ -312,12 +367,32 @@
               @if (reply.type === 'video') {
                 🎥 Vidéo
               }
+              @if (reply.type === 'audio') {
+                🎤 Vocal
+              }
               @if (reply.type === 'text') {
                 {{ reply.content }}
               }
             </span>
           </div>
           <button class="btn-cancel-reply" (click)="cancelReply()">✕</button>
+        </div>
+      }
+
+      <!-- Modification d'un message envoyé -->
+      @if (editing()) {
+        <div class="reply-bar edit-bar">
+          <div class="reply-bar-content">
+            <span class="reply-bar-author">✏️ Modifier le message</span>
+            <span class="reply-bar-text">{{ editing()!.content }}</span>
+          </div>
+          <button
+            class="btn-cancel-reply"
+            aria-label="Annuler la modification"
+            (click)="cancelEdit()"
+          >
+            ✕
+          </button>
         </div>
       }
 
@@ -352,80 +427,137 @@
           👁 Mode « voir une fois » : ton prochain envoi ne pourra être vu qu'une fois.
         </div>
       }
-      <div class="input-row">
-        <!-- Voir une fois -->
-        <button
-          type="button"
-          class="btn-attach btn-eph"
-          [class.active]="ephemeralMode()"
-          [attr.aria-pressed]="ephemeralMode()"
-          (click)="toggleEphemeral()"
-          title="Voir une fois"
-          aria-label="Voir une fois"
-        >
-          👁
-        </button>
-        <!-- Bouton média -->
-        <button class="btn-attach" (click)="triggerFileInput('image')" title="Photo">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
+      @if (recording()) {
+        <!-- Enregistrement d'un vocal -->
+        <div class="input-row recording-bar" role="status">
+          <span class="rec-dot" aria-hidden="true"></span>
+          <span class="rec-time"
+            >{{ formatDuration(recordSeconds()) }}
+            <small>/ {{ formatDuration(maxVoiceSeconds) }}</small></span
           >
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <circle cx="8.5" cy="8.5" r="1.5" />
-            <polyline points="21 15 16 10 5 21" />
-          </svg>
-        </button>
-        <button class="btn-attach" (click)="triggerFileInput('video')" title="Vidéo">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polygon points="23 7 16 12 23 17 23 7" />
-            <rect x="1" y="5" width="15" height="14" rx="2" />
-          </svg>
-        </button>
-
-        <textarea
-          class="msg-input"
-          [(ngModel)]="text"
-          [placeholder]="ephemeralMode() ? 'Message éphémère…' : 'Message…'"
-          rows="1"
-          (keydown)="onKeydown($event)"
-          (input)="
-            $any($event.target).style.height = 'auto';
-            $any($event.target).style.height = $any($event.target).scrollHeight + 'px'
-          "
-        ></textarea>
-
-        <button
-          class="btn-send"
-          aria-label="Envoyer"
-          [disabled]="(!text().trim() && !pendingMedia().length) || sending()"
-          (click)="send()"
-        >
-          @if (!sending()) {
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M2 21l21-9L2 3v7l15 2-15 2z" />
-            </svg>
+          <span class="rec-label">{{
+            ephemeralMode() ? '👁 Vocal éphémère' : 'Enregistrement…'
+          }}</span>
+          <button type="button" class="rec-btn ghost" (click)="stopRecording(false)">
+            Annuler
+          </button>
+          <button type="button" class="rec-btn" (click)="stopRecording(true)">Envoyer</button>
+        </div>
+      } @else {
+        <div class="input-row">
+          @if (!editing()) {
+            <!-- Voir une fois -->
+            <button
+              type="button"
+              class="btn-attach btn-eph"
+              [class.active]="ephemeralMode()"
+              [attr.aria-pressed]="ephemeralMode()"
+              (click)="toggleEphemeral()"
+              title="Voir une fois"
+              aria-label="Voir une fois"
+            >
+              👁
+            </button>
+            <!-- Bouton média -->
+            <button class="btn-attach" (click)="triggerFileInput('image')" title="Photo">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+            </button>
+            <button class="btn-attach" (click)="triggerFileInput('video')" title="Vidéo">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polygon points="23 7 16 12 23 17 23 7" />
+                <rect x="1" y="5" width="15" height="14" rx="2" />
+              </svg>
+            </button>
+            <!-- Message vocal -->
+            <button
+              type="button"
+              class="btn-attach"
+              [disabled]="sending()"
+              (click)="startRecording()"
+              title="Message vocal"
+              aria-label="Enregistrer un message vocal"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="9" y="2" width="6" height="12" rx="3" />
+                <path d="M5 10a7 7 0 0 0 14 0" />
+                <line x1="12" y1="17" x2="12" y2="22" />
+              </svg>
+            </button>
           }
-          @if (sending()) {
-            @if (sendProgress()) {
-              <span class="send-progress">{{ sendProgress() }}</span>
+
+          <textarea
+            class="msg-input"
+            [(ngModel)]="text"
+            [placeholder]="
+              editing() ? 'Nouveau texte…' : ephemeralMode() ? 'Message éphémère…' : 'Message…'
+            "
+            rows="1"
+            (keydown)="onKeydown($event)"
+            (input)="
+              $any($event.target).style.height = 'auto';
+              $any($event.target).style.height = $any($event.target).scrollHeight + 'px'
+            "
+          ></textarea>
+
+          <button
+            class="btn-send"
+            aria-label="Envoyer"
+            [disabled]="(!text().trim() && !pendingMedia().length) || sending()"
+            (click)="send()"
+          >
+            @if (editing() && !sending()) {
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
             } @else {
-              <div class="spinner-sm"></div>
+              @if (!sending()) {
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M2 21l21-9L2 3v7l15 2-15 2z" />
+                </svg>
+              }
+              @if (sending()) {
+                @if (sendProgress()) {
+                  <span class="send-progress">{{ sendProgress() }}</span>
+                } @else {
+                  <div class="spinner-sm"></div>
+                }
+              }
             }
-          }
-        </button>
-      </div>
+          </button>
+        </div>
+      }
 
       <input
         #fileInput
@@ -467,6 +599,14 @@
         <img [src]="shown.url" alt="Photo éphémère" />
       } @else if (shown.type === 'video') {
         <video [src]="shown.url" autoplay controls playsinline></video>
+      } @else if (shown.type === 'audio') {
+        <div class="eph-voice">🎤</div>
+        <audio
+          [src]="shown.url"
+          autoplay
+          controls
+          (loadedmetadata)="fixAudioDuration($event)"
+        ></audio>
       } @else {
         <p class="eph-viewer-text">{{ shown.content }}</p>
       }

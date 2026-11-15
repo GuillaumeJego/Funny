@@ -790,3 +790,161 @@
   color: rgba(255, 255, 255, 0.7);
   font-size: 0.82rem;
 }
+
+// ─── Messages supprimés et modifiés ───────────────────────
+.bubble.deleted {
+  background: transparent;
+  border: 1px dashed $border-color;
+  box-shadow: none;
+  cursor: default;
+  min-width: 10rem;
+
+  .deleted-text,
+  &.own .deleted-text {
+    color: $text-light;
+    font-style: italic;
+  }
+  &.own .bubble-time {
+    color: $text-light;
+  }
+}
+
+.edited {
+  font-style: italic;
+}
+
+.edit-bar {
+  border-left-color: $accent;
+}
+
+// ─── Sélecteur : modifier, supprimer ──────────────────────
+.reaction-picker.with-actions {
+  flex-direction: column;
+  align-items: stretch;
+  border-radius: 20px;
+  gap: 0.3rem;
+}
+
+.picker-row {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.picker-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  padding-bottom: 0.15rem;
+}
+
+.picker-confirm {
+  padding: 0.3rem 0.5rem 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: $text-dark;
+  white-space: nowrap;
+}
+
+.picker-action {
+  border: none;
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  color: $text-dark;
+
+  &.danger {
+    background: $error;
+    color: #fff;
+  }
+}
+
+// ─── Messages vocaux ──────────────────────────────────────
+.voice {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  audio {
+    width: 220px;
+    max-width: 60vw;
+    height: 40px;
+  }
+}
+
+.voice-icon {
+  font-size: 1.2rem;
+}
+
+.voice-duration {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.recording-bar {
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0.2rem;
+}
+
+.rec-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: $error;
+  flex-shrink: 0;
+  animation: recPulse 1s ease-in-out infinite;
+}
+
+.rec-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: $text-dark;
+
+  small {
+    font-weight: 400;
+    color: $text-light;
+  }
+}
+
+.rec-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+  color: $text-medium;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rec-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: $primary;
+  color: #fff;
+  flex-shrink: 0;
+
+  &.ghost {
+    background: transparent;
+    color: $text-medium;
+    border: 1px solid $border-color;
+  }
+}
+
+.eph-voice {
+  font-size: 4rem;
+}
+
+@keyframes recPulse {
+  50% {
+    opacity: 0.3;
+  }
+}

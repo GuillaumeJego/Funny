@@ -227,11 +227,15 @@ export const TABLES = [
       str('conversation_id', ID, { required: true }),
       str('sender_id', ID, { required: true }),
       text('content'),
-      enumeration('type', ['text', 'image', 'video'], { default: 'text' }),
+      enumeration('type', ['text', 'image', 'video', 'audio'], { default: 'text' }),
       str('media_file_id', ID),
       str('reply_to_id', ID),
       // Message éphémère (« voir une fois ») : vide ici, le contenu est dans ephemeral_contents.
       bool('ephemeral', { default: false }),
+      // Modifié par son auteur (avant d'être lu) : date de la dernière modification.
+      datetime('edited_at'),
+      // Supprimé par son auteur : vide ici, le contenu est gardé dans deleted_contents.
+      bool('deleted', { default: false }),
     ],
     indexes: [{ key: 'conversation', type: 'key', columns: ['conversation_id'] }],
   },
@@ -247,6 +251,23 @@ export const TABLES = [
       str('sender_id', ID, { required: true }),
       text('content'),
       str('media_file_id', ID),
+    ],
+    indexes: [],
+  },
+  {
+    // Messages supprimés par leur auteur : le contenu est gardé ici (lu par le serveur et les
+    // admins dans Appwrite seulement). L'identifiant de la ligne est celui du message.
+    id: 'deleted_contents',
+    name: 'Messages supprimés (contenu)',
+    permissions: [],
+    rowSecurity: false,
+    columns: [
+      str('conversation_id', ID, { required: true }),
+      str('sender_id', ID, { required: true }),
+      str('type', 20),
+      text('content'),
+      str('media_file_id', ID),
+      datetime('deleted_at', { required: true }),
     ],
     indexes: [],
   },
@@ -285,8 +306,11 @@ export const TABLES = [
       str('conversation_id', ID, { required: true }),
       datetime('last_read_at', { required: true }),
     ],
+    // Ligne : read("team:<conversation>") aussi, pour savoir si un message a été lu
+    // (on ne peut plus le modifier ensuite).
     indexes: [
       { key: 'user_conversation', type: 'unique', columns: ['user_id', 'conversation_id'] },
+      { key: 'conversation', type: 'key', columns: ['conversation_id'] },
     ],
   },
   {
@@ -509,7 +533,8 @@ export const BUCKETS = [
     permissions: [MEMBRES_CREENT],
     fileSecurity: true,
     maximumFileSize: 20 * MO,
-    allowedFileExtensions: [...IMAGES, 'gif', 'mp4', 'webm', 'mov'],
+    // Photos, vidéos et messages vocaux (webm / ogg sur Android, m4a / mp4 sur iPhone).
+    allowedFileExtensions: [...IMAGES, 'gif', 'mp4', 'webm', 'mov', 'ogg', 'm4a', 'mp3', 'aac'],
   },
 ];
 

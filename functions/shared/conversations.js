@@ -3,6 +3,7 @@
 // que par ses membres.
 import { Permission, Query, Role, deleteFile, inBatches } from './appwrite.js';
 import { deleteEphemeralParts } from './ephemeres.js';
+import { deleteDeletedParts } from './messages.js';
 
 /** Identifiant de la discussion de groupe d'une sortie (et de son équipe). */
 export const sortieChatId = (sortieId) => `s_${sortieId}`;
@@ -15,6 +16,7 @@ export async function deleteConversation(api, conversation) {
   await inBatches(messages, async (message) => {
     if (message.media_file_id) await deleteFile(api, 'chat-media', message.media_file_id);
     if (message.ephemeral) await deleteEphemeralParts(api, message.$id);
+    if (message.deleted) await deleteDeletedParts(api, message.$id);
     await api.deleteRow('messages', message.$id);
   });
   const reactions = await api.listAllRows('message_reactions', [

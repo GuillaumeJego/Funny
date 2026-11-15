@@ -12,6 +12,7 @@ import {
 import { collectEvidence, shareMediaWithAdmins } from './shared/moderation.js';
 import { listProfileVisits, purgeOldVisits, recordProfileVisit } from './shared/visites.js';
 import { answerSeeAgain, askToSeeAgain, openEphemeral, sendEphemeral } from './shared/ephemeres.js';
+import { deleteOwnMessage, editMessage } from './shared/messages.js';
 
 /** Délai avant de pouvoir redemander en ami un membre qui a refusé : 30 jours. */
 const RETRY_AFTER_DECLINE_MS = 30 * 24 * 3600 * 1000;
@@ -277,6 +278,15 @@ async function ephemeralAnswer({ api, userId, input }) {
   });
 }
 
+/** Modifier son message (texte pas encore lu) ou le supprimer (contenu gardé à part). */
+async function messageEdit({ api, userId, input }) {
+  return editMessage(api, { userId, messageId: input.messageId, content: input.content });
+}
+
+async function messageDelete({ api, userId, input }) {
+  return deleteOwnMessage(api, { userId, messageId: input.messageId });
+}
+
 export default handler(
   {
     friendRequest,
@@ -292,6 +302,8 @@ export default handler(
     ephemeralOpen,
     ephemeralAsk,
     ephemeralAnswer,
+    messageEdit,
+    messageDelete,
   },
   // Chaque nuit : effacer les visites de profil de plus de 30 jours.
   { onSchedule: async ({ api }) => purgeOldVisits(api) },
