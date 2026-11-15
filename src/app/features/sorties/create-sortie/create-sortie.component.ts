@@ -159,8 +159,8 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       description: sortie.description ?? '',
       theme_id: sortie.theme_id,
       theme_custom: sortie.theme_custom ?? '',
-      // Le champ « date et heure » attend 2026-11-20T19:30 : la date telle qu'elle a été saisie.
-      date: sortie.date.slice(0, 16),
+      // Le serveur garde l'heure universelle : on la remet à l'heure du téléphone (Paris…).
+      date: toLocalInput(sortie.date),
       location: sortie.location,
       price: sortie.price,
       max_participants: sortie.max_participants ?? undefined,
@@ -170,8 +170,8 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       lat: sortie.lat ?? null,
       lng: sortie.lng ?? null,
     };
-    this.dateDay = sortie.date.slice(0, 10);
-    this.dateHour = sortie.date.slice(11, 16);
+    this.dateDay = this.sortie.date!.slice(0, 10);
+    this.dateHour = this.sortie.date!.slice(11, 16);
     // Une sortie déjà Premium peut le rester, même si l'abonnement de l'organisateur a pris fin.
     if (sortie.is_premium) this.canCreatePremium.set(true);
     // Le statut comptait à la création : la sortie garde ses places (jamais moins de 10).
@@ -398,7 +398,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       if (this.editId()) {
         const { data: saved, error } = await this.sortieService.updateSortie(
           this.editId(),
-          this.sortie,
+          this.withUtcDate(),
           invites,
         );
         if (error || !saved) {
@@ -410,7 +410,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       } else {
         this.sortie.created_by = this.userId;
         const { data: newSortie, error } = await this.sortieService.createSortie(
-          this.sortie,
+          this.withUtcDate(),
           invites,
         );
         if (error || !newSortie) {
@@ -441,6 +441,14 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     reader.readAsDataURL(blob);
   }
 
+  /**
+   * La sortie à envoyer, avec sa date en heure universelle : 20h45 à Paris en hiver part en
+   * 19:45Z, et chaque téléphone l'affiche ensuite à 20h45 dans son propre fuseau.
+   */
+  private withUtcDate(): Partial<Sortie> {
+    return { ...this.sortie, date: new Date(this.sortie.date!).toISOString() };
+  }
+
   goToPremium() {
     this.router.navigate(['/premium']);
   }
@@ -448,4 +456,11 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   goToDashboard() {
     this.router.navigate(['/dashboard']);
   }
+}
+
+/** « 2026-11-20T19:45:00.000Z » → « 2026-11-20T20:45 » à l'heure locale (champs date et heure). */
+function toLocalInput(iso: string): string {
+  const d = new Date(iso);
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
 }
