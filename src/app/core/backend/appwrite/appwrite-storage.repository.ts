@@ -81,7 +81,7 @@ export class AppwriteStorageRepository extends StorageRepository {
         file,
         // Éphémère : la conversation ne le lit pas, le serveur le sert à l'ouverture.
         permissions: ephemeral
-          ? ownedBy(userId)
+          ? [Permission.read(Role.user(userId)), ...ownedBy(userId)]
           : [Permission.read(Role.team(conversationId)), ...ownedBy(userId)],
       });
       return created.$id;

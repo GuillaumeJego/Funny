@@ -46,7 +46,17 @@ const FUNCTIONS = [
     timeout: 30,
     // Chaque nuit (4 h) : effacer les visites de profil de plus de 30 jours.
     schedule: '0 4 * * *',
-    scopes: ['rows.read', 'rows.write', 'teams.read', 'teams.write'],
+    // Fichiers : photos jointes aux signalements, photos et vidéos éphémères (et leurs liens).
+    scopes: [
+      'rows.read',
+      'rows.write',
+      'teams.read',
+      'teams.write',
+      'files.read',
+      'files.write',
+      'tokens.read',
+      'tokens.write',
+    ],
   },
   {
     id: 'admin',
@@ -54,7 +64,16 @@ const FUNCTIONS = [
     timeout: 30,
     // Chaque heure : fin des bannissements arrivés à échéance.
     schedule: '0 * * * *',
-    scopes: ['rows.read', 'rows.write', 'teams.read', 'teams.write', 'users.write'],
+    // files.write : suppression d'une photo signalée.
+    scopes: [
+      'rows.read',
+      'rows.write',
+      'teams.read',
+      'teams.write',
+      'users.write',
+      'files.read',
+      'files.write',
+    ],
   },
   {
     id: 'account',

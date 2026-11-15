@@ -406,7 +406,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (content && !failed.length) {
       this.text.set('');
       const msg = ephemeral
-        ? await this.conversationService.sendEphemeral(this.conversationId, 'text', content)
+        ? await this.sendEphemeral('text', content, null)
         : await this.conversationService.sendMessage(
             this.conversationId,
             this.myId,
@@ -425,14 +425,32 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
     if (failed.length) {
       this.sendError.set(
-        `${failed.length} fichier(s) n'ont pas pu partir. Touche « Envoyer » pour réessayer.`,
+        `${failed.length} fichier(s) n'ont pas pu partir${this.ephemeralError ? ` (${this.ephemeralError})` : ''}. Touche « Envoyer » pour réessayer.`,
       );
     }
+    this.ephemeralError = '';
     if (replyTo) this.replyTo.set(replyTo);
     // Le mode éphémère vaut pour un envoi : on revient au mode normal ensuite.
     if (ephemeral && !failed.length && !this.text()) this.ephemeralMode.set(false);
     this.sending.set(false);
   }
+
+  /** Envoi éphémère : en cas d'échec, la raison donnée par le serveur s'affiche. */
+  private async sendEphemeral(
+    type: 'text' | 'image' | 'video',
+    content: string | null,
+    fileId: string | null,
+  ): Promise<Message | null> {
+    const { data, error } = await this.conversationService.sendEphemeral(
+      this.conversationId,
+      type,
+      content,
+      fileId,
+    );
+    if (error) this.ephemeralError = error;
+    return data;
+  }
+  private ephemeralError = '';
 
   private async sendMedia(
     media: PendingMedia,
@@ -446,9 +464,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       ephemeral,
     );
     if (!fileId) return null;
-    if (ephemeral) {
-      return this.conversationService.sendEphemeral(this.conversationId, media.type, null, fileId);
-    }
+    if (ephemeral) return this.sendEphemeral(media.type, null, fileId);
     return this.conversationService.sendMessage(
       this.conversationId,
       this.myId,
