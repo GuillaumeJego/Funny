@@ -122,31 +122,96 @@
                 appClickable
                 class="bubble"
                 [class.own]="isOwn(msg)"
+                [class.ephemeral]="msg.ephemeral"
                 (click)="openReactionPicker($event, msg)"
               >
-                <!-- Image -->
-                @if (msg.type === 'image' && msg.media_url) {
-                  <img
-                    [src]="msg.media_url"
-                    class="msg-media zoomable"
-                    alt="Photo — toucher pour l'agrandir"
-                    (click)="openLightbox($event, msg.media_url)"
-                    (load)="mediaLoaded()"
-                  />
-                }
-                <!-- Vidéo -->
-                @if (msg.type === 'video' && msg.media_url) {
-                  <video
-                    [src]="msg.media_url"
-                    class="msg-media"
-                    controls
-                    playsinline
-                    (loadedmetadata)="mediaLoaded()"
-                  ></video>
-                }
-                <!-- Texte -->
-                @if (msg.content) {
-                  <p class="bubble-text">{{ msg.content }}</p>
+                @if (msg.ephemeral) {
+                  <!-- Message éphémère : jamais affiché dans la bulle -->
+                  <div class="eph">
+                    <span class="eph-title">👁 {{ ephemeralLabel(msg) }}</span>
+                    @if (isOwn(msg)) {
+                      <span class="eph-status">{{ seenBy(msg) }}</span>
+                      @for (v of pendingRequests(msg); track v.user_id) {
+                        <div class="eph-request">
+                          <span>🔁 {{ v.username }} demande à revoir</span>
+                          <div class="eph-actions">
+                            <button
+                              type="button"
+                              class="eph-btn ghost"
+                              [disabled]="ephemeralBusy() === msg.id"
+                              (click)="answerSeeAgain($event, msg, v.user_id, false)"
+                            >
+                              Refuser
+                            </button>
+                            <button
+                              type="button"
+                              class="eph-btn"
+                              [disabled]="ephemeralBusy() === msg.id"
+                              (click)="answerSeeAgain($event, msg, v.user_id, true)"
+                            >
+                              Autoriser
+                            </button>
+                          </div>
+                        </div>
+                      }
+                    } @else if (canOpen(msg)) {
+                      <button
+                        type="button"
+                        class="eph-btn open"
+                        [disabled]="ephemeralBusy() === msg.id"
+                        (click)="openEphemeral($event, msg)"
+                      >
+                        {{ ephemeralBusy() === msg.id ? 'Ouverture…' : 'Appuie pour voir' }}
+                      </button>
+                      @if (myView(msg).seen > 0) {
+                        <span class="eph-status">Revoir autorisé une fois</span>
+                      } @else {
+                        <span class="eph-status">Visible une seule fois</span>
+                      }
+                    } @else {
+                      <span class="eph-status">Vu ✓</span>
+                      @if (myView(msg).request === 'pending') {
+                        <span class="eph-status">⏳ Demande envoyée</span>
+                      } @else {
+                        @if (myView(msg).request === 'refused') {
+                          <span class="eph-status">🙈 Demande refusée</span>
+                        }
+                        <button
+                          type="button"
+                          class="eph-btn ghost"
+                          [disabled]="ephemeralBusy() === msg.id"
+                          (click)="askToSeeAgain($event, msg)"
+                        >
+                          🔁 Demander à revoir
+                        </button>
+                      }
+                    }
+                  </div>
+                } @else {
+                  <!-- Image -->
+                  @if (msg.type === 'image' && msg.media_url) {
+                    <img
+                      [src]="msg.media_url"
+                      class="msg-media zoomable"
+                      alt="Photo — toucher pour l'agrandir"
+                      (click)="openLightbox($event, msg.media_url)"
+                      (load)="mediaLoaded()"
+                    />
+                  }
+                  <!-- Vidéo -->
+                  @if (msg.type === 'video' && msg.media_url) {
+                    <video
+                      [src]="msg.media_url"
+                      class="msg-media"
+                      controls
+                      playsinline
+                      (loadedmetadata)="mediaLoaded()"
+                    ></video>
+                  }
+                  <!-- Texte -->
+                  @if (msg.content) {
+                    <p class="bubble-text">{{ msg.content }}</p>
+                  }
                 }
                 <span class="bubble-time">{{ formatTime(msg.created_at) }}</span>
               </div>
@@ -282,7 +347,24 @@
         </div>
       }
 
+      @if (ephemeralMode()) {
+        <div class="eph-mode-bar">
+          👁 Mode « voir une fois » : ton prochain envoi ne pourra être vu qu'une fois.
+        </div>
+      }
       <div class="input-row">
+        <!-- Voir une fois -->
+        <button
+          type="button"
+          class="btn-attach btn-eph"
+          [class.active]="ephemeralMode()"
+          [attr.aria-pressed]="ephemeralMode()"
+          (click)="toggleEphemeral()"
+          title="Voir une fois"
+          aria-label="Voir une fois"
+        >
+          👁
+        </button>
         <!-- Bouton média -->
         <button class="btn-attach" (click)="triggerFileInput('image')" title="Photo">
           <svg
@@ -315,7 +397,7 @@
         <textarea
           class="msg-input"
           [(ngModel)]="text"
-          placeholder="Message…"
+          [placeholder]="ephemeralMode() ? 'Message éphémère…' : 'Message…'"
           rows="1"
           (keydown)="onKeydown($event)"
           (input)="
@@ -372,6 +454,23 @@
         alt="Photo envoyée dans la conversation"
         (click)="$event.stopPropagation()"
       />
+    </div>
+  }
+
+  <!-- Message éphémère ouvert : affiché une seule fois -->
+  @if (ephemeralShown(); as shown) {
+    <div class="lightbox eph-viewer" role="dialog" aria-modal="true" aria-label="Message éphémère">
+      <button type="button" class="lightbox-close" (click)="closeEphemeral()" title="Fermer">
+        ✕
+      </button>
+      @if (shown.type === 'image') {
+        <img [src]="shown.url" alt="Photo éphémère" />
+      } @else if (shown.type === 'video') {
+        <video [src]="shown.url" autoplay controls playsinline></video>
+      } @else {
+        <p class="eph-viewer-text">{{ shown.content }}</p>
+      }
+      <p class="eph-viewer-hint">👁 Visible une seule fois : en fermant, il disparaît.</p>
     </div>
   }
 

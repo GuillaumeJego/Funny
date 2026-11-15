@@ -101,6 +101,12 @@ const fakeConversations: ConversationRepository = {
   getUnreadCounts: async () => new Map(),
   markRead: async () => {},
   onReactionChange: () => () => {},
+  sendEphemeral: async () => null,
+  openEphemeral: async () => ({ data: null, error: null }),
+  askToSeeAgain: async () => null,
+  answerSeeAgain: async () => null,
+  getEphemeralViews: async () => [],
+  onEphemeralViewChange: () => () => {},
 };
 
 const fakeNotifications: NotificationRepository = {

@@ -23,14 +23,24 @@ export async function collectEvidence(api, conversationId, reporterId) {
     Query.orderDesc('$createdAt'),
     Query.limit(EVIDENCE_MESSAGES),
   ]);
-  return rows.reverse().map((m) => ({
-    id: m.$id,
-    sender_id: m.sender_id,
-    content: String(m.content ?? '').slice(0, MAX_CONTENT),
-    type: m.type ?? 'text',
-    media_file_id: m.media_file_id || null,
-    at: m.$createdAt,
-  }));
+  // Message éphémère : son vrai contenu est rangé à part, les admins doivent pouvoir le voir.
+  const secrets = new Map();
+  for (const m of rows.filter((r) => r.ephemeral)) {
+    const secret = await api.getRow('ephemeral_contents', m.$id);
+    if (secret) secrets.set(m.$id, secret);
+  }
+  return rows.reverse().map((m) => {
+    const source = secrets.get(m.$id) ?? m;
+    return {
+      id: m.$id,
+      sender_id: m.sender_id,
+      content: String(source.content ?? '').slice(0, MAX_CONTENT),
+      type: m.type ?? 'text',
+      media_file_id: source.media_file_id || null,
+      at: m.$createdAt,
+      ...(m.ephemeral ? { ephemeral: true } : {}),
+    };
+  });
 }
 
 /** Donne aux admins le droit de voir les photos et vidéos jointes au signalement. */

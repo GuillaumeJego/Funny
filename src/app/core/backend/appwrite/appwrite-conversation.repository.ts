@@ -1,15 +1,30 @@
 import { Injectable, inject } from '@angular/core';
 import { Channel, ID, Models, Permission, Query, Role } from 'appwrite';
-import { Conversation, Message, MessageReaction } from '../../models/message.model';
+import {
+  Conversation,
+  EphemeralContent,
+  EphemeralView,
+  Message,
+  MessageReaction,
+} from '../../models/message.model';
 import { ConversationRepository, NewMessage } from '../../repositories/conversation.repository';
 import { Unsubscribe } from '../../repositories/repository.types';
 import { AppwriteClientService, DB } from './appwrite-client';
 import { fromRow } from './rows';
 
-type MessageRow = Models.Row & Omit<NewMessage, 'media_file_id'> & { media_file_id: string | null };
+type MessageRow = Models.Row &
+  Omit<NewMessage, 'media_file_id'> & { media_file_id: string | null; ephemeral?: boolean };
 type ConversationRow = Models.Row & { participant_ids: string[]; sortie_id?: string | null };
 type ReadRow = Models.Row & { conversation_id: string; last_read_at: string };
 type ReactionRow = Models.Row & MessageReaction & { conversation_id: string };
+type ViewRow = Models.Row & {
+  message_id: string;
+  conversation_id: string;
+  user_id: string;
+  seen: number;
+  allowed: number;
+  request: 'pending' | 'refused' | null;
+};
 
 /** Nombre de messages chargés à l'ouverture d'une conversation. */
 const MESSAGES_LOADED = 200;
@@ -161,6 +176,109 @@ export class AppwriteConversationRepository extends ConversationRepository {
     } catch {
       return null;
     }
+  }
+
+  async sendEphemeral(
+    conversationId: string,
+    type: 'text' | 'image' | 'video',
+    content: string | null,
+    mediaFileId: string | null,
+  ): Promise<Message | null> {
+    const { data } = await this.appwrite.run<{ message: MessageRow }>('social', 'ephemeralSend', {
+      conversationId,
+      type,
+      content,
+      mediaFileId,
+    });
+    if (!data) return null;
+    const [message] = await this.enrich([data.message], []);
+    return message;
+  }
+
+  async openEphemeral(
+    messageId: string,
+  ): Promise<{ data: EphemeralContent | null; error: string | null }> {
+    const { data, error } = await this.appwrite.run<{
+      type: 'text' | 'image' | 'video';
+      content?: string;
+      fileId?: string;
+      token?: string;
+    }>('social', 'ephemeralOpen', { messageId });
+    if (error || !data) return { data: null, error: error?.message ?? 'Impossible de l’ouvrir.' };
+    if (data.type === 'text') return { data: { type: 'text', content: data.content }, error: null };
+    try {
+      // Lien de quelques minutes donné par le serveur : la photo est chargée tout de suite.
+      const url = new URL(this.appwrite.fileUrl('chat-media', data.fileId!));
+      url.searchParams.set('token', data.token!);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error();
+      return {
+        data: { type: data.type, url: URL.createObjectURL(await response.blob()) },
+        error: null,
+      };
+    } catch {
+      return { data: null, error: 'La photo n’a pas pu être chargée.' };
+    }
+  }
+
+  async askToSeeAgain(messageId: string): Promise<string | null> {
+    const { error } = await this.appwrite.run('social', 'ephemeralAsk', { messageId });
+    return error?.message ?? null;
+  }
+
+  async answerSeeAgain(
+    messageId: string,
+    memberId: string,
+    accept: boolean,
+  ): Promise<string | null> {
+    const { error } = await this.appwrite.run('social', 'ephemeralAnswer', {
+      messageId,
+      memberId,
+      accept,
+    });
+    return error?.message ?? null;
+  }
+
+  async getEphemeralViews(messageId: string): Promise<EphemeralView[]> {
+    return (await this.viewsOf([messageId])).get(messageId) ?? [];
+  }
+
+  onEphemeralViewChange(
+    conversationId: string,
+    callback: (messageId: string) => void,
+  ): Unsubscribe {
+    return this.appwrite.client.subscribe<ViewRow>(
+      Channel.tablesdb(DB).table('ephemeral_views').row(),
+      (event) => {
+        if (event.payload.conversation_id !== conversationId) return;
+        callback(event.payload.message_id);
+      },
+    );
+  }
+
+  /** Vues des messages éphémères, avec le pseudo de chaque destinataire. */
+  private async viewsOf(messageIds: string[]): Promise<Map<string, EphemeralView[]>> {
+    const byMessage = new Map<string, EphemeralView[]>();
+    if (!messageIds.length) return byMessage;
+    let rows: ViewRow[] = [];
+    try {
+      rows = await this.appwrite.listIn<ViewRow>('ephemeral_views', 'message_id', messageIds);
+    } catch {
+      return byMessage; // table pas encore créée (npm run appwrite:setup)
+    }
+    const profiles = await this.appwrite.miniProfiles(rows.map((r) => r.user_id));
+    for (const r of rows) {
+      const list = byMessage.get(r.message_id) ?? [];
+      list.push({
+        user_id: r.user_id,
+        username: profiles.get(r.user_id)?.username,
+        seen: r.seen ?? 0,
+        allowed: r.allowed ?? 1,
+        request: r.request ?? null,
+      });
+      byMessage.set(r.message_id, list);
+    }
+    return byMessage;
   }
 
   async setReaction(messageId: string, userId: string, emoji: string): Promise<void> {
@@ -336,7 +454,10 @@ export class AppwriteConversationRepository extends ConversationRepository {
     extraReplies: MessageRow[] = [],
   ): Promise<Message[]> {
     const byId = new Map([...rows, ...extraReplies].map((r) => [r.$id, r]));
-    const profiles = await this.appwrite.miniProfiles([...byId.values()].map((r) => r.sender_id));
+    const [profiles, views] = await Promise.all([
+      this.appwrite.miniProfiles([...byId.values()].map((r) => r.sender_id)),
+      this.viewsOf(rows.filter((r) => r.ephemeral).map((r) => r.$id)),
+    ]);
     return Promise.all(
       rows.map(async (row) => {
         const sender = profiles.get(row.sender_id);
@@ -356,6 +477,7 @@ export class AppwriteConversationRepository extends ConversationRepository {
           reactions: reactions
             .filter((r) => r.message_id === row.$id)
             .map((r) => ({ message_id: r.message_id, user_id: r.user_id, emoji: r.emoji })),
+          ...(row.ephemeral ? { ephemeral: true, views: views.get(row.$id) ?? [] } : {}),
         };
       }),
     );

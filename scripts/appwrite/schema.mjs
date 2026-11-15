@@ -230,8 +230,48 @@ export const TABLES = [
       enumeration('type', ['text', 'image', 'video'], { default: 'text' }),
       str('media_file_id', ID),
       str('reply_to_id', ID),
+      // Message éphémère (« voir une fois ») : vide ici, le contenu est dans ephemeral_contents.
+      bool('ephemeral', { default: false }),
     ],
     indexes: [{ key: 'conversation', type: 'key', columns: ['conversation_id'] }],
+  },
+  {
+    // Contenu des messages éphémères : lu et écrit par le serveur seulement (Function « social »).
+    // L'identifiant de la ligne est celui du message.
+    id: 'ephemeral_contents',
+    name: 'Messages éphémères (contenu)',
+    permissions: [],
+    rowSecurity: false,
+    columns: [
+      str('conversation_id', ID, { required: true }),
+      str('sender_id', ID, { required: true }),
+      text('content'),
+      str('media_file_id', ID),
+    ],
+    indexes: [],
+  },
+  {
+    // Vues des messages éphémères : une ligne par message et par destinataire, écrite par le
+    // serveur. Ligne : read("team:<conversation>") (l'expéditeur voit qui a ouvert).
+    id: 'ephemeral_views',
+    name: 'Messages éphémères (vues)',
+    permissions: [],
+    rowSecurity: true,
+    columns: [
+      str('message_id', ID, { required: true }),
+      str('conversation_id', ID, { required: true }),
+      str('user_id', ID, { required: true }),
+      // Vues utilisées et vues autorisées (1, puis +1 à chaque « revoir » accepté).
+      integer('seen', { default: 0 }),
+      integer('allowed', { default: 1 }),
+      datetime('seen_at'),
+      // Demande pour revoir : en attente, ou refusée par l'expéditeur.
+      enumeration('request', ['pending', 'refused']),
+    ],
+    indexes: [
+      { key: 'message_user', type: 'unique', columns: ['message_id', 'user_id'] },
+      { key: 'conversation', type: 'key', columns: ['conversation_id'] },
+    ],
   },
   {
     // Jusqu'où chaque membre a lu chaque conversation : sert au badge des messages non lus.
