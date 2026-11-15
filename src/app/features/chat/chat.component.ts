@@ -18,7 +18,7 @@ import { ProfileService } from '../../core/services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
 import { UnreadMessagesService } from '../../core/services/unread-messages.service';
 import { ConversationService } from '../../core/services/conversation.service';
-import { Message } from '../../core/models/message.model';
+import { EphemeralContent, EphemeralView, Message } from '../../core/models/message.model';
 import { ModerationService } from '../../core/services/moderation.service';
 import { MemberSafetyComponent } from '../../core/components/member-safety/member-safety.component';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
@@ -101,11 +101,20 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   /** Photo affichée en grand (adresse de l'image), ou null. */
   readonly lightboxUrl = signal<string | null>(null);
 
+  /** Mode « voir une fois » : le prochain envoi (texte, photos, vidéos) est éphémère. */
+  readonly ephemeralMode = signal(false);
+  /** Message éphémère ouvert, affiché en plein écran une seule fois. */
+  readonly ephemeralShown = signal<EphemeralContent | null>(null);
+  private ephemeralShownId = '';
+  /** Message éphémère en cours d'ouverture ou de demande (bouton désactivé). */
+  readonly ephemeralBusy = signal('');
+
   /** Message qui n'a pas pu partir : affiché sous la zone de saisie. */
   readonly sendError = signal('');
 
   private stopListening: (() => void) | null = null;
   private stopReactions: (() => void) | null = null;
+  private stopViews: (() => void) | null = null;
   private destroyed = false;
   private shouldScroll = false;
 
@@ -148,6 +157,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.stopReactions = this.conversationService.subscribeToReactions(
       this.conversationId,
       (messageId) => this.zone.run(() => this.refreshReactions(messageId)),
+    );
+    this.stopViews = this.conversationService.subscribeToEphemeralViews(
+      this.conversationId,
+      (messageId) => this.zone.run(() => this.refreshViews(messageId)),
     );
 
     await this.loadMessages();
@@ -206,6 +219,98 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.messages.update((list) => list.map((m) => (m.id === messageId ? { ...m, reactions } : m)));
   }
 
+  /** Relit les vues d'un message éphémère (ouverture, demande, réponse). */
+  private async refreshViews(messageId: string) {
+    if (!this.messages().some((m) => m.id === messageId)) return;
+    const views = await this.conversationService.getEphemeralViews(messageId);
+    this.messages.update((list) => list.map((m) => (m.id === messageId ? { ...m, views } : m)));
+  }
+
+  // ── Messages éphémères ──────────────────────
+
+  toggleEphemeral() {
+    this.ephemeralMode.update((on) => !on);
+  }
+
+  /** Ma vue d'un message éphémère reçu (aucune ligne = jamais ouvert). */
+  myView(msg: Message): EphemeralView {
+    return (
+      msg.views?.find((v) => v.user_id === this.myId) ?? {
+        user_id: this.myId,
+        seen: 0,
+        allowed: 1,
+        request: null,
+      }
+    );
+  }
+
+  canOpen(msg: Message): boolean {
+    const view = this.myView(msg);
+    return view.seen < view.allowed;
+  }
+
+  /** « Vu par Bob, Zoé » pour l'expéditeur. */
+  seenBy(msg: Message): string {
+    const names = (msg.views ?? []).filter((v) => v.seen > 0).map((v) => v.username ?? '?');
+    if (!names.length) return 'Pas encore vu';
+    return this.groupSortieId() ? `Vu par ${names.join(', ')}` : 'Vu ✓';
+  }
+
+  pendingRequests(msg: Message): EphemeralView[] {
+    return (msg.views ?? []).filter((v) => v.request === 'pending');
+  }
+
+  ephemeralLabel(msg: Message): string {
+    return msg.type === 'image'
+      ? 'Photo éphémère'
+      : msg.type === 'video'
+        ? 'Vidéo éphémère'
+        : 'Message éphémère';
+  }
+
+  async openEphemeral(event: Event, msg: Message) {
+    event.stopPropagation();
+    if (this.ephemeralBusy()) return;
+    this.ephemeralBusy.set(msg.id);
+    this.sendError.set('');
+    const { data, error } = await this.conversationService.openEphemeral(msg.id);
+    this.ephemeralBusy.set('');
+    if (error || !data) {
+      this.sendError.set(error ?? 'Impossible d’ouvrir ce message.');
+      await this.refreshViews(msg.id);
+      return;
+    }
+    this.ephemeralShownId = msg.id;
+    this.ephemeralShown.set(data);
+  }
+
+  /** Fermé : le contenu disparaît de l'écran et de la mémoire du téléphone. */
+  closeEphemeral() {
+    const shown = this.ephemeralShown();
+    if (shown?.url) URL.revokeObjectURL(shown.url);
+    this.ephemeralShown.set(null);
+    if (this.ephemeralShownId) this.refreshViews(this.ephemeralShownId);
+    this.ephemeralShownId = '';
+  }
+
+  async askToSeeAgain(event: Event, msg: Message) {
+    event.stopPropagation();
+    this.ephemeralBusy.set(msg.id);
+    const error = await this.conversationService.askToSeeAgain(msg.id);
+    this.ephemeralBusy.set('');
+    if (error) this.sendError.set(error);
+    await this.refreshViews(msg.id);
+  }
+
+  async answerSeeAgain(event: Event, msg: Message, memberId: string, accept: boolean) {
+    event.stopPropagation();
+    this.ephemeralBusy.set(msg.id);
+    const error = await this.conversationService.answerSeeAgain(msg.id, memberId, accept);
+    this.ephemeralBusy.set('');
+    if (error) this.sendError.set(error);
+    await this.refreshViews(msg.id);
+  }
+
   ngAfterViewChecked() {
     if (this.shouldScroll) {
       this.scrollToBottom();
@@ -217,6 +322,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.destroyed = true;
     this.stopListening?.();
     this.stopReactions?.();
+    this.stopViews?.();
+    this.closeEphemeral();
     if (this.conversationId && this.myId) this.unread.closed(this.conversationId, this.myId);
     for (const media of this.pendingMedia()) URL.revokeObjectURL(media.previewUrl);
   }
@@ -238,6 +345,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   @HostListener('document:keydown.escape')
   closeLightbox() {
+    if (this.ephemeralShown()) this.closeEphemeral();
     this.lightboxUrl.set(null);
   }
 
@@ -272,15 +380,17 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     if ((!content && !files.length) || this.sending()) return;
     this.sending.set(true);
     this.sendError.set('');
-    let replyTo = this.replyTo();
-    this.replyTo.set(null);
+    const ephemeral = this.ephemeralMode();
+    // Un message éphémère ne cite pas d'autre message.
+    let replyTo = ephemeral ? null : this.replyTo();
+    if (!ephemeral) this.replyTo.set(null);
 
     // Photos et vidéos : une par message, celles qui échouent restent prêtes à renvoyer.
     const failed: PendingMedia[] = [];
     this.uploading.set(files.length > 0);
     for (const [index, media] of files.entries()) {
       this.sendProgress.set(files.length > 1 ? `${index + 1}/${files.length}` : '');
-      const msg = await this.sendMedia(media, replyTo?.id);
+      const msg = await this.sendMedia(media, replyTo?.id, ephemeral);
       if (msg) {
         this.addMessages([msg]);
         URL.revokeObjectURL(media.previewUrl);
@@ -295,13 +405,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     if (content && !failed.length) {
       this.text.set('');
-      const msg = await this.conversationService.sendMessage(
-        this.conversationId,
-        this.myId,
-        content,
-        'text',
-        replyTo?.id,
-      );
+      const msg = ephemeral
+        ? await this.conversationService.sendEphemeral(this.conversationId, 'text', content)
+        : await this.conversationService.sendMessage(
+            this.conversationId,
+            this.myId,
+            content,
+            'text',
+            replyTo?.id,
+          );
       if (msg) {
         this.addMessages([msg]);
         replyTo = null;
@@ -317,16 +429,26 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       );
     }
     if (replyTo) this.replyTo.set(replyTo);
+    // Le mode éphémère vaut pour un envoi : on revient au mode normal ensuite.
+    if (ephemeral && !failed.length && !this.text()) this.ephemeralMode.set(false);
     this.sending.set(false);
   }
 
-  private async sendMedia(media: PendingMedia, replyToId?: string): Promise<Message | null> {
+  private async sendMedia(
+    media: PendingMedia,
+    replyToId?: string,
+    ephemeral = false,
+  ): Promise<Message | null> {
     const fileId = await this.conversationService.uploadMedia(
       media.file,
       this.myId,
       this.conversationId,
+      ephemeral,
     );
     if (!fileId) return null;
+    if (ephemeral) {
+      return this.conversationService.sendEphemeral(this.conversationId, media.type, null, fileId);
+    }
     return this.conversationService.sendMessage(
       this.conversationId,
       this.myId,

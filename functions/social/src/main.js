@@ -11,6 +11,7 @@ import {
 } from './shared/appwrite.js';
 import { collectEvidence, shareMediaWithAdmins } from './shared/moderation.js';
 import { listProfileVisits, purgeOldVisits, recordProfileVisit } from './shared/visites.js';
+import { answerSeeAgain, askToSeeAgain, openEphemeral, sendEphemeral } from './shared/ephemeres.js';
 
 /** Délai avant de pouvoir redemander en ami un membre qui a refusé : 30 jours. */
 const RETRY_AFTER_DECLINE_MS = 30 * 24 * 3600 * 1000;
@@ -248,6 +249,34 @@ async function profileVisits({ api, userId }) {
   return listProfileVisits(api, { userId });
 }
 
+/** Messages éphémères (« voir une fois ») : envoi, ouverture, demande pour revoir, réponse. */
+async function ephemeralSend({ api, userId, input }) {
+  return sendEphemeral(api, {
+    userId,
+    conversationId: input.conversationId,
+    type: input.type,
+    content: input.content,
+    mediaFileId: input.mediaFileId,
+  });
+}
+
+async function ephemeralOpen({ api, userId, input }) {
+  return openEphemeral(api, { userId, messageId: input.messageId });
+}
+
+async function ephemeralAsk({ api, userId, input }) {
+  return askToSeeAgain(api, { userId, messageId: input.messageId });
+}
+
+async function ephemeralAnswer({ api, userId, input }) {
+  return answerSeeAgain(api, {
+    userId,
+    messageId: input.messageId,
+    memberId: input.memberId,
+    accept: input.accept,
+  });
+}
+
 export default handler(
   {
     friendRequest,
@@ -259,6 +288,10 @@ export default handler(
     unblock,
     profileVisit,
     profileVisits,
+    ephemeralSend,
+    ephemeralOpen,
+    ephemeralAsk,
+    ephemeralAnswer,
   },
   // Chaque nuit : effacer les visites de profil de plus de 30 jours.
   { onSchedule: async ({ api }) => purgeOldVisits(api) },

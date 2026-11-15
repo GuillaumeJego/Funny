@@ -4,6 +4,25 @@ export interface MessageReaction {
   emoji: string;
 }
 
+/** Vue d'un message éphémère par un destinataire. */
+export interface EphemeralView {
+  user_id: string;
+  username?: string;
+  /** Vues utilisées / vues autorisées (1, puis +1 à chaque « revoir » accepté). */
+  seen: number;
+  allowed: number;
+  /** Demande pour revoir : en attente, ou refusée par l'expéditeur. */
+  request: 'pending' | 'refused' | null;
+}
+
+/** Contenu d'un message éphémère, le temps de l'afficher une fois. */
+export interface EphemeralContent {
+  type: 'text' | 'image' | 'video';
+  content?: string;
+  /** Adresse locale de la photo ou de la vidéo (à libérer après affichage). */
+  url?: string;
+}
+
 export interface Message {
   id: string;
   conversation_id: string;
@@ -21,6 +40,10 @@ export interface Message {
     sender?: { username: string };
   } | null;
   reactions?: MessageReaction[];
+  /** Message éphémère (« voir une fois ») : son contenu n'est jamais dans le message. */
+  ephemeral?: boolean;
+  /** Message éphémère : qui l'a ouvert, et les demandes pour le revoir. */
+  views?: EphemeralView[];
 }
 
 export interface ConversationParticipant {

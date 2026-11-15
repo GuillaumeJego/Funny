@@ -72,13 +72,17 @@ export class AppwriteStorageRepository extends StorageRepository {
     userId: string,
     conversationId: string,
     file: File,
+    ephemeral = false,
   ): Promise<RepositoryResult<string>> {
     return attempt(async () => {
       const created = await this.appwrite.storage.createFile({
         bucketId: 'chat-media',
         fileId: ID.unique(),
         file,
-        permissions: [Permission.read(Role.team(conversationId)), ...ownedBy(userId)],
+        // Éphémère : la conversation ne le lit pas, le serveur le sert à l'ouverture.
+        permissions: ephemeral
+          ? ownedBy(userId)
+          : [Permission.read(Role.team(conversationId)), ...ownedBy(userId)],
       });
       return created.$id;
     });

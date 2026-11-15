@@ -81,9 +81,48 @@ export class ConversationService {
   }
 
   // Envoie une photo ou une vidéo, lisible par les seuls participants ; renvoie son identifiant
-  async uploadMedia(file: File, userId: string, conversationId: string): Promise<string | null> {
-    const { data } = await this.storage.uploadChatMedia(userId, conversationId, file);
+  // (éphémère : lisible par personne, le serveur la sert une fois à chacun)
+  async uploadMedia(
+    file: File,
+    userId: string,
+    conversationId: string,
+    ephemeral = false,
+  ): Promise<string | null> {
+    const { data } = await this.storage.uploadChatMedia(userId, conversationId, file, ephemeral);
     return data;
+  }
+
+  // ── Messages éphémères (« voir une fois ») ──
+  async sendEphemeral(
+    conversationId: string,
+    type: 'text' | 'image' | 'video',
+    content: string | null,
+    mediaFileId: string | null = null,
+  ) {
+    return await this.conversations.sendEphemeral(conversationId, type, content, mediaFileId);
+  }
+
+  async openEphemeral(messageId: string) {
+    return await this.conversations.openEphemeral(messageId);
+  }
+
+  async askToSeeAgain(messageId: string) {
+    return await this.conversations.askToSeeAgain(messageId);
+  }
+
+  async answerSeeAgain(messageId: string, memberId: string, accept: boolean) {
+    return await this.conversations.answerSeeAgain(messageId, memberId, accept);
+  }
+
+  async getEphemeralViews(messageId: string) {
+    return await this.conversations.getEphemeralViews(messageId);
+  }
+
+  subscribeToEphemeralViews(
+    conversationId: string,
+    callback: (messageId: string) => void,
+  ): Unsubscribe {
+    return this.conversations.onEphemeralViewChange(conversationId, callback);
   }
 
   // Écoute les nouveaux messages de toutes ses conversations (liste des conversations)

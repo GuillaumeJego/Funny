@@ -672,3 +672,121 @@
   font-size: 0.7rem;
   font-weight: 700;
 }
+
+// ─── Messages éphémères (voir une fois) ───────────────────
+.bubble.ephemeral {
+  min-width: 11rem;
+}
+
+.eph {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.eph-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.eph-status {
+  font-size: 0.78rem;
+  opacity: 0.8;
+}
+
+.eph-request {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  padding-top: 0.4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 0.82rem;
+}
+
+.eph-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.eph-btn {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 999px;
+  background: $accent;
+  color: $on-accent;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &.ghost {
+    background: alpha($text-dark, 0.08);
+    color: inherit;
+  }
+
+  &.open {
+    padding: 0.55rem 1rem;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.bubble.own .eph-btn.ghost {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-eph {
+  font-size: 1.05rem;
+  line-height: 1;
+  filter: grayscale(1);
+  opacity: 0.7;
+
+  &.active {
+    filter: none;
+    opacity: 1;
+    background: alpha($accent, 0.3);
+  }
+}
+
+.eph-mode-bar {
+  margin-bottom: 0.4rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: $border-radius;
+  background: alpha($accent, 0.18);
+  color: $text-dark;
+  font-size: 0.8rem;
+}
+
+.eph-viewer {
+  background: #000;
+  flex-direction: column;
+  gap: 1rem;
+  cursor: default;
+
+  video {
+    max-width: 100%;
+    max-height: 80%;
+    border-radius: 6px;
+  }
+}
+
+.eph-viewer-text {
+  max-width: 34rem;
+  margin: 0;
+  color: #fff;
+  font-size: 1.25rem;
+  line-height: 1.5;
+  text-align: center;
+  white-space: pre-wrap;
+}
+
+.eph-viewer-hint {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+}

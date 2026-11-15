@@ -1,4 +1,10 @@
-import { Conversation, Message, MessageReaction } from '../models/message.model';
+import {
+  Conversation,
+  EphemeralContent,
+  EphemeralView,
+  Message,
+  MessageReaction,
+} from '../models/message.model';
 import { Unsubscribe } from './repository.types';
 
 export interface NewMessage {
@@ -36,6 +42,35 @@ export abstract class ConversationRepository {
   abstract getUnreadCounts(userId: string): Promise<Map<string, number>>;
   /** Note que le membre a lu la conversation jusqu'à maintenant. */
   abstract markRead(conversationId: string, userId: string): Promise<void>;
+  /**
+   * Message éphémère (texte, ou photo / vidéo déjà envoyée avec
+   * StorageRepository.uploadChatMedia(…, true)). Le serveur garde le contenu à part.
+   */
+  abstract sendEphemeral(
+    conversationId: string,
+    type: 'text' | 'image' | 'video',
+    content: string | null,
+    mediaFileId: string | null,
+  ): Promise<Message | null>;
+  /** Ouvre un message éphémère reçu (une vue) ; l'erreur dit pourquoi c'est impossible. */
+  abstract openEphemeral(
+    messageId: string,
+  ): Promise<{ data: EphemeralContent | null; error: string | null }>;
+  /** Demande à revoir un message éphémère déjà vu. */
+  abstract askToSeeAgain(messageId: string): Promise<string | null>;
+  /** L'expéditeur autorise (une vue de plus) ou refuse la demande d'un membre. */
+  abstract answerSeeAgain(
+    messageId: string,
+    memberId: string,
+    accept: boolean,
+  ): Promise<string | null>;
+  /** Vues d'un message éphémère (avec le pseudo de chacun). */
+  abstract getEphemeralViews(messageId: string): Promise<EphemeralView[]>;
+  /** Prévient quand une vue ou une demande change : donne le message concerné. */
+  abstract onEphemeralViewChange(
+    conversationId: string,
+    callback: (messageId: string) => void,
+  ): Unsubscribe;
   /** Réactions d'un message (celles qui viennent vraiment de leur auteur). */
   abstract getReactions(messageId: string): Promise<MessageReaction[]>;
   /** Prévient quand une réaction est ajoutée, changée ou retirée : donne le message concerné. */
