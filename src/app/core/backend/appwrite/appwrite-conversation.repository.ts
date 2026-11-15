@@ -183,16 +183,20 @@ export class AppwriteConversationRepository extends ConversationRepository {
     type: 'text' | 'image' | 'video',
     content: string | null,
     mediaFileId: string | null,
-  ): Promise<Message | null> {
-    const { data } = await this.appwrite.run<{ message: MessageRow }>('social', 'ephemeralSend', {
-      conversationId,
-      type,
-      content,
-      mediaFileId,
-    });
-    if (!data) return null;
+  ): Promise<{ data: Message | null; error: string | null }> {
+    const { data, error } = await this.appwrite.run<{ message: MessageRow }>(
+      'social',
+      'ephemeralSend',
+      {
+        conversationId,
+        type,
+        content,
+        mediaFileId,
+      },
+    );
+    if (!data) return { data: null, error: error?.message ?? 'Le message n’est pas parti.' };
     const [message] = await this.enrich([data.message], []);
-    return message;
+    return { data: message, error: null };
   }
 
   async openEphemeral(

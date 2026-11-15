@@ -51,7 +51,7 @@ export abstract class ConversationRepository {
     type: 'text' | 'image' | 'video',
     content: string | null,
     mediaFileId: string | null,
-  ): Promise<Message | null>;
+  ): Promise<{ data: Message | null; error: string | null }>;
   /** Ouvre un message éphémère reçu (une vue) ; l'erreur dit pourquoi c'est impossible. */
   abstract openEphemeral(
     messageId: string,
