@@ -77,21 +77,25 @@ describe('places des non-abonnés', () => {
 });
 
 function invitationsApi(extra = {}) {
-  return createFakeApi({
-    profiles: [
-      { $id: 'orga', username: 'Orga' },
-      { $id: 'alice', username: 'Alice' },
-      { $id: 'bob', username: 'Bob' },
-      { $id: 'zoe', username: 'Zoé' },
-    ],
-    member_status: [{ $id: 'bob', role: 'user_premium' }],
-    sorties: [extra.sortie],
-    inscriptions: [
-      { $id: 'i0', sortie_id: 's1', user_id: 'orga', status: 'confirmed' },
-      ...(extra.inscriptions ?? []),
-    ],
-    blocks: extra.blocks ?? [],
-  });
+  return createFakeApi(
+    {
+      profiles: [
+        { $id: 'orga', username: 'Orga' },
+        { $id: 'alice', username: 'Alice' },
+        { $id: 'bob', username: 'Bob' },
+        { $id: 'zoe', username: 'Zoé' },
+      ],
+      member_status: [{ $id: 'bob', role: 'user_premium' }],
+      sorties: [extra.sortie],
+      inscriptions: [
+        { $id: 'i0', sortie_id: 's1', user_id: 'orga', status: 'confirmed' },
+        ...(extra.inscriptions ?? []),
+      ],
+      blocks: extra.blocks ?? [],
+    },
+    // L'organisateur est abonné (sauf mention contraire).
+    { abonnes: extra.subscribers ?? ['orga'] },
+  );
 }
 
 const premiumSortie = {
@@ -140,17 +144,37 @@ describe('invitations', () => {
     expect(rows(api)).toHaveLength(1);
   });
 
-  it('pas d’invitation pour une sortie ouverte à tous, ni pour un membre bloqué', async () => {
+  it('un organisateur abonné invite aussi à une sortie ouverte à tous', async () => {
     const open = { ...premiumSortie, is_premium: false };
-    const api = invitationsApi({
+    const api = invitationsApi({ sortie: open });
+    const { invited } = await inviteMembers(api, {
       sortie: open,
+      organizerId: 'orga',
+      userIds: ['alice'],
+      now: NOW,
+    });
+    expect(invited).toEqual(['alice']);
+    expect(rows(api).find((r) => r.user_id === 'alice').status).toBe('invited');
+  });
+
+  it('pas d’invitation par un organisateur non abonné, ni pour un membre bloqué', async () => {
+    const notSubscriber = invitationsApi({ sortie: premiumSortie, subscribers: [] });
+    expect(
+      (
+        await errorOf(() =>
+          inviteMembers(notSubscriber, {
+            sortie: premiumSortie,
+            organizerId: 'orga',
+            userIds: ['bob'],
+            now: NOW,
+          }),
+        )
+      )?.status,
+    ).toBe(403);
+    const api = invitationsApi({
+      sortie: premiumSortie,
       blocks: [{ $id: 'b', blocker_id: 'alice', blocked_id: 'orga' }],
     });
-    expect(
-      await errorOf(() =>
-        inviteMembers(api, { sortie: open, organizerId: 'orga', userIds: ['bob'], now: NOW }),
-      ),
-    ).toBeInstanceOf(HttpError);
     const result = await inviteMembers(api, {
       sortie: premiumSortie,
       organizerId: 'orga',
@@ -235,7 +259,7 @@ describe('qui inviter : amis et personnes rencontrées', () => {
         ],
         blocks: extra.blocks ?? [],
       },
-      { admins: ['admin'] },
+      { admins: ['admin'], abonnes: extra.subscribers ?? ['orga'] },
     );
   }
   const ids = (list) => list.map((p) => p.id);
@@ -307,12 +331,16 @@ describe('qui inviter : amis et personnes rencontrées', () => {
     expect(skipped).toEqual(['zoe']);
   });
 
-  it('seul l’organisateur (ou un admin) peut inviter, et à une sortie pour abonnés', async () => {
+  it('seul l’organisateur abonné (ou un admin) peut inviter, à toute sortie', async () => {
     const api = candidatesApi();
     expect((await errorOf(() => checkCanInvite(api, premiumSortie, 'alice')))?.status).toBe(403);
     expect(await errorOf(() => checkCanInvite(api, premiumSortie, 'orga'))).toBeNull();
     expect(await errorOf(() => checkCanInvite(api, premiumSortie, 'admin'))).toBeNull();
     const ordinary = { ...premiumSortie, is_premium: false };
-    expect((await errorOf(() => checkCanInvite(api, ordinary, 'orga')))?.status).toBe(400);
+    expect(await errorOf(() => checkCanInvite(api, ordinary, 'orga'))).toBeNull();
+    const notSubscriber = candidatesApi({ subscribers: [] });
+    expect((await errorOf(() => checkCanInvite(notSubscriber, ordinary, 'orga')))?.status).toBe(
+      403,
+    );
   });
 });

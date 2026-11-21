@@ -103,8 +103,10 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   /** Écran d'invitation ouvert (sortie publiée, ou modifiée). */
   readonly inviteOpen = signal(false);
   readonly shareMessage = signal('');
-  /** Modification d'une sortie pour abonnés à venir : on peut y inviter des membres. */
-  readonly savedPremium = signal(false);
+  /** L'organisateur est abonné : il peut inviter des membres, à toute sortie. */
+  readonly isSubscriber = signal(false);
+  /** Modification d'une sortie à venir : un organisateur abonné peut y inviter des membres. */
+  readonly savedUpcoming = signal(false);
 
   /** La sortie dont on ouvre l'écran d'invitation (publiée ou modifiée). */
   inviteSortieId(): string {
@@ -123,6 +125,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
 
     const { data: profile } = await this.profileService.getMyProfile(user.id);
     this.canCreatePremium.set(isPremiumMember(profile));
+    this.isSubscriber.set(isPremiumMember(profile));
     if (!isPremiumMember(profile)) this.placesCap.set(CreateSortieComponent.FREE_PLACES);
     this.editId.set(this.route.snapshot.paramMap.get('id') ?? '');
     if (this.editId()) {
@@ -194,7 +197,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       );
     }
     this.takenPlaces = sortie.inscriptionsCount ?? 1;
-    this.savedPremium.set(!!sortie.is_premium && new Date(sortie.date).getTime() > Date.now());
+    this.savedUpcoming.set(new Date(sortie.date).getTime() > Date.now());
     this.locationQuery.set(sortie.location);
     const { data } = await this.themeService.getThemeImages(sortie.theme_id);
     this.themeImages.set(data ?? []);
@@ -282,11 +285,11 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
 
   // ── Après la publication : inviter ou partager ──
 
-  /** Sortie pour abonnés : écran d'invitation des membres ; sinon, partage du lien. */
+  /** Organisateur abonné : écran d'invitation des membres ; sinon, partage du lien. */
   async inviteFriends() {
     const sortie = this.published();
     if (!sortie) return;
-    if (sortie.is_premium) {
+    if (this.isSubscriber()) {
       this.inviteOpen.set(true);
       return;
     }
