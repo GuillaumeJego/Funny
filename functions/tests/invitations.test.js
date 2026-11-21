@@ -281,6 +281,20 @@ describe('qui inviter : amis et personnes rencontrées', () => {
     expect(placesLeft).toBe(1);
   });
 
+  it('marche aussi avant la création de la sortie (formulaire)', async () => {
+    const api = candidatesApi();
+    const { friends, met, placesLeft } = await inviteCandidates(api, {
+      sortie: { $id: null, max_participants: 5 },
+      organizerId: 'orga',
+      now: NOW,
+    });
+    expect(ids(friends)).toEqual(['alice', 'bob']);
+    expect(ids(met)).toEqual(['alice', 'zoe']);
+    // Personne n'est encore invité ; seule la place de l'organisateur est prise.
+    expect(friends.every((p) => p.state === null)).toBe(true);
+    expect(placesLeft).toBe(4);
+  });
+
   it('cache les membres bloqués, dans un sens comme dans l’autre', async () => {
     const api = candidatesApi({
       blocks: [

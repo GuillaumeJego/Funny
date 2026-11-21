@@ -18,7 +18,7 @@ import { SettingsService } from '../../../core/services/settings.service';
 import { SortieService } from '../../../core/services/sortie.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { OTHER_THEME_ID, Theme, ThemeImage } from '../../../core/models/theme.model';
-import { Sortie } from '../../../core/models/sortie.model';
+import { InviteCandidate, Sortie } from '../../../core/models/sortie.model';
 import { SortieImageUploadComponent } from '../sortie-image-upload/sortie-image-upload.component';
 import { isPremiumMember } from '../../../core/utils/premium';
 import { ClickableDirective } from '../../../core/directives/clickable.directive';
@@ -103,6 +103,12 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   /** Écran d'invitation ouvert (sortie publiée, ou modifiée). */
   readonly inviteOpen = signal(false);
   readonly shareMessage = signal('');
+  /** Création : invités choisis dans le formulaire, invités à la publication. */
+  readonly invitees = signal<InviteCandidate[]>([]);
+  /** Écran de choix des invités ouvert (formulaire de création). */
+  readonly pickerOpen = signal(false);
+  /** Nombre d'invitations parties avec la sortie publiée. */
+  readonly sentInvites = signal(0);
   /** L'organisateur est abonné : il peut inviter des membres, à toute sortie. */
   readonly isSubscriber = signal(false);
   /** Modification d'une sortie à venir : un organisateur abonné peut y inviter des membres. */
@@ -271,7 +277,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   }
 
   /** Nombre de places saisi (null = vide). */
-  private places(): number | null {
+  places(): number | null {
     const value = this.sortie.max_participants as number | string | null | undefined;
     return value === null || value === undefined || value === '' ? null : Number(value);
   }
@@ -303,6 +309,10 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     const result = await shareSortie(sortie);
     if (result === 'copied') this.shareMessage.set('🔗 Lien copié ! Colle-le où tu veux.');
     if (result === 'error') this.shareMessage.set(`Copie ce lien : ${sortieLink(sortie.id)}`);
+  }
+
+  removeInvitee(id: string) {
+    this.invitees.update((list) => list.filter((p) => p.id !== id));
   }
 
   viewSortie() {
@@ -341,6 +351,13 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       return;
     }
     const places = this.places();
+    const invites = this.editId() ? [] : this.invitees().map((p) => p.id);
+    if (places !== null && invites.length + 1 > places) {
+      this.errorMessage.set(
+        `Trop d'invités pour ${places} places (toi compris) : ajoute des places ou retire des invités.`,
+      );
+      return;
+    }
     if (places !== null && this.takenPlaces > places) {
       this.errorMessage.set(
         `${this.takenPlaces} places déjà prises (toi et tes invités compris) : garde au moins ${this.takenPlaces} places.`,
@@ -392,11 +409,13 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
         this.sortie.created_by = this.userId;
         const { data: newSortie, error } = await this.sortieService.createSortie(
           this.withUtcDate(),
+          invites,
         );
         if (error || !newSortie) {
           this.errorMessage.set(error?.message ?? 'Erreur lors de la création de la sortie.');
         } else {
           // « Ta sortie est publiée ! 🎉 » : voir la sortie, ou inviter tout de suite.
+          this.sentInvites.set(invites.length);
           this.published.set(newSortie);
           window.scrollTo({ top: 0 });
         }

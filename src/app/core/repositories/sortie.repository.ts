@@ -22,8 +22,14 @@ export abstract class SortieRepository {
     invites?: string[],
   ): Promise<RepositoryResult<Sortie>>;
   abstract delete(id: string): Promise<RepositoryResult<null>>;
-  /** Amis et personnes rencontrées que l'organisateur peut inviter (sortie pour abonnés). */
-  abstract getInviteCandidates(sortieId: string): Promise<RepositoryResult<InviteCandidates>>;
+  /**
+   * Amis et personnes rencontrées que l'organisateur abonné peut inviter. Sans `sortieId`
+   * (formulaire de création), pour une sortie à venir de `places` places.
+   */
+  abstract getInviteCandidates(
+    sortieId: string | null,
+    places?: number | null,
+  ): Promise<RepositoryResult<InviteCandidates>>;
   /** Invite des membres ; le serveur revérifie tout et dit qui a été ignoré. */
   abstract invite(
     sortieId: string,

@@ -152,7 +152,7 @@
         <button
           type="button"
           class="btn-invite"
-          [disabled]="!selected().size || sending()"
+          [disabled]="(!selected().size && !pickOnly()) || sending()"
           (click)="send()"
         >
           {{ sending() ? 'Envoi…' : buttonLabel() }}

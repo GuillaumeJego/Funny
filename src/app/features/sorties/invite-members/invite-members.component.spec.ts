@@ -116,4 +116,16 @@ describe('InviteMembersComponent', () => {
     expect(component.sendError()).toContain('connexion');
     expect(component.selected().has('alice')).toBe(true);
   });
+
+  it('formulaire de création : rend les personnes choisies sans rien envoyer', async () => {
+    await setup();
+    fixture.componentRef.setInput('pickOnly', true);
+    let picked: string[] = [];
+    component.picked.subscribe((list) => (picked = list.map((p) => p.id)));
+    component.toggle(find(component.friends(), 'alice'));
+    expect(component.buttonLabel()).toBe('Ajouter 1 personne');
+    await component.send();
+    expect(picked).toEqual(['alice']);
+    expect(sent).toEqual([]);
+  });
 });

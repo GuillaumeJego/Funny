@@ -93,11 +93,14 @@ export class AppwriteSortieRepository extends SortieRepository {
     return { data: null, error };
   }
 
-  async getInviteCandidates(sortieId: string): Promise<RepositoryResult<InviteCandidates>> {
+  async getInviteCandidates(
+    sortieId: string | null,
+    places: number | null = null,
+  ): Promise<RepositoryResult<InviteCandidates>> {
     const { data, error } = await this.appwrite.run<InviteCandidates>(
       'sorties',
       'inviteCandidates',
-      { sortieId },
+      { sortieId, places },
     );
     return {
       data: data

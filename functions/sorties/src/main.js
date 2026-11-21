@@ -238,6 +238,15 @@ async function invite({ api, userId, input }) {
 
 /** Amis et personnes rencontrées que l'organisateur peut inviter, avec leur état. */
 async function candidates({ api, userId, input }) {
+  // Formulaire de création : la sortie n'existe pas encore, l'organisateur est celui qui appelle.
+  if (!input.sortieId) {
+    await checkCanInvite(api, { created_by: userId }, userId);
+    const places = Number.isInteger(input.places) && input.places > 0 ? input.places : null;
+    return inviteCandidates(api, {
+      sortie: { $id: null, max_participants: places },
+      organizerId: userId,
+    });
+  }
   const sortie = await getSortie(api, input.sortieId);
   await checkCanInvite(api, sortie, userId);
   return inviteCandidates(api, { sortie, organizerId: sortie.created_by });
