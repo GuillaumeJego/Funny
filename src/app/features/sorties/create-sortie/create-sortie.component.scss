@@ -596,3 +596,56 @@
   font-size: 0.9rem;
   word-break: break-all;
 }
+
+.published-sent {
+  margin: 0 0 0.5rem;
+  color: $success-text;
+  font-weight: 700;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.6rem 0 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.3rem 0.25rem 0.25rem;
+  background: $primary-light;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $text-dark;
+
+  img,
+  .chip-initial {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .chip-initial {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: $primary;
+    color: white;
+    font-size: 0.72rem;
+  }
+
+  button {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: $text-medium;
+    cursor: pointer;
+  }
+}

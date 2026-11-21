@@ -17,6 +17,13 @@
       <div class="published-icon" aria-hidden="true">🎉</div>
       <h1>Ta sortie est publiée !</h1>
       <p class="published-title">« {{ p.title }} »</p>
+      @if (sentInvites()) {
+        <p class="published-sent">
+          💌 {{ sentInvites() }} invitation{{ sentInvites() > 1 ? 's' : '' }} envoyée{{
+            sentInvites() > 1 ? 's' : ''
+          }}
+        </p>
+      }
       <p class="published-hint">
         @if (isSubscriber()) {
           Invite tes amis et les personnes rencontrées en sortie : leur place est gardée jusqu'à
@@ -37,6 +44,17 @@
       }
     </div>
   </div>
+}
+
+@if (pickerOpen()) {
+  <app-invite-members
+    [pickOnly]="true"
+    [places]="places()"
+    [initialSelection]="invitees()"
+    [sortieTitle]="sortie.title ?? ''"
+    (picked)="invitees.set($event)"
+    (closed)="pickerOpen.set(false)"
+  />
 }
 
 @if (inviteOpen() && inviteSortieId()) {
@@ -268,6 +286,41 @@
         </label>
         <span class="toggle-text">⭐ Réservée aux abonnés</span>
         <button type="button" class="badge-premium" (click)="goToPremium()">Option Premium</button>
+      </div>
+    }
+
+    @if (!editId() && isSubscriber()) {
+      <!-- Abonné : choisir ses invités avant de publier -->
+      <div class="formfield invite-box">
+        <span class="invite-box-title">💌 Inviter des amis</span>
+        <p class="hint">
+          Tes amis et les personnes rencontrées en sortie recevront une invitation dès la
+          publication. Leur place est gardée jusqu'à leur réponse.
+        </p>
+        @if (invitees().length) {
+          <div class="chips">
+            @for (m of invitees(); track m.id) {
+              <span class="chip">
+                @if (m.avatar_url) {
+                  <img [src]="m.avatar_url" alt="" />
+                } @else {
+                  <span class="chip-initial">{{ m.username.charAt(0).toUpperCase() }}</span>
+                }
+                {{ m.username }}
+                <button
+                  type="button"
+                  [attr.aria-label]="'Retirer ' + m.username"
+                  (click)="removeInvitee(m.id)"
+                >
+                  ✕
+                </button>
+              </span>
+            }
+          </div>
+        }
+        <button type="button" class="btn-invite-friends" (click)="pickerOpen.set(true)">
+          {{ invitees().length ? 'Modifier mes invités' : 'Choisir des amis' }}
+        </button>
       </div>
     }
 

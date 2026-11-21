@@ -229,10 +229,13 @@ export async function inviteCandidates(api, { sortie, organizerId, now = new Dat
       .filter((p) => !p.is_banned)
       .map((p) => [p.$id, p]),
   );
-  const inscriptions = await api.listAllRows('inscriptions', [
-    Query.equal('sortie_id', sortie.$id),
-    Query.notEqual('status', 'cancelled'),
-  ]);
+  // Sortie pas encore créée (formulaire de création) : personne n'y est encore.
+  const inscriptions = sortie.$id
+    ? await api.listAllRows('inscriptions', [
+        Query.equal('sortie_id', sortie.$id),
+        Query.notEqual('status', 'cancelled'),
+      ])
+    : [];
   const stateOf = new Map(inscriptions.map((i) => [i.user_id, STATE_OF[i.status] ?? null]));
 
   const people = (ids) =>
@@ -246,7 +249,8 @@ export async function inviteCandidates(api, { sortie, organizerId, now = new Dat
       }))
       .sort((a, b) => a.username.localeCompare(b.username, 'fr'));
 
-  const taken = inscriptions.filter((i) => TAKEN.includes(i.status)).length;
+  // Sans sortie créée, seule la place de l'organisateur est prise.
+  const taken = sortie.$id ? inscriptions.filter((i) => TAKEN.includes(i.status)).length : 1;
   return {
     friends: people(friendIds),
     met: people(metIds),

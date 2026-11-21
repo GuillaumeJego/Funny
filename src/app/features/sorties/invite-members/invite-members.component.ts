@@ -33,9 +33,21 @@ const PAGE = 30;
 export class InviteMembersComponent implements OnInit {
   private sortieService = inject(SortieService);
 
-  readonly sortieId = input.required<string>();
+  /** La sortie ; vide dans le formulaire de création (la sortie n'existe pas encore). */
+  readonly sortieId = input<string | null>(null);
   readonly sortieTitle = input('');
+  /** Formulaire de création : nombre de places prévu (null : illimité). */
+  readonly places = input<number | null>(null);
+  /**
+   * Formulaire de création : on choisit seulement ses invités, qui partiront avec la sortie
+   * à la publication (rien n'est envoyé d'ici).
+   */
+  readonly pickOnly = input(false);
+  /** Personnes déjà choisies dans le formulaire. */
+  readonly initialSelection = input<InviteCandidate[]>([]);
   readonly closed = output<void>();
+  /** Formulaire de création : les personnes choisies. */
+  readonly picked = output<InviteCandidate[]>();
   /** Nombre de personnes invitées à cet envoi (pour rafraîchir la fiche). */
   readonly invited = output<number>();
 
@@ -78,8 +90,9 @@ export class InviteMembersComponent implements OnInit {
 
   readonly buttonLabel = computed(() => {
     const n = this.selected().size;
-    if (n === 0) return 'Choisis des personnes';
-    return `Inviter ${n} personne${n > 1 ? 's' : ''}`;
+    if (n === 0) return this.pickOnly() ? 'Valider' : 'Choisis des personnes';
+    const people = `${n} personne${n > 1 ? 's' : ''}`;
+    return this.pickOnly() ? `Ajouter ${people}` : `Inviter ${people}`;
   });
 
   async ngOnInit() {
@@ -89,7 +102,11 @@ export class InviteMembersComponent implements OnInit {
   async load() {
     this.loading.set(true);
     this.loadError.set('');
-    const { data, error } = await this.sortieService.getInviteCandidates(this.sortieId());
+    this.selected.set(new Set(this.initialSelection().map((p) => p.id)));
+    const { data, error } = await this.sortieService.getInviteCandidates(
+      this.sortieId(),
+      this.sortieId() ? null : this.places(),
+    );
     this.loading.set(false);
     if (error || !data) {
       this.loadError.set(error?.message ?? 'Impossible de charger tes contacts.');
@@ -162,11 +179,19 @@ export class InviteMembersComponent implements OnInit {
   /** Envoie les invitations ; le bouton est désactivé pendant l'envoi (pas de double envoi). */
   async send() {
     const ids = [...this.selected()];
-    if (!ids.length || this.sending()) return;
+    if (this.pickOnly()) {
+      // Formulaire : on rend la sélection (même vide, pour tout retirer).
+      const all = [...this.friends(), ...this.met()];
+      this.picked.emit(ids.map((id) => all.find((p) => p.id === id)!).filter(Boolean));
+      this.closed.emit();
+      return;
+    }
+    const sortieId = this.sortieId();
+    if (!ids.length || this.sending() || !sortieId) return;
     this.sending.set(true);
     this.sendError.set('');
     this.success.set('');
-    const { data, error } = await this.sortieService.invite(this.sortieId(), ids);
+    const { data, error } = await this.sortieService.invite(sortieId, ids);
     this.sending.set(false);
     if (error || !data) {
       // La sélection est gardée : il suffit de réessayer.

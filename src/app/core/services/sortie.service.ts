@@ -111,8 +111,8 @@ export class SortieService {
   }
 
   // Écran d'invitation : amis et personnes rencontrées, puis l'envoi (le serveur revérifie)
-  async getInviteCandidates(sortieId: string) {
-    return await this.sorties.getInviteCandidates(sortieId);
+  async getInviteCandidates(sortieId: string | null, places: number | null = null) {
+    return await this.sorties.getInviteCandidates(sortieId, places);
   }
 
   async invite(sortieId: string, userIds: string[]) {
