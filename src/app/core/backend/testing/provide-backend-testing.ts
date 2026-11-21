@@ -52,6 +52,11 @@ const fakeSorties: SortieRepository = {
   create: async () => ok,
   update: async () => ok,
   delete: async () => ok,
+  getInviteCandidates: async () => ({
+    data: { friends: [], met: [], placesLeft: null },
+    error: null,
+  }),
+  invite: async () => ({ data: { invited: [], skipped: [] }, error: null }),
 };
 
 const fakeInscriptions: InscriptionRepository = {

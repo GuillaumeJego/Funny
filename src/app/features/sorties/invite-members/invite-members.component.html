@@ -1,0 +1,163 @@
+<div class="invite-backdrop" (click)="close()">
+  <div
+    class="invite-sheet"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="invite-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="invite-header">
+      <div class="invite-heading">
+        <h2 id="invite-title">💌 Inviter à ta sortie</h2>
+        @if (sortieTitle()) {
+          <p class="invite-sub">{{ sortieTitle() }}</p>
+        }
+      </div>
+      <button type="button" class="invite-close" aria-label="Fermer" (click)="close()">✕</button>
+    </header>
+
+    <div class="invite-search">
+      <span class="search-icon" aria-hidden="true">🔍</span>
+      <input
+        type="search"
+        placeholder="Rechercher un pseudo…"
+        aria-label="Rechercher une personne"
+        [value]="query()"
+        (input)="onSearch($any($event.target).value)"
+      />
+    </div>
+
+    <div class="invite-tabs" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        class="invite-tab"
+        [class.active]="tab() === 'friends'"
+        [attr.aria-selected]="tab() === 'friends'"
+        (click)="setTab('friends')"
+      >
+        Mes amis
+        @if (!loading()) {
+          <span class="count">{{ friends().length }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="invite-tab"
+        [class.active]="tab() === 'met'"
+        [attr.aria-selected]="tab() === 'met'"
+        (click)="setTab('met')"
+      >
+        Rencontrés en sortie
+        @if (!loading()) {
+          <span class="count">{{ met().length }}</span>
+        }
+      </button>
+    </div>
+
+    @if (placesLeft() !== null && !loading()) {
+      <p class="invite-places" [class.none]="placesLeft() === 0">
+        @if (placesLeft() === 0) {
+          Plus de place libre pour inviter.
+        } @else {
+          {{ placesLeft() }} place{{ placesLeft()! > 1 ? 's' : '' }} libre{{
+            placesLeft()! > 1 ? 's' : ''
+          }}
+          · chaque invité garde sa place jusqu'à sa réponse
+        }
+      </p>
+    }
+
+    <div class="invite-list" (scroll)="onScroll($event)">
+      @if (loading()) {
+        <div class="invite-state"><div class="spinner"></div></div>
+      } @else if (loadError()) {
+        <div class="invite-state">
+          <p>{{ loadError() }}</p>
+          <button type="button" class="btn-retry" (click)="load()">Réessayer</button>
+        </div>
+      } @else if (!list().length) {
+        <div class="invite-state">
+          @if (tab() === 'friends') {
+            <span class="state-icon">👋</span>
+            <p><strong>Pas encore d'amis sur Funny.</strong></p>
+            <p>Ajoute des amis depuis leur profil pour les retrouver ici.</p>
+          } @else {
+            <span class="state-icon">🎈</span>
+            <p><strong>Personne rencontrée pour l'instant.</strong></p>
+            <p>Les participants de tes sorties passées apparaîtront ici.</p>
+          }
+        </div>
+      } @else if (!filtered().length) {
+        <div class="invite-state">
+          <span class="state-icon">🔎</span>
+          <p>Aucun résultat pour « {{ query() }} ».</p>
+        </div>
+      } @else {
+        @if (allTaken()) {
+          <p class="invite-note">✅ Tout le monde ici est déjà invité ou inscrit.</p>
+        }
+        <ul class="people">
+          @for (person of visible(); track person.id) {
+            <li>
+              <button
+                type="button"
+                class="person"
+                [class.selected]="isSelected(person)"
+                [class.taken]="person.state !== null"
+                [disabled]="!canSelect(person)"
+                [attr.aria-pressed]="isSelected(person)"
+                (click)="toggle(person)"
+              >
+                @if (person.avatar_url) {
+                  <img class="avatar" [src]="person.avatar_url" alt="" loading="lazy" />
+                } @else {
+                  <span class="avatar placeholder" aria-hidden="true">{{ initial(person) }}</span>
+                }
+                <span class="person-text">
+                  <span class="person-name">{{ person.username }}</span>
+                  @if (person.state) {
+                    <span class="person-state">{{ stateLabel(person) }}</span>
+                  }
+                </span>
+                @if (person.state === null) {
+                  <span class="check" aria-hidden="true">
+                    @if (isSelected(person)) {
+                      ✓
+                    }
+                  </span>
+                }
+              </button>
+            </li>
+          }
+        </ul>
+        @if (visible().length < filtered().length) {
+          <button type="button" class="btn-more" (click)="showMore()">Voir plus</button>
+        }
+      }
+    </div>
+
+    <footer class="invite-footer">
+      @if (sendError()) {
+        <p class="invite-msg error" role="alert">{{ sendError() }}</p>
+      }
+      @if (success()) {
+        <p class="invite-msg ok" role="status">{{ success() }}</p>
+      }
+      <div class="footer-actions">
+        @if (success() && !selected().size) {
+          <button type="button" class="btn-done" (click)="close()">Terminé</button>
+        }
+        <button
+          type="button"
+          class="btn-invite"
+          [disabled]="!selected().size || sending()"
+          (click)="send()"
+        >
+          {{ sending() ? 'Envoi…' : buttonLabel() }}
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>

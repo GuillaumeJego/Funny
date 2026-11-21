@@ -10,7 +10,44 @@
   </div>
 }
 
-@if (!accessDenied()) {
+@if (published(); as p) {
+  <!-- Sortie publiée : on propose de la voir, ou d'inviter tout de suite -->
+  <div class="published-wrap">
+    <div class="published-card" role="status">
+      <div class="published-icon" aria-hidden="true">🎉</div>
+      <h1>Ta sortie est publiée !</h1>
+      <p class="published-title">« {{ p.title }} »</p>
+      <p class="published-hint">
+        @if (p.is_premium) {
+          Invite tes amis et les personnes rencontrées en sortie : leur place est gardée jusqu'à
+          leur réponse.
+        } @else {
+          Partage-la à tes amis pour réunir du monde.
+        }
+      </p>
+      <button type="button" class="btn-publish" (click)="inviteFriends()">
+        💌 Inviter des amis
+      </button>
+      <button type="button" class="btn-see" (click)="viewSortie()">Voir ma sortie</button>
+      @if (p.is_premium) {
+        <button type="button" class="btn-link" (click)="share()">📤 Partager le lien</button>
+      }
+      @if (shareMessage()) {
+        <p class="share-message" role="status">{{ shareMessage() }}</p>
+      }
+    </div>
+  </div>
+}
+
+@if (inviteOpen() && inviteSortieId()) {
+  <app-invite-members
+    [sortieId]="inviteSortieId()"
+    [sortieTitle]="published()?.title ?? sortie.title ?? ''"
+    (closed)="inviteOpen.set(false)"
+  />
+}
+
+@if (!accessDenied() && !published()) {
   <!-- Dès qu'on corrige un champ, l'ancien message « il manque » disparaît. -->
   <div class="create-page" (input)="errorMessage.set('')" (change)="errorMessage.set('')">
     <button class="btn-back" type="button" (click)="goToDashboard()">← Retour</button>
@@ -234,81 +271,13 @@
       </div>
     }
 
-    @if (canCreatePremium() && sortie.is_premium) {
+    @if (editId() && savedPremium()) {
       <div class="formfield invite-box">
-        <label for="cs-invite">💌 Qui souhaitez-vous inviter ?</label>
-        <p class="hint invite-hint">
-          Abonnés ou non : leur place est gardée tant qu'ils n'ont pas refusé.
-          @if (hasPlacesLimit()) {
-            <strong>
-              {{ placesLeft() }} place{{ placesLeft() > 1 ? 's' : '' }} libre{{
-                placesLeft() > 1 ? 's' : ''
-              }}
-              pour inviter.
-            </strong>
-          }
-        </p>
-        @if (alreadyInvited().length) {
-          <p class="hint">
-            Déjà invités :
-            @for (m of alreadyInvited(); track m.id; let last = $last) {
-              {{ m.username }}{{ last ? '' : ', ' }}
-            }
-          </p>
-        }
-        @if (invitees().length) {
-          <div class="chips">
-            @for (m of invitees(); track m.id) {
-              <span class="chip">
-                @if (m.avatar_url) {
-                  <img [src]="m.avatar_url" alt="" />
-                } @else {
-                  <span class="chip-initial">{{ m.username.charAt(0).toUpperCase() }}</span>
-                }
-                {{ m.username }}
-                <button
-                  type="button"
-                  [attr.aria-label]="'Retirer ' + m.username"
-                  (click)="removeInvitee(m.id)"
-                >
-                  ✕
-                </button>
-              </span>
-            }
-          </div>
-        }
-        <input
-          id="cs-invite"
-          type="search"
-          autocomplete="off"
-          placeholder="Chercher un membre par son nom"
-          [disabled]="placesLeft() <= 0"
-          [ngModel]="inviteQuery()"
-          (ngModelChange)="inviteQuery.set($event)"
-          (focus)="loadMembers()"
-        />
-        @if (placesLeft() <= 0) {
-          <p class="hint">Plus de place libre : ajoute des places pour inviter plus de monde.</p>
-        }
-        @if (inviteResults().length) {
-          <div class="location-suggestions">
-            @for (m of inviteResults(); track m.id) {
-              <div appClickable class="suggestion-item" (click)="addInvitee(m)">
-                @if (m.avatar_url) {
-                  <img class="sug-avatar" [src]="m.avatar_url" alt="" />
-                } @else {
-                  <span class="sug-avatar sug-initial">{{
-                    m.username.charAt(0).toUpperCase()
-                  }}</span>
-                }
-                <span class="sug-name">{{ m.username }}</span>
-                <span class="sug-country">+ Inviter</span>
-              </div>
-            }
-          </div>
-        } @else if (inviteQuery().trim()) {
-          <p class="hint">Aucun membre trouvé.</p>
-        }
+        <span class="invite-box-title">💌 Invitations</span>
+        <p class="hint">Invite tes amis et les personnes rencontrées lors de tes sorties.</p>
+        <button type="button" class="btn-invite-friends" (click)="inviteOpen.set(true)">
+          Inviter des amis
+        </button>
       </div>
     }
 

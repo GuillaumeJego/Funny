@@ -16,6 +16,8 @@ import { SortieWithRelations } from '../../../core/models/sortie.model';
 import { SortieService } from '../../../core/services/sortie.service';
 import { InscriptionStatus } from '../../../core/services/inscription.service';
 import { ClickableDirective } from '../../../core/directives/clickable.directive';
+import { InviteMembersComponent } from '../invite-members/invite-members.component';
+import { sortieLink, shareSortie } from '../share-sortie';
 
 interface MiniProfile {
   id: string;
@@ -27,7 +29,7 @@ interface MiniProfile {
 @Component({
   selector: 'app-sortie-drawer',
   standalone: true,
-  imports: [ClickableDirective],
+  imports: [ClickableDirective, InviteMembersComponent],
   templateUrl: './sortie-drawer.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './sortie-drawer.component.scss',
@@ -54,6 +56,14 @@ export class SortieDrawerComponent implements OnChanges {
   /** Le bouton Supprimer demande une confirmation dans le tiroir lui-même. */
   readonly confirmingDelete = signal(false);
 
+  /** Panneau « Inviter / Partager » déplié. */
+  readonly shareOpen = signal(false);
+  /** Écran d'invitation des membres Funny ouvert. */
+  readonly inviteOpen = signal(false);
+  /** « Lien copié ! », ou l'erreur du partage. */
+  readonly shareMessage = signal('');
+  readonly canShareNatively = typeof navigator !== 'undefined' && !!navigator.share;
+
   readonly activeTab = signal<'details' | 'membres'>('details');
   readonly membresInscrits = signal<MiniProfile[]>([]);
   readonly membresLikes = signal<MiniProfile[]>([]);
@@ -78,6 +88,51 @@ export class SortieDrawerComponent implements OnChanges {
     if (this.inscriptionStatus() !== 'none' || this.isOrganizer()) return false;
     return !['admin', 'developer', 'user_premium'].includes(this.userRole());
   });
+
+  /** La sortie a commencé : les invitations sans réponse ont expiré. */
+  readonly isPast = computed<boolean>(() => {
+    const sortie = this.sortie();
+    return !!sortie && new Date(sortie.date).getTime() <= Date.now();
+  });
+
+  /** L'organisateur invite des membres : sortie pour abonnés, pas encore commencée. */
+  readonly canInvite = computed<boolean>(() => {
+    const sortie = this.sortie();
+    return this.isOrganizer() && !!sortie?.is_premium && !this.isPast();
+  });
+
+  toggleShare() {
+    this.shareOpen.update((open) => !open);
+    this.shareMessage.set('');
+  }
+
+  openInvite() {
+    this.shareOpen.set(false);
+    this.inviteOpen.set(true);
+  }
+
+  /** Des invitations sont parties : la liste des membres sera relue. */
+  onInvited() {
+    this.membresLoaded.set(false);
+    if (this.activeTab() === 'membres') this.loadMembres();
+  }
+
+  /** Partage du téléphone (WhatsApp, SMS…) quand il existe. */
+  async shareNative(sortie: SortieWithRelations) {
+    this.shareMessage.set('');
+    const result = await shareSortie(sortie);
+    if (result === 'copied') this.shareMessage.set('🔗 Lien copié !');
+    if (result === 'error') this.shareMessage.set('Le partage n’a pas fonctionné. Copie le lien.');
+  }
+
+  async copyLink(sortie: SortieWithRelations) {
+    try {
+      await navigator.clipboard.writeText(sortieLink(sortie.id));
+      this.shareMessage.set('🔗 Lien copié ! Colle-le où tu veux.');
+    } catch {
+      this.shareMessage.set(`Copie ce lien : ${sortieLink(sortie.id)}`);
+    }
+  }
 
   readonly membresTabCount = computed<number>(() => {
     return this.membresInscrits().length + this.membresWaiting().length;
@@ -184,6 +239,9 @@ export class SortieDrawerComponent implements OnChanges {
     const change = changes['sortie'];
     if (change && this.sortie() && change.previousValue?.id !== change.currentValue?.id) {
       this.activeTab.set('details');
+      this.shareOpen.set(false);
+      this.inviteOpen.set(false);
+      this.shareMessage.set('');
       this.membresInscrits.set([]);
       this.membresLikes.set([]);
       this.membresWaiting.set([]);

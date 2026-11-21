@@ -110,6 +110,15 @@ export class SortieService {
     }));
   }
 
+  // Écran d'invitation : amis et personnes rencontrées, puis l'envoi (le serveur revérifie)
+  async getInviteCandidates(sortieId: string) {
+    return await this.sorties.getInviteCandidates(sortieId);
+  }
+
+  async invite(sortieId: string, userIds: string[]) {
+    return await this.sorties.invite(sortieId, userIds);
+  }
+
   // Membres invités qui n'ont pas encore répondu
   async getMembresInvites(sortieId: string): Promise<MiniProfile[]> {
     return await this.profiles.getMiniProfiles(await this.inscriptions.getInvitedUserIds(sortieId));

@@ -30,6 +30,17 @@ describe('authGuard', () => {
     expect(urlOf(await run())).toBe('/login');
   });
 
+  it('garde la page demandée pour y revenir après la connexion', async () => {
+    connectedAs(null);
+    const result = await executeGuard(
+      {} as ActivatedRouteSnapshot,
+      {
+        url: '/dashboard?sortie=s1',
+      } as RouterStateSnapshot,
+    );
+    expect(urlOf(result)).toBe('/login?redirect=%2Fdashboard%3Fsortie%3Ds1');
+  });
+
   it("renvoie vers la confirmation tant que l'adresse n'est pas confirmée", async () => {
     connectedAs({ id: 'u1', email: 'a@b.fr', emailVerified: false });
     expect(urlOf(await run())).toBe('/verifier-email');

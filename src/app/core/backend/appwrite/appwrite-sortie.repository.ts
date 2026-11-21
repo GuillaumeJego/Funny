@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Models, Query } from 'appwrite';
-import { Sortie, SortieWithRelations } from '../../models/sortie.model';
+import { InviteCandidates, Sortie, SortieWithRelations } from '../../models/sortie.model';
 import { Theme } from '../../models/theme.model';
 import { RepositoryResult } from '../../repositories/repository.types';
 import { SortieRepository } from '../../repositories/sortie.repository';
@@ -91,6 +91,35 @@ export class AppwriteSortieRepository extends SortieRepository {
   async delete(id: string): Promise<RepositoryResult<null>> {
     const { error } = await this.appwrite.run('sorties', 'delete', { sortieId: id });
     return { data: null, error };
+  }
+
+  async getInviteCandidates(sortieId: string): Promise<RepositoryResult<InviteCandidates>> {
+    const { data, error } = await this.appwrite.run<InviteCandidates>(
+      'sorties',
+      'inviteCandidates',
+      { sortieId },
+    );
+    return {
+      data: data
+        ? { friends: data.friends, met: data.met, placesLeft: data.placesLeft ?? null }
+        : null,
+      error,
+    };
+  }
+
+  async invite(
+    sortieId: string,
+    userIds: string[],
+  ): Promise<RepositoryResult<{ invited: string[]; skipped: string[] }>> {
+    const { data, error } = await this.appwrite.run<{ invited: string[]; skipped?: string[] }>(
+      'sorties',
+      'invite',
+      { sortieId, userIds },
+    );
+    return {
+      data: data ? { invited: data.invited ?? [], skipped: data.skipped ?? [] } : null,
+      error,
+    };
   }
 
   private async list(queries: string[]): Promise<SortieWithRelations[]> {

@@ -489,91 +489,110 @@
   cursor: pointer;
 }
 
-// ── Invitations ─────────────────────────────
+// ── Invitations (modification d'une sortie pour abonnés) ──
 .invite-box {
   padding: 0.9rem;
   background: $bg-white;
   border: 1px solid $border-color;
   border-radius: $border-radius;
 
-  .invite-hint {
-    margin-bottom: 0.7rem;
-
-    strong {
-      color: $text-dark;
-    }
-  }
-
-  .location-suggestions {
-    margin-top: 0.4rem;
+  .invite-box-title {
+    display: block;
+    font-weight: 700;
+    color: $text-dark;
   }
 }
 
-.chips {
+.btn-invite-friends {
+  margin-top: 0.6rem;
+  min-height: 48px;
+  padding: 0 1.25rem;
+  border: 2px solid $primary;
+  border-radius: $border-radius;
+  background: none;
+  color: $primary;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+// ── Sortie publiée ──
+.published-wrap {
+  min-height: calc(100dvh - 180px);
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 0.6rem;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.25rem 0.3rem 0.25rem 0.25rem;
-  background: $primary-light;
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: $text-dark;
-
-  img,
-  .chip-initial {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-
-  .chip-initial {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: $primary;
-    color: white;
-    font-size: 0.7rem;
-  }
-
-  button {
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    border: none;
-    border-radius: 50%;
-    background: none;
-    color: $text-medium;
-    cursor: pointer;
-  }
-}
-
-.sug-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex: 0 0 auto;
-}
-
-.sug-initial {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: $primary;
-  color: white;
-  font-size: 0.8rem;
-  font-weight: 700;
+  padding: 1.5rem 1rem;
 }
 
-.suggestion-item .sug-name {
-  flex: 1;
+.published-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow;
+  animation: pop 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+
+  h1 {
+    margin: 0.4rem 0 0.25rem;
+    font-size: 1.5rem;
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+}
+
+.published-icon {
+  font-size: 3.2rem;
+}
+
+.published-title {
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+  color: $text-dark;
+}
+
+.published-hint {
+  margin: 0 0 0.5rem;
+  color: $text-medium;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.btn-see {
+  display: block;
+  width: 100%;
+  margin-top: 0.6rem;
+  min-height: 52px;
+  border: 2px solid $primary;
+  border-radius: 13px;
+  background: none;
+  color: $primary;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-link {
+  margin-top: 0.75rem;
+  min-height: 44px;
+  border: none;
+  background: none;
+  color: $text-medium;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.share-message {
+  margin: 0.5rem 0 0;
+  color: $success-text;
+  font-weight: 600;
+  font-size: 0.9rem;
+  word-break: break-all;
 }

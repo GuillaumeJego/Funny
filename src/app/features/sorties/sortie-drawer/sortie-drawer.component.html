@@ -219,6 +219,47 @@
                 @if (chatError()) {
                   <p class="chat-error">{{ chatError() }}</p>
                 }
+                <!-- Inviter des membres (organisateur) ou partager le lien (tout le monde) -->
+                <button
+                  type="button"
+                  class="btn-share"
+                  [attr.aria-expanded]="shareOpen()"
+                  (click)="toggleShare()"
+                >
+                  {{ canInvite() ? '💌 Inviter / Partager' : '📤 Partager la sortie' }}
+                </button>
+                @if (shareOpen()) {
+                  <div class="share-panel">
+                    @if (canInvite()) {
+                      <button type="button" class="share-option" (click)="openInvite()">
+                        <span class="share-icon" aria-hidden="true">💌</span>
+                        <span>
+                          <strong>Inviter des membres Funny</strong>
+                          <small>Tes amis et les personnes rencontrées en sortie</small>
+                        </span>
+                      </button>
+                    }
+                    @if (canShareNatively) {
+                      <button type="button" class="share-option" (click)="shareNative(s)">
+                        <span class="share-icon" aria-hidden="true">📲</span>
+                        <span>
+                          <strong>Partager…</strong>
+                          <small>WhatsApp, SMS, e-mail…</small>
+                        </span>
+                      </button>
+                    }
+                    <button type="button" class="share-option" (click)="copyLink(s)">
+                      <span class="share-icon" aria-hidden="true">🔗</span>
+                      <span>
+                        <strong>Copier le lien</strong>
+                        <small>Il ouvre directement cette sortie</small>
+                      </span>
+                    </button>
+                    @if (shareMessage()) {
+                      <p class="share-message" role="status">{{ shareMessage() }}</p>
+                    }
+                  </div>
+                }
                 <!-- Organisateur : modifier / supprimer -->
                 @if (isOrganizer()) {
                   <button class="btn-modifier" (click)="goToEdit(s.id)">
@@ -297,7 +338,11 @@
                   @if (membresInvites().length > 0) {
                     <div class="membres-section">
                       <div class="membres-section-title">
-                        💌 Invités, en attente de réponse ({{ membresInvites().length }})
+                        @if (isPast()) {
+                          ⌛ Invitations expirées, sans réponse ({{ membresInvites().length }})
+                        } @else {
+                          💌 Invités, en attente de réponse ({{ membresInvites().length }})
+                        }
                       </div>
                       <div class="membres-list">
                         @for (m of membresInvites(); track m.id) {
@@ -448,4 +493,12 @@
       }
     </div>
   </div>
+  @if (inviteOpen() && sortie(); as s) {
+    <app-invite-members
+      [sortieId]="s.id"
+      [sortieTitle]="s.title"
+      (closed)="inviteOpen.set(false)"
+      (invited)="onInvited()"
+    />
+  }
 }

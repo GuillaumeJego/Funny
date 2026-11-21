@@ -3,7 +3,9 @@ import { HttpError } from '../shared/appwrite.js';
 import { checkPlaces, cleanSortie } from '../shared/sortie-rules.js';
 import {
   acceptInvitation,
+  checkCanInvite,
   declineInvitation,
+  inviteCandidates,
   inviteMembers,
   sortieReaders,
 } from '../shared/invitations.js';
@@ -195,5 +197,122 @@ describe('invitations', () => {
       zoe: 'pending',
     });
     expect(notifs(api).map((n) => n.title)).toContain('❌ Invitation refusée');
+  });
+});
+
+describe('qui inviter : amis et personnes rencontrées', () => {
+  const pastSortie = { $id: 'old', date: '2026-10-01T19:00:00Z', created_by: 'zoe' };
+  function candidatesApi(extra = {}) {
+    return createFakeApi(
+      {
+        profiles: [
+          { $id: 'orga', username: 'Orga' },
+          { $id: 'alice', username: 'Alice' },
+          { $id: 'bob', username: 'Bob' },
+          { $id: 'zoe', username: 'Zoé' },
+          { $id: 'max', username: 'Max' },
+          { $id: 'ben', username: 'Ben', is_banned: true },
+          { $id: 'tom', username: 'Tom' },
+          { $id: 'lea', username: 'Léa' },
+        ],
+        friendships: [
+          { $id: 'f1', requester_id: 'orga', receiver_id: 'alice', status: 'accepted' },
+          { $id: 'f2', requester_id: 'bob', receiver_id: 'orga', status: 'accepted' },
+          { $id: 'f3', requester_id: 'orga', receiver_id: 'max', status: 'pending' },
+          { $id: 'f4', requester_id: 'orga', receiver_id: 'ben', status: 'accepted' },
+        ],
+        sorties: [premiumSortie, pastSortie],
+        inscriptions: [
+          { $id: 'i0', sortie_id: 's1', user_id: 'orga', status: 'confirmed' },
+          { $id: 'i1', sortie_id: 's1', user_id: 'bob', status: 'invited' },
+          // Sortie passée : Orga, Zoé (organisatrice), Alice, Tom (absent), Léa (partie).
+          { $id: 'o1', sortie_id: 'old', user_id: 'orga', status: 'pending', present: true },
+          { $id: 'o2', sortie_id: 'old', user_id: 'zoe', status: 'confirmed' },
+          { $id: 'o3', sortie_id: 'old', user_id: 'alice', status: 'pending' },
+          { $id: 'o4', sortie_id: 'old', user_id: 'tom', status: 'pending', present: false },
+          { $id: 'o5', sortie_id: 'old', user_id: 'lea', status: 'cancelled' },
+          ...(extra.inscriptions ?? []),
+        ],
+        blocks: extra.blocks ?? [],
+      },
+      { admins: ['admin'] },
+    );
+  }
+  const ids = (list) => list.map((p) => p.id);
+
+  it('donne les amis acceptés et les participants des sorties passées', async () => {
+    const api = candidatesApi();
+    const { friends, met, placesLeft } = await inviteCandidates(api, {
+      sortie: premiumSortie,
+      organizerId: 'orga',
+      now: NOW,
+    });
+    // Pas les demandes en attente, ni les membres bannis.
+    expect(ids(friends)).toEqual(['alice', 'bob']);
+    // Ni les absents notés, ni ceux qui avaient quitté la sortie, ni soi-même.
+    expect(ids(met)).toEqual(['alice', 'zoe']);
+    // Bob est déjà invité : il est marqué, et sa place compte.
+    expect(friends.find((p) => p.id === 'bob').state).toBe('invited');
+    expect(friends.find((p) => p.id === 'alice').state).toBeNull();
+    expect(placesLeft).toBe(1);
+  });
+
+  it('cache les membres bloqués, dans un sens comme dans l’autre', async () => {
+    const api = candidatesApi({
+      blocks: [
+        { $id: 'b1', blocker_id: 'orga', blocked_id: 'alice' },
+        { $id: 'b2', blocker_id: 'zoe', blocked_id: 'orga' },
+      ],
+    });
+    const { friends, met } = await inviteCandidates(api, {
+      sortie: premiumSortie,
+      organizerId: 'orga',
+      now: NOW,
+    });
+    expect(ids(friends)).toEqual(['bob']);
+    expect(ids(met)).toEqual([]);
+  });
+
+  it('une personne présente dans les deux listes ne reçoit qu’une invitation', async () => {
+    const api = candidatesApi();
+    const { invited, skipped } = await inviteMembers(api, {
+      sortie: premiumSortie,
+      organizerId: 'orga',
+      userIds: ['alice', 'alice', 'bob'],
+      now: NOW,
+    });
+    expect(invited).toEqual(['alice']);
+    expect(skipped).toEqual(['bob']); // déjà invité
+    expect(notifs(api).filter((n) => n.user_id === 'alice')).toHaveLength(1);
+    // Un deuxième envoi (double clic) n'invite personne de plus.
+    const again = await inviteMembers(api, {
+      sortie: premiumSortie,
+      organizerId: 'orga',
+      userIds: ['alice'],
+      now: NOW,
+    });
+    expect(again.invited).toEqual([]);
+    expect(notifs(api).filter((n) => n.user_id === 'alice')).toHaveLength(1);
+  });
+
+  it('un membre bloqué est refusé même si l’appli l’envoie', async () => {
+    const api = candidatesApi({ blocks: [{ $id: 'b1', blocker_id: 'zoe', blocked_id: 'orga' }] });
+    const { invited, skipped } = await inviteMembers(api, {
+      sortie: premiumSortie,
+      organizerId: 'orga',
+      userIds: ['zoe'],
+      now: NOW,
+    });
+    expect(invited).toEqual([]);
+    expect(skipped).toEqual(['zoe']);
+  });
+
+  it('seul l’organisateur (ou un admin) peut inviter, et à une sortie pour abonnés', async () => {
+    const api = candidatesApi();
+    expect((await errorOf(() => checkCanInvite(api, premiumSortie, 'alice')))?.status).toBe(403);
+    expect(await errorOf(() => checkCanInvite(api, premiumSortie, 'orga'))).toBeNull();
+    expect(await errorOf(() => checkCanInvite(api, premiumSortie, 'admin'))).toBeNull();
+    const ordinary = { ...premiumSortie, is_premium: false };
+    expect((await errorOf(() => checkCanInvite(api, ordinary, 'orga')))?.status).toBe(400);
   });
 });
