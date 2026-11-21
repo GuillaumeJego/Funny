@@ -1,4 +1,4 @@
-// Invitations aux sorties réservées aux abonnés.
+// Invitations aux sorties, réservées aux organisateurs abonnés (sortie pour abonnés ou non).
 // L'organisateur abonné invite des membres (abonnés ou non) : chaque invité reçoit une
 // notification, et sa place lui est gardée (statut « invited ») jusqu'à ce qu'il refuse.
 // En acceptant, il devient participant, même sans abonnement. Une invitation sans réponse
@@ -53,12 +53,18 @@ export async function sortieReaders(api, sortie, organizerId) {
   return [...new Set(roles)].map(Permission.read);
 }
 
-/** Seul l'organisateur (ou un admin) invite, et seulement à une sortie pour abonnés. */
+/** Message quand l'organisateur n'est pas (ou plus) abonné. */
+const SUBSCRIBERS_ONLY = 'Les invitations sont réservées aux organisateurs abonnés.';
+
+/**
+ * Seul l'organisateur (ou un admin) invite, et seulement si l'organisateur est abonné, que la
+ * sortie soit réservée aux abonnés ou non.
+ */
 export async function checkCanInvite(api, sortie, userId) {
   if (sortie.created_by !== userId && !(await isAdmin(api, userId))) {
     fail(403, "Seul l'organisateur peut inviter à cette sortie.");
   }
-  if (!sortie.is_premium) fail(400, 'Les invitations sont réservées aux sorties pour abonnés.');
+  if (!(await api.isTeamMember('abonnes', sortie.created_by))) fail(403, SUBSCRIBERS_ONLY);
 }
 
 /** Remet à jour les droits de lecture d'une sortie (après une invitation ou un refus). */
@@ -73,7 +79,7 @@ export async function refreshReaders(api, sortie) {
 }
 
 /**
- * Invite des membres à une sortie réservée aux abonnés. Ignore l'organisateur, les membres
+ * Invite des membres à une sortie d'un organisateur abonné. Ignore l'organisateur, les membres
  * inconnus ou bloqués, et ceux qui sont déjà invités ou inscrits. Refuse s'il n'y a pas assez
  * de places libres. Ne touche pas aux droits de lecture : voir refreshReaders.
  */
@@ -82,7 +88,7 @@ export async function inviteMembers(api, { sortie, organizerId, userIds, now = n
     (id) => id && id !== organizerId,
   );
   if (ids.length === 0) return { invited: [] };
-  if (!sortie.is_premium) fail(400, 'Les invitations sont réservées aux sorties pour abonnés.');
+  if (!(await api.isTeamMember('abonnes', organizerId))) fail(403, SUBSCRIBERS_ONLY);
   if (ids.length > MAX_INVITES) fail(400, `${MAX_INVITES} invitations au maximum à la fois.`);
   if (new Date(sortie.date).getTime() < now.getTime()) fail(400, 'Cette sortie est déjà passée.');
 

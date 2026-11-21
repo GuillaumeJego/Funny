@@ -171,7 +171,7 @@ async function update({ api, userId, input }) {
       `${taken} places déjà prises (organisateur et invités compris) : garde au moins ${taken} places.`,
     );
   }
-  // Nouveaux invités : seulement pour une sortie réservée aux abonnés, dans les places libres.
+  // Nouveaux invités (organisateur abonné seulement), dans les places libres.
   const { invited } = await inviteMembers(api, {
     sortie: { ...sortie, ...data },
     organizerId: sortie.created_by,
@@ -223,7 +223,7 @@ async function update({ api, userId, input }) {
   return { sortie: updated, invited };
 }
 
-/** L'organisateur invite d'autres membres à sa sortie réservée aux abonnés. */
+/** L'organisateur abonné invite d'autres membres à sa sortie. */
 async function invite({ api, userId, input }) {
   const sortie = await getSortie(api, input.sortieId);
   await checkCanInvite(api, sortie, userId);

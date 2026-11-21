@@ -95,12 +95,10 @@ export class SortieDrawerComponent implements OnChanges {
     return !!sortie && new Date(sortie.date).getTime() <= Date.now();
   });
 
-  /** L'organisateur invite des membres : sortie pour abonnés, pas encore commencée. */
-  readonly canInvite = computed<boolean>(() => {
-    const sortie = this.sortie();
-    return this.isOrganizer() && !!sortie?.is_premium && !this.isPast();
-  });
-
+  /** L'organisateur abonné invite des membres, à toute sortie pas encore commencée. */
+  readonly canInvite = computed<boolean>(
+    () => this.isOrganizer() && this.userIsPremium() && !this.isPast(),
+  );
   toggleShare() {
     this.shareOpen.update((open) => !open);
     this.shareMessage.set('');

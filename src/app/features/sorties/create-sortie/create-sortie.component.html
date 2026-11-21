@@ -18,7 +18,7 @@
       <h1>Ta sortie est publiée !</h1>
       <p class="published-title">« {{ p.title }} »</p>
       <p class="published-hint">
-        @if (p.is_premium) {
+        @if (isSubscriber()) {
           Invite tes amis et les personnes rencontrées en sortie : leur place est gardée jusqu'à
           leur réponse.
         } @else {
@@ -29,7 +29,7 @@
         💌 Inviter des amis
       </button>
       <button type="button" class="btn-see" (click)="viewSortie()">Voir ma sortie</button>
-      @if (p.is_premium) {
+      @if (isSubscriber()) {
         <button type="button" class="btn-link" (click)="share()">📤 Partager le lien</button>
       }
       @if (shareMessage()) {
@@ -271,7 +271,7 @@
       </div>
     }
 
-    @if (editId() && savedPremium()) {
+    @if (editId() && savedUpcoming() && isSubscriber()) {
       <div class="formfield invite-box">
         <span class="invite-box-title">💌 Invitations</span>
         <p class="hint">Invite tes amis et les personnes rencontrées lors de tes sorties.</p>
