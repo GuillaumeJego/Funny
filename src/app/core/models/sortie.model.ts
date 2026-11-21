@@ -51,3 +51,19 @@ export interface Inscription {
   status: 'pending' | 'confirmed' | 'cancelled';
   created_at?: string;
 }
+
+/** Un membre qu'on peut inviter, et ce qu'il est déjà pour la sortie. */
+export interface InviteCandidate {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+  /** Déjà invité, inscrit ou en liste d'attente (ne peut plus être invité) ; null sinon. */
+  state: 'invited' | 'inscrit' | 'waiting' | null;
+}
+
+/** Les deux listes de l'écran d'invitation, et les places encore libres (null : illimité). */
+export interface InviteCandidates {
+  friends: InviteCandidate[];
+  met: InviteCandidate[];
+  placesLeft: number | null;
+}

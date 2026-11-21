@@ -1,4 +1,4 @@
-import { Sortie, SortieWithRelations } from '../models/sortie.model';
+import { InviteCandidates, Sortie, SortieWithRelations } from '../models/sortie.model';
 import { RepositoryResult } from './repository.types';
 
 export abstract class SortieRepository {
@@ -22,4 +22,11 @@ export abstract class SortieRepository {
     invites?: string[],
   ): Promise<RepositoryResult<Sortie>>;
   abstract delete(id: string): Promise<RepositoryResult<null>>;
+  /** Amis et personnes rencontrées que l'organisateur peut inviter (sortie pour abonnés). */
+  abstract getInviteCandidates(sortieId: string): Promise<RepositoryResult<InviteCandidates>>;
+  /** Invite des membres ; le serveur revérifie tout et dit qui a été ignoré. */
+  abstract invite(
+    sortieId: string,
+    userIds: string[],
+  ): Promise<RepositoryResult<{ invited: string[]; skipped: string[] }>>;
 }

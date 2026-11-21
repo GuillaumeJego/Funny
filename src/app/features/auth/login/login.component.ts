@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { MetanaCreditComponent } from '../../../core/components/metana-credit/metana-credit.component';
+import { safeRedirect } from '../../../core/utils/redirect';
 
 @Component({
   selector: 'app-login',
@@ -23,11 +24,14 @@ export class LoginComponent {
   readonly loading = signal(false);
   /** Affiché après la suppression du compte, un changement de mot de passe ou la confirmation de l'adresse. */
   readonly successMessage = signal('');
+  /** Page demandée avant la connexion (ex. le lien d'une sortie) : on y revient ensuite. */
+  private readonly redirect: string | null;
 
   constructor() {
     const route = inject(ActivatedRoute);
 
     const params = route.snapshot.queryParamMap;
+    this.redirect = safeRedirect(params.get('redirect'));
     if (params.get('compte') === 'supprime') {
       this.successMessage.set('Votre compte et toutes vos données ont été supprimés.');
     } else if (params.get('mot-de-passe') === 'modifie') {
@@ -47,7 +51,7 @@ export class LoginComponent {
       // Le message distingue un compte suspendu ; sinon il ne dit pas si l'email existe.
       this.errorMessage.set(error.message || 'Email ou mot de passe incorrect.');
     } else {
-      this.router.navigate(['/dashboard']);
+      this.router.navigateByUrl(this.redirect ?? '/dashboard');
     }
 
     this.loading.set(false);

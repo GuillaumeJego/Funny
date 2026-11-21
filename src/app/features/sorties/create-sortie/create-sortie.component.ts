@@ -18,16 +18,23 @@ import { SettingsService } from '../../../core/services/settings.service';
 import { SortieService } from '../../../core/services/sortie.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { OTHER_THEME_ID, Theme, ThemeImage } from '../../../core/models/theme.model';
-import { Profile } from '../../../core/models/profile.model';
 import { Sortie } from '../../../core/models/sortie.model';
 import { SortieImageUploadComponent } from '../sortie-image-upload/sortie-image-upload.component';
 import { isPremiumMember } from '../../../core/utils/premium';
 import { ClickableDirective } from '../../../core/directives/clickable.directive';
+import { InviteMembersComponent } from '../invite-members/invite-members.component';
+import { shareSortie, sortieLink } from '../share-sortie';
 
 @Component({
   selector: 'app-create-sortie',
   standalone: true,
-  imports: [ClickableDirective, CommonModule, FormsModule, SortieImageUploadComponent],
+  imports: [
+    ClickableDirective,
+    CommonModule,
+    FormsModule,
+    InviteMembersComponent,
+    SortieImageUploadComponent,
+  ],
   templateUrl: './create-sortie.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './create-sortie.component.scss',
@@ -89,16 +96,20 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
   static readonly FREE_PLACES = 10;
   readonly placesCap = signal<number | null>(null);
 
-  // Invitations (sortie réservée aux abonnés)
-  private readonly allMembers = signal<Profile[]>([]);
-  private membersLoaded = false;
-  readonly inviteQuery = signal('');
-  readonly invitees = signal<Profile[]>([]);
-  /** Modification : membres déjà invités, inscrits ou en attente (à ne pas réinviter). */
-  private readonly involvedIds = signal<Set<string>>(new Set());
-  readonly alreadyInvited = signal<{ id: string; username: string }[]>([]);
   /** Places déjà prises (toi compris, et les invités qui n'ont pas répondu). */
   private takenPlaces = 1;
+  /** Sortie qui vient d'être publiée : écran « Ta sortie est publiée ! 🎉 ». */
+  readonly published = signal<Sortie | null>(null);
+  /** Écran d'invitation ouvert (sortie publiée, ou modifiée). */
+  readonly inviteOpen = signal(false);
+  readonly shareMessage = signal('');
+  /** Modification d'une sortie pour abonnés à venir : on peut y inviter des membres. */
+  readonly savedPremium = signal(false);
+
+  /** La sortie dont on ouvre l'écran d'invitation (publiée ou modifiée). */
+  inviteSortieId(): string {
+    return this.published()?.id ?? this.editId();
+  }
 
   async ngOnInit() {
     const {
@@ -183,7 +194,7 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       );
     }
     this.takenPlaces = sortie.inscriptionsCount ?? 1;
-    if (sortie.is_premium) await this.loadInvolved(id);
+    this.savedPremium.set(!!sortie.is_premium && new Date(sortie.date).getTime() > Date.now());
     this.locationQuery.set(sortie.location);
     const { data } = await this.themeService.getThemeImages(sortie.theme_id);
     this.themeImages.set(data ?? []);
@@ -269,62 +280,31 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
     return cap !== null && places !== null && places > cap;
   }
 
-  // ── Invitations ─────────────────────────────
+  // ── Après la publication : inviter ou partager ──
 
-  /** Membres déjà concernés par la sortie modifiée : on ne les propose pas à nouveau. */
-  private async loadInvolved(sortieId: string) {
-    const [inscrits, waiting, invited] = await Promise.all([
-      this.sortieService.getMembresInscrits(sortieId),
-      this.sortieService.getMembresWaiting(sortieId),
-      this.sortieService.getMembresInvites(sortieId),
-    ]);
-    this.involvedIds.set(new Set([...inscrits, ...waiting, ...invited].map((m) => m.id)));
-    this.alreadyInvited.set(invited);
+  /** Sortie pour abonnés : écran d'invitation des membres ; sinon, partage du lien. */
+  async inviteFriends() {
+    const sortie = this.published();
+    if (!sortie) return;
+    if (sortie.is_premium) {
+      this.inviteOpen.set(true);
+      return;
+    }
+    await this.share();
   }
 
-  /** La liste des membres n'est chargée qu'au moment de chercher quelqu'un à inviter. */
-  async loadMembers() {
-    if (this.membersLoaded) return;
-    this.membersLoaded = true;
-    const { data } = await this.profileService.getAllProfiles();
-    this.allMembers.set(data ?? []);
+  async share() {
+    const sortie = this.published();
+    if (!sortie) return;
+    this.shareMessage.set('');
+    const result = await shareSortie(sortie);
+    if (result === 'copied') this.shareMessage.set('🔗 Lien copié ! Colle-le où tu veux.');
+    if (result === 'error') this.shareMessage.set(`Copie ce lien : ${sortieLink(sortie.id)}`);
   }
 
-  hasPlacesLimit(): boolean {
-    return this.places() !== null;
-  }
-
-  /** Places encore libres pour inviter (Infinity sans limite). */
-  placesLeft(): number {
-    const places = this.places();
-    if (places === null) return Infinity;
-    return Math.max(0, places - this.takenPlaces - this.invitees().length);
-  }
-
-  /** Membres qui correspondent à la recherche (8 au plus). */
-  inviteResults(): Profile[] {
-    const q = this.inviteQuery().toLowerCase().trim();
-    if (!q) return [];
-    const chosen = new Set(this.invitees().map((m) => m.id));
-    return this.allMembers()
-      .filter(
-        (m) =>
-          m.id !== this.userId &&
-          !chosen.has(m.id) &&
-          !this.involvedIds().has(m.id) &&
-          m.username.toLowerCase().includes(q),
-      )
-      .slice(0, 8);
-  }
-
-  addInvitee(member: Profile) {
-    if (this.placesLeft() <= 0) return;
-    this.invitees.update((list) => [...list, member]);
-    this.inviteQuery.set('');
-  }
-
-  removeInvitee(memberId: string) {
-    this.invitees.update((list) => list.filter((m) => m.id !== memberId));
+  viewSortie() {
+    const sortie = this.published();
+    if (sortie) this.router.navigate(['/dashboard'], { queryParams: { sortie: sortie.id } });
   }
 
   /** Ce qu'il manque pour publier, en clair ; vide quand tout est prêt. */
@@ -358,10 +338,9 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
       return;
     }
     const places = this.places();
-    const invites = this.sortie.is_premium ? this.invitees().map((m) => m.id) : [];
-    if (places !== null && this.takenPlaces + invites.length > places) {
+    if (places !== null && this.takenPlaces > places) {
       this.errorMessage.set(
-        `Pas assez de places pour tes invités : il en faut au moins ${this.takenPlaces + invites.length}.`,
+        `${this.takenPlaces} places déjà prises (toi et tes invités compris) : garde au moins ${this.takenPlaces} places.`,
       );
       return;
     }
@@ -399,7 +378,6 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
         const { data: saved, error } = await this.sortieService.updateSortie(
           this.editId(),
           this.withUtcDate(),
-          invites,
         );
         if (error || !saved) {
           this.errorMessage.set(error?.message ?? 'Erreur lors de la modification de la sortie.');
@@ -411,13 +389,13 @@ export class CreateSortieComponent implements OnInit, OnDestroy {
         this.sortie.created_by = this.userId;
         const { data: newSortie, error } = await this.sortieService.createSortie(
           this.withUtcDate(),
-          invites,
         );
         if (error || !newSortie) {
           this.errorMessage.set(error?.message ?? 'Erreur lors de la création de la sortie.');
         } else {
-          this.successMessage.set('Sortie créée avec succès !');
-          setTimeout(() => this.router.navigate(['/dashboard']), 1500);
+          // « Ta sortie est publiée ! 🎉 » : voir la sortie, ou inviter tout de suite.
+          this.published.set(newSortie);
+          window.scrollTo({ top: 0 });
         }
       }
     } catch (e) {

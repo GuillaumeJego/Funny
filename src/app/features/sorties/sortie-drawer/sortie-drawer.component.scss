@@ -784,3 +784,74 @@
   font-weight: 650;
   cursor: pointer;
 }
+
+// ─── Inviter / Partager ───────────────────────────────────
+.btn-share {
+  width: 100%;
+  min-height: 52px;
+  margin-bottom: 0.6rem;
+  border: none;
+  border-radius: $border-radius;
+  background: $primary;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: $primary-hover;
+  }
+}
+
+.share-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: -0.2rem 0 0.8rem;
+  padding: 0.5rem;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  background: $bg-elevated;
+  animation: fadeIn 0.15s ease;
+}
+
+.share-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 56px;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: $text-dark;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: $bg-white;
+  }
+
+  strong,
+  small {
+    display: block;
+  }
+
+  small {
+    color: $text-medium;
+    font-size: 0.8rem;
+  }
+}
+
+.share-icon {
+  font-size: 1.4rem;
+}
+
+.share-message {
+  margin: 0.2rem 0.5rem 0.3rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: $success-text;
+  word-break: break-all;
+}

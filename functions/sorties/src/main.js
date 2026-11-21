@@ -28,7 +28,9 @@ import {
 } from './shared/sortie-rules.js';
 import {
   acceptInvitation,
+  checkCanInvite,
   declineInvitation,
+  inviteCandidates,
   inviteMembers,
   refreshReaders,
   sortieReaders,
@@ -224,9 +226,7 @@ async function update({ api, userId, input }) {
 /** L'organisateur invite d'autres membres à sa sortie réservée aux abonnés. */
 async function invite({ api, userId, input }) {
   const sortie = await getSortie(api, input.sortieId);
-  if (sortie.created_by !== userId && !(await isAdmin(api, userId))) {
-    fail(403, "Seul l'organisateur peut inviter à cette sortie.");
-  }
+  await checkCanInvite(api, sortie, userId);
   const result = await inviteMembers(api, {
     sortie,
     organizerId: sortie.created_by,
@@ -234,6 +234,13 @@ async function invite({ api, userId, input }) {
   });
   if (result.invited.length) await refreshReaders(api, sortie);
   return result;
+}
+
+/** Amis et personnes rencontrées que l'organisateur peut inviter, avec leur état. */
+async function candidates({ api, userId, input }) {
+  const sortie = await getSortie(api, input.sortieId);
+  await checkCanInvite(api, sortie, userId);
+  return inviteCandidates(api, { sortie, organizerId: sortie.created_by });
 }
 
 async function join({ api, userId, input }) {
@@ -392,7 +399,19 @@ async function presences({ api, userId, input }) {
 }
 
 export default handler(
-  { create, update, invite, join, leave, like, affinite, presences, openChat, delete: remove },
+  {
+    create,
+    update,
+    invite,
+    inviteCandidates: candidates,
+    join,
+    leave,
+    like,
+    affinite,
+    presences,
+    openChat,
+    delete: remove,
+  },
   // Chaque heure : rappel la veille des sorties, question des affinités après,
   // et rappel quotidien à l'organisateur tant que les présences ne sont pas validées.
   {
