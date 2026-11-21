@@ -38,7 +38,7 @@ async function blockedBetween(api, a, b) {
 /** Le message éphémère, et sa conversation (que `userId` doit faire partie). */
 async function ephemeralMessage(api, messageId, userId) {
   const message = await api.getRow('messages', String(messageId ?? ''));
-  if (!message || !message.ephemeral) fail(404, 'Message introuvable.');
+  if (!message || !message.ephemeral || message.deleted) fail(404, 'Message introuvable.');
   const conversation = await conversationOf(api, message.conversation_id, userId);
   return { message, conversation };
 }
@@ -79,7 +79,7 @@ export async function sendEphemeral(api, { userId, conversationId, type, content
       if (await blockedBetween(api, userId, other)) fail(403, 'Impossible d’écrire à ce membre.');
     }
   }
-  const kind = ['text', 'image', 'video'].includes(type) ? type : 'text';
+  const kind = ['text', 'image', 'video', 'audio'].includes(type) ? type : 'text';
   const text = typeof content === 'string' ? content.trim() : '';
   let fileId = null;
   if (kind === 'text') {

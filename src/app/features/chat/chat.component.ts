@@ -18,7 +18,12 @@ import { ProfileService } from '../../core/services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
 import { UnreadMessagesService } from '../../core/services/unread-messages.service';
 import { ConversationService } from '../../core/services/conversation.service';
-import { EphemeralContent, EphemeralView, Message } from '../../core/models/message.model';
+import {
+  EphemeralContent,
+  EphemeralView,
+  Message,
+  MessageType,
+} from '../../core/models/message.model';
 import { ModerationService } from '../../core/services/moderation.service';
 import { MemberSafetyComponent } from '../../core/components/member-safety/member-safety.component';
 import { ClickableDirective } from '../../core/directives/clickable.directive';
@@ -27,6 +32,15 @@ import { ProfileLinkDirective } from '../../core/directives/profile-link.directi
 const EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍'];
 /** Nombre de photos ou vidéos envoyées en une fois. */
 const MAX_MEDIA = 10;
+/** Durée maximale d'un message vocal, en secondes (10 minutes). */
+const MAX_VOICE_SECONDS = 600;
+/** Formats d'enregistrement essayés dans l'ordre, et l'extension du fichier envoyé. */
+const VOICE_FORMATS = [
+  { mime: 'audio/webm;codecs=opus', ext: 'webm' },
+  { mime: 'audio/webm', ext: 'webm' },
+  { mime: 'audio/mp4', ext: 'm4a' },
+  { mime: 'audio/ogg;codecs=opus', ext: 'ogg' },
+];
 
 interface PendingMedia {
   file: File;
@@ -109,12 +123,32 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   /** Message éphémère en cours d'ouverture ou de demande (bouton désactivé). */
   readonly ephemeralBusy = signal('');
 
+  // ── Message vocal ──
+  readonly recording = signal(false);
+  /** Secondes enregistrées. */
+  readonly recordSeconds = signal(0);
+  readonly maxVoiceSeconds = MAX_VOICE_SECONDS;
+  private recorder: MediaRecorder | null = null;
+  private recordTimer: ReturnType<typeof setInterval> | null = null;
+  /** Le vocal part à l'arrêt de l'enregistrement (faux : « Annuler »). */
+  private sendVoiceOnStop = false;
+
+  // ── Modifier et supprimer ses messages ──
+  /** Message en cours de modification (son texte est dans la zone de saisie). */
+  readonly editing = signal<Message | null>(null);
+  /** Le sélecteur demande de confirmer la suppression. */
+  readonly confirmDelete = signal(false);
+  /** Jusqu'où chaque autre participant a lu la conversation. */
+  private readonly readStates = signal(new Map<string, string>());
+
   /** Message qui n'a pas pu partir : affiché sous la zone de saisie. */
   readonly sendError = signal('');
 
   private stopListening: (() => void) | null = null;
   private stopReactions: (() => void) | null = null;
   private stopViews: (() => void) | null = null;
+  private stopUpdates: (() => void) | null = null;
+  private stopReads: (() => void) | null = null;
   private destroyed = false;
   private shouldScroll = false;
 
@@ -163,7 +197,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       (messageId) => this.zone.run(() => this.refreshViews(messageId)),
     );
 
-    await this.loadMessages();
+    this.stopUpdates = this.conversationService.subscribeToMessageUpdates(
+      this.conversationId,
+      (message) => this.zone.run(() => this.applyUpdate(message)),
+    );
+    this.stopReads = this.conversationService.subscribeToReads(this.conversationId, (read) =>
+      this.zone.run(() => this.setRead(read.user_id, read.last_read_at)),
+    );
+
+    const [, reads] = await Promise.all([
+      this.loadMessages(),
+      this.conversationService.getReadStates(this.conversationId),
+    ]);
+    for (const read of reads) this.setRead(read.user_id, read.last_read_at);
     this.loading.set(false);
     this.shouldScroll = true;
     // La conversation est lue : le badge « Messages » se met à jour.
@@ -219,6 +265,223 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.messages.update((list) => list.map((m) => (m.id === messageId ? { ...m, reactions } : m)));
   }
 
+  /** Un message a été modifié ou supprimé (par soi, ou en direct par son auteur). */
+  private applyUpdate(updated: Message) {
+    this.messages.update((list) =>
+      list.map((m) => {
+        if (m.id === updated.id) {
+          return { ...updated, reactions: m.reactions, views: m.views, reply_to: m.reply_to };
+        }
+        // Les réponses à ce message montrent aussi le nouveau texte.
+        if (m.reply_to?.id === updated.id) {
+          return {
+            ...m,
+            reply_to: {
+              ...m.reply_to,
+              content: updated.deleted ? 'Message supprimé' : updated.content,
+              type: updated.deleted ? 'text' : updated.type,
+            },
+          };
+        }
+        return m;
+      }),
+    );
+    if (this.editing()?.id === updated.id && updated.deleted) this.cancelEdit();
+  }
+
+  private setRead(userId: string, lastReadAt: string) {
+    if (userId === this.myId) return;
+    const current = this.readStates().get(userId);
+    if (current && current >= lastReadAt) return;
+    this.readStates.update((map) => new Map(map).set(userId, lastReadAt));
+  }
+
+  /** Un autre participant a ouvert la conversation depuis l'envoi du message. */
+  private readByOthers(msg: Message): boolean {
+    return [...this.readStates().values()].some((at) => at >= msg.created_at);
+  }
+
+  /** Son propre texte, tant que personne d'autre ne l'a lu. */
+  canEdit(msg: Message): boolean {
+    return (
+      this.isOwn(msg) &&
+      msg.type === 'text' &&
+      !msg.ephemeral &&
+      !msg.deleted &&
+      !this.readByOthers(msg)
+    );
+  }
+
+  startEdit(msg: Message) {
+    this.reactionTarget.set(null);
+    this.replyTo.set(null);
+    this.ephemeralMode.set(false);
+    this.sendError.set('');
+    this.editing.set(msg);
+    this.text.set(msg.content ?? '');
+  }
+
+  cancelEdit() {
+    this.editing.set(null);
+    this.text.set('');
+  }
+
+  private async saveEdit(msg: Message) {
+    const content = this.text().trim();
+    if (!content || this.sending()) return;
+    if (content === msg.content) {
+      this.cancelEdit();
+      return;
+    }
+    this.sending.set(true);
+    this.sendError.set('');
+    const error = await this.conversationService.editMessage(msg.id, content);
+    this.sending.set(false);
+    if (error) {
+      this.sendError.set(error);
+      return;
+    }
+    this.applyUpdate({ ...msg, content, edited_at: new Date().toISOString() });
+    this.cancelEdit();
+  }
+
+  askDelete() {
+    this.confirmDelete.set(true);
+  }
+
+  async deleteMessage() {
+    const msg = this.reactionTarget();
+    if (!msg) return;
+    this.reactionTarget.set(null);
+    this.confirmDelete.set(false);
+    this.sendError.set('');
+    const error = await this.conversationService.deleteMessage(msg.id);
+    if (error) {
+      this.sendError.set(error);
+      return;
+    }
+    this.applyUpdate({ ...msg, content: null, media_url: null, deleted: true });
+    if (this.replyTo()?.id === msg.id) this.replyTo.set(null);
+  }
+
+  // ── Messages vocaux ─────────────────────────
+
+  /** Enregistre au micro ; s'arrête tout seul au bout de 10 minutes. */
+  async startRecording() {
+    if (this.recording() || this.sending()) return;
+    this.sendError.set('');
+    const format = VOICE_FORMATS.find(
+      (f) => typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(f.mime),
+    );
+    if (!format || !navigator.mediaDevices?.getUserMedia) {
+      this.sendError.set('Ton navigateur ne permet pas d’enregistrer un vocal.');
+      return;
+    }
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      this.sendError.set('Autorise le micro pour enregistrer un vocal.');
+      return;
+    }
+    const chunks: Blob[] = [];
+    const recorder = new MediaRecorder(stream, {
+      mimeType: format.mime,
+      audioBitsPerSecond: 32000,
+    });
+    recorder.ondataavailable = (e) => {
+      if (e.data.size) chunks.push(e.data);
+    };
+    recorder.onstop = () =>
+      this.zone.run(() => {
+        stream.getTracks().forEach((t) => t.stop());
+        const seconds = this.recordSeconds();
+        this.recording.set(false);
+        this.recorder = null;
+        if (this.sendVoiceOnStop && chunks.length && !this.destroyed) {
+          const type = format.mime.split(';')[0];
+          const file = new File(chunks, `vocal-${Date.now()}.${format.ext}`, { type });
+          this.sendVoice(file, seconds);
+        }
+      });
+    this.recorder = recorder;
+    this.sendVoiceOnStop = false;
+    this.recordSeconds.set(0);
+    this.recording.set(true);
+    recorder.start(1000);
+    this.recordTimer = setInterval(() => {
+      this.recordSeconds.update((s) => s + 1);
+      if (this.recordSeconds() >= MAX_VOICE_SECONDS) this.stopRecording(true);
+    }, 1000);
+  }
+
+  /** Arrête l'enregistrement : « Envoyer » (true) ou « Annuler » (false). */
+  stopRecording(send: boolean) {
+    if (this.recordTimer) clearInterval(this.recordTimer);
+    this.recordTimer = null;
+    this.sendVoiceOnStop = send;
+    if (this.recorder?.state === 'recording') this.recorder.stop();
+    else this.recording.set(false);
+  }
+
+  private async sendVoice(file: File, seconds: number) {
+    this.sending.set(true);
+    this.uploading.set(true);
+    const ephemeral = this.ephemeralMode();
+    const replyTo = ephemeral ? null : this.replyTo();
+    const fileId = await this.conversationService.uploadMedia(
+      file,
+      this.myId,
+      this.conversationId,
+      ephemeral,
+    );
+    let msg: Message | null = null;
+    if (fileId) {
+      msg = ephemeral
+        ? await this.sendEphemeral('audio', null, fileId)
+        : await this.conversationService.sendMessage(
+            this.conversationId,
+            this.myId,
+            this.formatDuration(seconds),
+            'audio',
+            replyTo?.id,
+            fileId,
+          );
+    }
+    this.uploading.set(false);
+    this.sending.set(false);
+    if (!msg) {
+      this.sendError.set(
+        `Le vocal n'est pas parti${this.ephemeralError ? ` (${this.ephemeralError})` : ''}. Vérifie ta connexion et réessaie.`,
+      );
+      this.ephemeralError = '';
+      return;
+    }
+    this.addMessages([msg]);
+    if (!ephemeral) this.replyTo.set(null);
+    else this.ephemeralMode.set(false);
+  }
+
+  /** 75 → « 1:15 ». */
+  formatDuration(seconds: number): string {
+    const s = Math.max(0, Math.floor(seconds));
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  }
+
+  /**
+   * Les vocaux enregistrés par Chrome n'annoncent pas leur durée : on la fait calculer au
+   * navigateur (en sautant à la fin puis en revenant au début) pour que la barre soit juste.
+   */
+  fixAudioDuration(event: Event) {
+    const audio = event.target as HTMLAudioElement;
+    if (audio.duration !== Infinity) return;
+    audio.ontimeupdate = () => {
+      audio.ontimeupdate = null;
+      audio.currentTime = 0;
+    };
+    audio.currentTime = 1e101;
+  }
+
   /** Relit les vues d'un message éphémère (ouverture, demande, réponse). */
   private async refreshViews(messageId: string) {
     if (!this.messages().some((m) => m.id === messageId)) return;
@@ -261,6 +524,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   ephemeralLabel(msg: Message): string {
+    if (msg.type === 'audio') return 'Vocal éphémère';
     return msg.type === 'image'
       ? 'Photo éphémère'
       : msg.type === 'video'
@@ -323,6 +587,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.stopListening?.();
     this.stopReactions?.();
     this.stopViews?.();
+    this.stopUpdates?.();
+    this.stopReads?.();
+    if (this.recording()) this.stopRecording(false);
     this.closeEphemeral();
     if (this.conversationId && this.myId) this.unread.closed(this.conversationId, this.myId);
     for (const media of this.pendingMedia()) URL.revokeObjectURL(media.previewUrl);
@@ -375,6 +642,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   /** Envoie les photos et vidéos choisies (dans l'ordre), puis le texte. */
   async send() {
+    const edited = this.editing();
+    if (edited) return this.saveEdit(edited);
     const content = this.text().trim();
     const files = this.pendingMedia();
     if ((!content && !files.length) || this.sending()) return;
@@ -437,7 +706,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   /** Envoi éphémère : en cas d'échec, la raison donnée par le serveur s'affiche. */
   private async sendEphemeral(
-    type: 'text' | 'image' | 'video',
+    type: MessageType,
     content: string | null,
     fileId: string | null,
   ): Promise<Message | null> {
@@ -515,16 +784,21 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   openReactionPicker(event: MouseEvent, msg: Message) {
     event.preventDefault();
     event.stopPropagation();
+    // Un message supprimé ne se commente plus.
+    if (msg.deleted) return;
     this.reactionTarget.set(msg);
+    this.confirmDelete.set(false);
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    // Ses propres messages ont aussi « Modifier » et « Supprimer », sur une deuxième ligne.
     this.reactionPickerPos.set({
-      top: rect.top - 60,
-      left: Math.min(rect.left, window.innerWidth - 220),
+      top: Math.max(8, rect.top - (this.isOwn(msg) ? 104 : 60)),
+      left: Math.max(8, Math.min(rect.left, window.innerWidth - 310)),
     });
   }
 
   closeReactionPicker() {
     this.reactionTarget.set(null);
+    this.confirmDelete.set(false);
   }
 
   /** Ajoute, change ou retire sa réaction : depuis le sélecteur, ou en touchant une réaction. */
@@ -550,6 +824,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   setReply(msg: Message) {
+    if (msg.deleted) return;
+    if (this.editing()) this.cancelEdit();
     this.replyTo.set(msg);
     this.reactionTarget.set(null);
   }

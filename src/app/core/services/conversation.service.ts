@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { StorageRepository } from '../repositories/storage.repository';
 import { Unsubscribe } from '../repositories/repository.types';
-import { Message, Conversation } from '../models/message.model';
+import { Message, Conversation, MessageType, ReadState } from '../models/message.model';
 
 @Injectable({ providedIn: 'root' })
 export class ConversationService {
@@ -58,7 +58,7 @@ export class ConversationService {
     conversationId: string,
     senderId: string,
     content: string,
-    type: 'text' | 'image' | 'video' = 'text',
+    type: MessageType = 'text',
     replyToId?: string,
     mediaFileId?: string,
   ): Promise<Message | null> {
@@ -95,7 +95,7 @@ export class ConversationService {
   // ── Messages éphémères (« voir une fois ») ──
   async sendEphemeral(
     conversationId: string,
-    type: 'text' | 'image' | 'video',
+    type: MessageType,
     content: string | null,
     mediaFileId: string | null = null,
   ) {
@@ -112,6 +112,30 @@ export class ConversationService {
 
   async answerSeeAgain(messageId: string, memberId: string, accept: boolean) {
     return await this.conversations.answerSeeAgain(messageId, memberId, accept);
+  }
+
+  // ── Modifier et supprimer ses messages ──
+  async editMessage(messageId: string, content: string) {
+    return await this.conversations.editMessage(messageId, content);
+  }
+
+  async deleteMessage(messageId: string) {
+    return await this.conversations.deleteMessage(messageId);
+  }
+
+  subscribeToMessageUpdates(
+    conversationId: string,
+    callback: (message: Message) => void,
+  ): Unsubscribe {
+    return this.conversations.onMessageUpdate(conversationId, callback);
+  }
+
+  async getReadStates(conversationId: string): Promise<ReadState[]> {
+    return await this.conversations.getReadStates(conversationId);
+  }
+
+  subscribeToReads(conversationId: string, callback: (read: ReadState) => void): Unsubscribe {
+    return this.conversations.onReadChange(conversationId, callback);
   }
 
   async getEphemeralViews(messageId: string) {

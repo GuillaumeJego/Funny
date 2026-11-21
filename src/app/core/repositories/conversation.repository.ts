@@ -4,6 +4,8 @@ import {
   EphemeralView,
   Message,
   MessageReaction,
+  MessageType,
+  ReadState,
 } from '../models/message.model';
 import { Unsubscribe } from './repository.types';
 
@@ -11,7 +13,7 @@ export interface NewMessage {
   conversation_id: string;
   sender_id: string;
   content: string | null;
-  type: 'text' | 'image' | 'video';
+  type: MessageType;
   reply_to_id: string | null;
   /** Identifiant du fichier envoyé avec StorageRepository.uploadChatMedia. */
   media_file_id: string | null;
@@ -48,7 +50,7 @@ export abstract class ConversationRepository {
    */
   abstract sendEphemeral(
     conversationId: string,
-    type: 'text' | 'image' | 'video',
+    type: MessageType,
     content: string | null,
     mediaFileId: string | null,
   ): Promise<{ data: Message | null; error: string | null }>;
@@ -71,6 +73,19 @@ export abstract class ConversationRepository {
     conversationId: string,
     callback: (messageId: string) => void,
   ): Unsubscribe;
+  /** Modifie le texte de son message (refusé une fois lu) ; renvoie l'erreur éventuelle. */
+  abstract editMessage(messageId: string, content: string): Promise<string | null>;
+  /** Supprime son message pour tous ; renvoie l'erreur éventuelle. */
+  abstract deleteMessage(messageId: string): Promise<string | null>;
+  /** Prévient quand un message de la conversation est modifié ou supprimé. */
+  abstract onMessageUpdate(
+    conversationId: string,
+    callback: (message: Message) => void,
+  ): Unsubscribe;
+  /** Jusqu'où chaque participant a lu la conversation. */
+  abstract getReadStates(conversationId: string): Promise<ReadState[]>;
+  /** Prévient quand un participant lit la conversation. */
+  abstract onReadChange(conversationId: string, callback: (read: ReadState) => void): Unsubscribe;
   /** Réactions d'un message (celles qui viennent vraiment de leur auteur). */
   abstract getReactions(messageId: string): Promise<MessageReaction[]>;
   /** Prévient quand une réaction est ajoutée, changée ou retirée : donne le message concerné. */

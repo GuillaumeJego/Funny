@@ -23,10 +23,13 @@ export async function collectEvidence(api, conversationId, reporterId) {
     Query.orderDesc('$createdAt'),
     Query.limit(EVIDENCE_MESSAGES),
   ]);
-  // Message éphémère : son vrai contenu est rangé à part, les admins doivent pouvoir le voir.
+  // Message éphémère ou supprimé : son vrai contenu est rangé à part, les admins doivent
+  // pouvoir le voir.
   const secrets = new Map();
-  for (const m of rows.filter((r) => r.ephemeral)) {
-    const secret = await api.getRow('ephemeral_contents', m.$id);
+  for (const m of rows.filter((r) => r.ephemeral || r.deleted)) {
+    const secret =
+      (m.ephemeral ? await api.getRow('ephemeral_contents', m.$id) : null) ??
+      (m.deleted ? await api.getRow('deleted_contents', m.$id) : null);
     if (secret) secrets.set(m.$id, secret);
   }
   return rows.reverse().map((m) => {
@@ -39,6 +42,7 @@ export async function collectEvidence(api, conversationId, reporterId) {
       media_file_id: source.media_file_id || null,
       at: m.$createdAt,
       ...(m.ephemeral ? { ephemeral: true } : {}),
+      ...(m.deleted ? { deleted: true } : {}),
     };
   });
 }

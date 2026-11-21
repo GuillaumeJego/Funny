@@ -6,6 +6,8 @@ import {
   EphemeralView,
   Message,
   MessageReaction,
+  MessageType,
+  ReadState,
 } from '../../models/message.model';
 import { ConversationRepository, NewMessage } from '../../repositories/conversation.repository';
 import { Unsubscribe } from '../../repositories/repository.types';
@@ -13,9 +15,14 @@ import { AppwriteClientService, DB } from './appwrite-client';
 import { fromRow } from './rows';
 
 type MessageRow = Models.Row &
-  Omit<NewMessage, 'media_file_id'> & { media_file_id: string | null; ephemeral?: boolean };
+  Omit<NewMessage, 'media_file_id'> & {
+    media_file_id: string | null;
+    ephemeral?: boolean;
+    deleted?: boolean;
+    edited_at?: string | null;
+  };
 type ConversationRow = Models.Row & { participant_ids: string[]; sortie_id?: string | null };
-type ReadRow = Models.Row & { conversation_id: string; last_read_at: string };
+type ReadRow = Models.Row & { conversation_id: string; user_id: string; last_read_at: string };
 type ReactionRow = Models.Row & MessageReaction & { conversation_id: string };
 type ViewRow = Models.Row & {
   message_id: string;
@@ -180,7 +187,7 @@ export class AppwriteConversationRepository extends ConversationRepository {
 
   async sendEphemeral(
     conversationId: string,
-    type: 'text' | 'image' | 'video',
+    type: MessageType,
     content: string | null,
     mediaFileId: string | null,
   ): Promise<{ data: Message | null; error: string | null }> {
@@ -203,7 +210,7 @@ export class AppwriteConversationRepository extends ConversationRepository {
     messageId: string,
   ): Promise<{ data: EphemeralContent | null; error: string | null }> {
     const { data, error } = await this.appwrite.run<{
-      type: 'text' | 'image' | 'video';
+      type: MessageType;
       content?: string;
       fileId?: string;
       token?: string;
@@ -221,7 +228,7 @@ export class AppwriteConversationRepository extends ConversationRepository {
         error: null,
       };
     } catch {
-      return { data: null, error: 'La photo n’a pas pu être chargée.' };
+      return { data: null, error: 'Le fichier n’a pas pu être chargé.' };
     }
   }
 
@@ -241,6 +248,50 @@ export class AppwriteConversationRepository extends ConversationRepository {
       accept,
     });
     return error?.message ?? null;
+  }
+
+  async editMessage(messageId: string, content: string): Promise<string | null> {
+    const { error } = await this.appwrite.run('social', 'messageEdit', { messageId, content });
+    return error?.message ?? null;
+  }
+
+  async deleteMessage(messageId: string): Promise<string | null> {
+    const { error } = await this.appwrite.run('social', 'messageDelete', { messageId });
+    return error?.message ?? null;
+  }
+
+  onMessageUpdate(conversationId: string, callback: (message: Message) => void): Unsubscribe {
+    return this.appwrite.client.subscribe<MessageRow>(
+      Channel.tablesdb(DB).table('messages').row().update(),
+      async (event) => {
+        const row = event.payload;
+        if (row.conversation_id !== conversationId || !writtenBy(row, row.sender_id)) return;
+        const [message] = await this.enrich([row], []);
+        callback(message);
+      },
+    );
+  }
+
+  async getReadStates(conversationId: string): Promise<ReadState[]> {
+    try {
+      const rows = await this.appwrite.listAll<ReadRow>('conversation_reads', [
+        Query.equal('conversation_id', conversationId),
+      ]);
+      return rows.map((r) => ({ user_id: r.user_id, last_read_at: r.last_read_at }));
+    } catch {
+      return [];
+    }
+  }
+
+  onReadChange(conversationId: string, callback: (read: ReadState) => void): Unsubscribe {
+    return this.appwrite.client.subscribe<ReadRow>(
+      Channel.tablesdb(DB).table('conversation_reads').row(),
+      (event) => {
+        const row = event.payload;
+        if (row.conversation_id !== conversationId) return;
+        callback({ user_id: row.user_id, last_read_at: row.last_read_at });
+      },
+    );
   }
 
   async getEphemeralViews(messageId: string): Promise<EphemeralView[]> {
@@ -390,6 +441,7 @@ export class AppwriteConversationRepository extends ConversationRepository {
         tableId: 'conversation_reads',
         rowId: existing.$id,
         data: { last_read_at: now },
+        permissions: this.readPermissions(conversationId, userId),
       });
       return;
     }
@@ -398,8 +450,20 @@ export class AppwriteConversationRepository extends ConversationRepository {
       tableId: 'conversation_reads',
       rowId: ID.unique(),
       data: { user_id: userId, conversation_id: conversationId, last_read_at: now },
-      permissions: [Permission.read(Role.user(userId)), Permission.update(Role.user(userId))],
+      permissions: this.readPermissions(conversationId, userId),
     });
+  }
+
+  /**
+   * Sa date de lecture : les autres participants la voient (pour savoir si un message peut
+   * encore être modifié), seul le membre la change.
+   */
+  private readPermissions(conversationId: string, userId: string): string[] {
+    return [
+      Permission.read(Role.user(userId)),
+      Permission.update(Role.user(userId)),
+      Permission.read(Role.team(conversationId)),
+    ];
   }
 
   async getReactions(messageId: string): Promise<MessageReaction[]> {
@@ -473,8 +537,8 @@ export class AppwriteConversationRepository extends ConversationRepository {
           reply_to: replied
             ? {
                 id: replied.$id,
-                content: replied.content,
-                type: replied.type,
+                content: replied.deleted ? 'Message supprimé' : replied.content,
+                type: replied.deleted ? 'text' : replied.type,
                 sender: { username: profiles.get(replied.sender_id)?.username ?? '' },
               }
             : null,
